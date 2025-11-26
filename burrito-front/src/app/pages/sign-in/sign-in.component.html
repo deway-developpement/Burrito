@@ -1,0 +1,63 @@
+<app-background-div class="auth">
+
+  <main class="auth__main">
+    <section class="auth__card">
+      <h1 class="auth__title">Sign in to Burrito</h1>
+      <form
+        class="auth__form"
+        (ngSubmit)="onSubmit()"
+      >
+        <label class="auth__field">
+          <span class="auth__label">Email</span>
+          <input
+            class="auth__input"
+            type="email"
+            name="email"
+            [(ngModel)]="email"
+            required
+          />
+        </label>
+
+        <label class="auth__field">
+          <span class="auth__label">Password</span>
+          <input
+            class="auth__input"
+            type="password"
+            name="password"
+            [(ngModel)]="password"
+            required
+          />
+        </label>
+
+        <div class="auth__actions">
+          <app-button
+            type="submit"
+            variant="primary"
+          >
+            Sign in
+          </app-button>
+
+          <button
+            type="button"
+            class="auth__forgot"
+          >
+            Forgot your password?
+          </button>
+        </div>
+      </form>
+
+      <div class="auth__divider">
+        <span class="auth__divider-line"></span>
+        <span class="auth__divider-text">or</span>
+        <span class="auth__divider-line"></span>
+      </div>
+
+      <div class="auth__oauth">
+        <app-button variant="outline">
+          Continue with Google
+        </app-button>
+      </div>
+    </section>
+  </main>
+
+</app-background-div>

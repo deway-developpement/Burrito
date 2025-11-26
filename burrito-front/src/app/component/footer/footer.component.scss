@@ -1,0 +1,57 @@
+@use 'burrito-theme' as theme;
+
+.footer {
+  margin-top: auto;
+  display: block;
+  padding: 2rem 1.5rem;
+  text-align: center;
+  font-family: system-ui, sans-serif;
+  color: theme.$text-muted;
+  white-space: nowrap;
+
+  &__inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: row;
+    gap: 3rem;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    font-size: 0.85rem;
+    color: theme.$text-muted;
+  }
+
+  &__logo {
+    font-size: 0.85rem;
+  }
+
+  &__links {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    gap: 0.9rem 1.3rem;
+  }
+
+  &__link {
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: theme.$text-muted;
+    transition: color 0.15s ease;
+
+    &:hover {
+      color: theme.$text-dark;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+  }
+
+  &__copy {
+    font-size: 0.78rem;
+    color: theme.$text-muted;
+  }
+}
