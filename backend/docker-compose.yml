@@ -1,0 +1,21 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: ${MONGODB_CONTAINER_NAME:-burrito-mongo}
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USERNAME:-burrito}
+      MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASSWORD:-burrito}
+      MONGO_INITDB_DATABASE: ${DATABASE_NAME:-burrito}
+    ports:
+      - "${MONGODB_PORT:-27017}:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--quiet', 'localhost/burrito', '--eval', 'db.runCommand({ ping: 1 })']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo-data:
