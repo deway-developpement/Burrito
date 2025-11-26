@@ -1,0 +1,32 @@
+@use 'burrito-theme' as theme;
+
+.home__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: auto;
+}
+
+.home__logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.home__logo-icon {
+  font-size: 1.4rem;
+}
+
+.home__logo-text {
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(theme.$orange, 0.12);
+  color: theme.$orange;
+}
