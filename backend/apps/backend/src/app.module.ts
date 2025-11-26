@@ -13,6 +13,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { LoggerMiddleware } from './logger/logger.middleware';
 import { setHttpPlugin } from './plugins/graphQL.plugin';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { setHttpPlugin } from './plugins/graphQL.plugin';
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: 'src/schema.gql',
+      autoSchemaFile: join(process.cwd(), 'schema.gql'),
       sortSchema: true,
       playground: false,
       debug: false,

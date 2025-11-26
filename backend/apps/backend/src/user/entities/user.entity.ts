@@ -16,7 +16,7 @@ export class User extends Document {
   @Prop({ required: true })
   readonly fullName: string;
 
-  @Prop()
+  @Prop({ type: String, enum: AuthType, required: true })
   readonly userType: AuthType;
 
   @Prop({ default: null, nullable: true, type: String })
