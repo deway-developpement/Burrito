@@ -1,0 +1,291 @@
+type: spec.insomnia.rest/5.0
+schema_version: "5.1"
+name: burrito
+meta:
+  id: wrk_bfc4ea22b20545d2a7206e933851d850
+  created: 1764118694766
+  modified: 1764118694766
+  description: ""
+collection:
+  - url: "{{ _.base_url }}/auth/login"
+    name: GetAccessToken
+    meta:
+      id: req_a79b457355dd4c4a9c4126ae2772c3b3
+      created: 1648332679604
+      modified: 1681609001248
+      isPrivate: false
+      description: ""
+      sortKey: -1648332679604
+    method: POST
+    body:
+      mimeType: application/json
+      text: |-
+        {
+        	"email": "{{ _.email }}",
+        	"password": "{{ _.password }}"
+        }
+    headers:
+      - name: Content-Type
+        value: application/json; charset=utf-8
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.graphql_url }}"
+    name: Introspection
+    meta:
+      id: req_a2f744b1d8864b12b2ac3bb1b679dd9f
+      created: 1677664918079
+      modified: 1683818998005
+      isPrivate: false
+      description: ""
+      sortKey: -1677664918079
+    method: POST
+    body:
+      mimeType: application/graphql
+      text: '{"query":"query IntrospectionQuery {\n      __schema
+        {\n        \n        queryType { name }\n        mutationType { name
+        }\n        subscriptionType { name }\n        types
+        {\n          ...FullType\n        }\n        directives
+        {\n          name\n          description\n          \n          locations\n          args
+        {\n            ...InputValue\n          }\n        }\n      }\n    }\n\n    fragment
+        FullType on __Type
+        {\n      kind\n      name\n      description\n      \n      fields(includeDeprecated:
+        true) {\n        name\n        description\n        args
+        {\n          ...InputValue\n        }\n        type
+        {\n          ...TypeRef\n        }\n        isDeprecated\n        deprecationReason\n      }\n      inputFields
+        {\n        ...InputValue\n      }\n      interfaces
+        {\n        ...TypeRef\n      }\n      enumValues(includeDeprecated:
+        true)
+        {\n        name\n        description\n        isDeprecated\n        deprecationReason\n      }\n      possibleTypes
+        {\n        ...TypeRef\n      }\n    }\n\n    fragment InputValue on
+        __InputValue {\n      name\n      description\n      type { ...TypeRef
+        }\n      defaultValue\n      \n      \n    }\n\n    fragment TypeRef on
+        __Type {\n      kind\n      name\n      ofType
+        {\n        kind\n        name\n        ofType
+        {\n          kind\n          name\n          ofType
+        {\n            kind\n            name\n            ofType
+        {\n              kind\n              name\n              ofType
+        {\n                kind\n                name\n                ofType
+        {\n                  kind\n                  name\n                  ofType
+        {\n                    kind\n                    name\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }"}'
+    headers:
+      - name: Content-Type
+        value: application/json
+    authentication:
+      type: bearer
+      token: "{% response 'body', 'req_8648e76c98d2430db15bcd414bfc036e',
+        'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
+      prefix: Bearer
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - url: "{{ _.base_url }}/auth/refresh"
+    name: RefreshToken
+    meta:
+      id: req_72708a02ab8647c586716d35f7b0d7d8
+      created: 1680197359086
+      modified: 1763996276178
+      isPrivate: false
+      description: ""
+      sortKey: -824166339839.5
+    method: GET
+    headers:
+      - name: refresh_token
+        value: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
+          'b64::JC5yZWZyZXNoX3Rva2Vu::46b', 'always', 58 %}"
+    authentication:
+      type: none
+    settings:
+      renderRequestBody: true
+      encodeUrl: true
+      followRedirects: global
+      cookies:
+        send: true
+        store: true
+      rebuildPath: true
+  - name: users
+    meta:
+      id: fld_b8669806301e47f48685ca1c952bebff
+      created: 1660082657825
+      modified: 1660082657825
+      sortKey: -1660082657825
+      description: ""
+    children:
+      - url: "{{ _.graphql_url }}"
+        name: create user
+        meta:
+          id: req_a57e004d7de14aa09881d8d312e66105
+          created: 1648578766958
+          modified: 1763993190253
+          isPrivate: false
+          description: ""
+          sortKey: -1648754227983.75
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"mutation CreateUser($createUserInput: CreateUserInput!)
+            {\n  createUser(createUserInput: $createUserInput)
+            {\n    id\n    email\n    fullName\n    updatedAt\n    createdAt\n  }\n}","operationName":"CreateUser","variables":"{\n  \"createUserInput\":
+            {\n    \"email\": \"paul.mairesse@free.fr\",\n    \"fullName\":
+            \"Paul\",\n    \"password\": \"Paul72\"\n  }\n}"}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          disabled: true
+          token: "{% response 'body', 'req_8648e76c98d2430db15bcd414bfc036e',
+            'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
+          prefix: Bearer
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.graphql_url }}"
+        name: list users
+        meta:
+          id: req_ceec3a2a2e2749e7b1a20598f2907ae7
+          created: 1648636428683
+          modified: 1763993429910
+          isPrivate: false
+          description: ""
+          sortKey: -1648754228040
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"query ListUsers {\n  users {\n    edges
+            {\n      cursor\n      node
+            {\n        id\n        email\n        updatedAt\n        fullName\n        createdAt\n      }\n    }\n    pageInfo
+            {\n      hasNextPage\n    }\n  }\n}","operationName":"ListUsers"}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          disabled: false
+          token: "{% response 'body', 'req_8648e76c98d2430db15bcd414bfc036e',
+            'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
+          prefix: Bearer
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_a4d1c79e82144c889f38bb4aa5512c71
+    created: 1683818182777
+    modified: 1683818182777
+environments:
+  name: Base Environment
+  meta:
+    id: env_9d96ae23a64e4648a209e386a2286863
+    created: 1683818182775
+    modified: 1683907106129
+    isPrivate: false
+  data:
+    protocole: https
+    domain: deway.fr
+    path: /goto-api
+    protocole_local: http
+    domain_local: localhost:3000
+    path_local: ""
+    islocal: false
+    base_url: "{{ protocole_local if islocal else protocole }}://{{ domain_local if
+      islocal else domain }}{{ path_local if islocal else path }}"
+    graphql_url: "{{ _.base_url }}/graphQL"
+  subEnvironments:
+    - name: dev graphQL global
+      meta:
+        id: env_0bdebf8826084a49b5f9d8bf4b3fa2b9
+        created: 1683818538708
+        modified: 1706030085140
+        isPrivate: false
+        sortKey: 1683818538708
+      data:
+        email: admin@deway.fr
+        password: admin
+      color: "#a75db1"
+    - name: user graphQL global
+      meta:
+        id: env_2377c36fe9064620b6316276e2541539
+        created: 1683818616129
+        modified: 1763992895339
+        isPrivate: false
+        sortKey: 1683818616129
+      data:
+        email: paul.mairesse@free.fr
+        password: Paul72
+    - name: user graphQL local
+      meta:
+        id: env_3bef23fe2b3e48a0af07da49ff3923c8
+        created: 1683903844578
+        modified: 1763993076343
+        isPrivate: false
+        sortKey: 1683903844578
+      data:
+        email: paul.mairesse@free.fr
+        password: Paul72
+        islocal: true
+      color: "#fa0000"
+    - name: no user graphQL
+      meta:
+        id: env_857fb849c7e345a0a8250782cf43c1a1
+        created: 1683904286127
+        modified: 1683904294823
+        isPrivate: false
+        sortKey: 1683861243961
+      data:
+        email: ""
+        password: ""
+spec:
+  meta:
+    id: spc_2fe67c14b015404f8f2dc851acf01167
+    created: 1764118694770
+    modified: 1764118694770
+testSuites:
+  - name: Authentification Test Suite
+    meta:
+      id: uts_7d05d52ea3844838b574584e97f71833
+      created: 1648332679605
+      modified: 1763993570597
+      sortKey: -1763992825800
+    tests:
+      - name: get token
+        meta:
+          id: ut_6cb191a8ee3f4886aaea25a032bd3b0d
+          created: 1658521410041
+          modified: 1659470460871
+          sortKey: -1763992825800
+        requestId: req_a79b457355dd4c4a9c4126ae2772c3b3
+        code: |-
+          const response1 = await insomnia.send();
+          expect(response1.status).to.equal(201);
+      - name: refresh token
+        meta:
+          id: ut_867eae0adfe04c74b0d2875021ae3e32
+          created: 1763993581285
+          modified: 1763996305445
+          sortKey: -1763992825799
+        requestId: req_72708a02ab8647c586716d35f7b0d7d8
+        code: |-
+          const response1 = await insomnia.send();
+          expect(response1.status).to.equal(200);
