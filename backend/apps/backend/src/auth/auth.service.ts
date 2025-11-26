@@ -26,7 +26,6 @@ export class AuthService {
   }
 
   async login(user: User) {
-    console.log('Logging in user:', user);
     const payload: JwtPayload = {
       username: user.email,
       sub: user.id,
