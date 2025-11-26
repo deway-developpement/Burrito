@@ -40,7 +40,7 @@ collection:
     meta:
       id: req_a2f744b1d8864b12b2ac3bb1b679dd9f
       created: 1677664918079
-      modified: 1683818998005
+      modified: 1764150643500
       isPrivate: false
       description: ""
       sortKey: -1677664918079
@@ -78,7 +78,7 @@ collection:
         value: application/json
     authentication:
       type: bearer
-      token: "{% response 'body', 'req_8648e76c98d2430db15bcd414bfc036e',
+      token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
         'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
       prefix: Bearer
     settings:
@@ -94,7 +94,7 @@ collection:
     meta:
       id: req_72708a02ab8647c586716d35f7b0d7d8
       created: 1680197359086
-      modified: 1763996276178
+      modified: 1764150629158
       isPrivate: false
       description: ""
       sortKey: -824166339839.5
@@ -126,7 +126,7 @@ collection:
         meta:
           id: req_a57e004d7de14aa09881d8d312e66105
           created: 1648578766958
-          modified: 1763993190253
+          modified: 1764150614408
           isPrivate: false
           description: ""
           sortKey: -1648754227983.75
@@ -144,7 +144,7 @@ collection:
         authentication:
           type: bearer
           disabled: true
-          token: "{% response 'body', 'req_8648e76c98d2430db15bcd414bfc036e',
+          token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
             'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
           prefix: Bearer
         settings:
@@ -160,7 +160,7 @@ collection:
         meta:
           id: req_ceec3a2a2e2749e7b1a20598f2907ae7
           created: 1648636428683
-          modified: 1763993429910
+          modified: 1764150606568
           isPrivate: false
           description: ""
           sortKey: -1648754228040
@@ -177,7 +177,38 @@ collection:
         authentication:
           type: bearer
           disabled: false
-          token: "{% response 'body', 'req_8648e76c98d2430db15bcd414bfc036e',
+          token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
+            'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
+          prefix: Bearer
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.graphql_url }}"
+        name: whoami
+        meta:
+          id: req_375abdaaffd847c1a5916b39b94e9837
+          created: 1764149601631
+          modified: 1764150690635
+          isPrivate: false
+          description: ""
+          sortKey: -1648754228033.75
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"query Whoami {\n  me
+            {\n    id\n\t\temail\n\t\tfullName\n\t\tcreatedAt\n\t\tupdatedAt\n  }\n}","operationName":"Whoami"}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          disabled: false
+          token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
             'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
           prefix: Bearer
         settings:
