@@ -1,9 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { AuthType } from '../../auth/interface/auth.type';
+import { UserType } from '@app/common';
+import type { IUser } from '@app/common';
 
-@Schema()
-export class User extends Document {
+@Schema({
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true },
+})
+export class User extends Document implements IUser {
   // Mongoose always adds an id getter based on _id; explicitly type it so DTO requirements match.
   declare readonly id: string;
 
@@ -16,8 +20,8 @@ export class User extends Document {
   @Prop({ required: true })
   readonly fullName: string;
 
-  @Prop({ type: String, enum: AuthType, required: true })
-  readonly userType: AuthType;
+  @Prop({ type: String, enum: UserType, required: true })
+  readonly userType: UserType;
 
   @Prop({ default: null, nullable: true, type: String })
   readonly refresh_token: string | null;

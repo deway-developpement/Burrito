@@ -1,7 +1,8 @@
 import { InputType, Field } from '@nestjs/graphql';
+import { ICreateUser } from '@app/common';
 
 @InputType()
-export class CreateUserInput {
+export class CreateUserInput implements ICreateUser {
   @Field(() => String, { description: 'User email address' })
   email: string;
 

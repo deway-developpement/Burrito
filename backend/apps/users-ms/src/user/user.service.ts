@@ -1,12 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateUserInput } from './dto/create-user.input';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './entities/user.entity';
 import { Model } from 'mongoose';
-import { AuthType } from '../auth/interface/auth.type';
 import { MongooseQueryService } from '@nestjs-query/query-mongoose';
 import { QueryService } from '@nestjs-query/core';
 import { genSalt, hash } from 'bcrypt';
+import { ICreateUser, UserType } from '@app/common';
 
 @Injectable()
 @QueryService(User)
@@ -15,11 +14,11 @@ export class UserService extends MongooseQueryService<User> {
     super(userModel);
   }
 
-  async create(createUserInput: CreateUserInput) {
+  async create(createUserInput: ICreateUser): Promise<User> {
     const createUserEntity = {
       ...createUserInput,
       refresh_token: null,
-      userType: AuthType.student,
+      userType: UserType.STUDENT,
     };
     const salt = await genSalt(10);
     // hash the password with the salt

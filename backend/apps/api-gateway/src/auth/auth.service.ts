@@ -5,7 +5,7 @@ import { compare } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from './interface/auth.type';
 import type { Request } from 'express';
-import { User } from '@app/common';
+import { IUser } from '@app/common';
 import { isValidObjectId } from 'mongoose';
 
 @Injectable()
@@ -16,7 +16,10 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async validateUser(username: string, password: string): Promise<User | null> {
+  async validateUser(
+    username: string,
+    password: string,
+  ): Promise<IUser | null> {
     // Find the user by email
     const user = await this.usersService.findByEmail(username);
     if (user && (await compare(password, user.password))) {
@@ -25,7 +28,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: User) {
+  async login(user: IUser) {
     const payload: JwtPayload = {
       username: user.email,
       sub: user.id,

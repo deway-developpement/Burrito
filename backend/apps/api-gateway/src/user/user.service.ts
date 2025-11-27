@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import {
@@ -18,7 +15,7 @@ import {
 } from '@nestjs-query/core';
 import { firstValueFrom } from 'rxjs';
 import { UserDto } from './dto/user.dto';
-import { User } from '@app/common';
+import { IUser } from '@app/common';
 
 @Injectable()
 @QueryService<UserDto>(UserDto)
@@ -40,9 +37,9 @@ export class UserService {
   /**
    * Called by CRUDResolver for single item fetch by id.
    */
-  async findById(id: string): Promise<User | undefined> {
+  async findById(id: string): Promise<IUser | undefined> {
     return firstValueFrom(
-      this.userClient.send<User | undefined>({ cmd: 'user.findById' }, id),
+      this.userClient.send<IUser | undefined>({ cmd: 'user.findById' }, id),
     );
   }
 
@@ -266,9 +263,10 @@ export class UserService {
    * If later you re-enable writes, you can wire these:
    */
   async createOne(dto: Partial<UserDto>): Promise<UserDto> {
-    return firstValueFrom(
-      this.userClient.send<UserDto>({ cmd: 'user.createOne' }, dto),
+    const user = await firstValueFrom(
+      this.userClient.send<IUser>({ cmd: 'user.createOne' }, dto),
     );
+    return user;
   }
 
   async createMany(dtos: Partial<UserDto>[]): Promise<UserDto[]> {
@@ -277,9 +275,9 @@ export class UserService {
     );
   }
 
-  async updateOne(id: string, update: Partial<User>): Promise<User> {
+  async updateOne(id: string, update: Partial<IUser>): Promise<IUser> {
     return firstValueFrom(
-      this.userClient.send<User>({ cmd: 'user.updateOne' }, { id, update }),
+      this.userClient.send<IUser>({ cmd: 'user.updateOne' }, { id, update }),
     );
   }
 
@@ -314,9 +312,9 @@ export class UserService {
    * Custom methods
    */
 
-  async findByEmail(email: string): Promise<User | undefined> {
+  async findByEmail(email: string): Promise<IUser | undefined> {
     return firstValueFrom(
-      this.userClient.send<User | undefined>(
+      this.userClient.send<IUser | undefined>(
         { cmd: 'user.findByEmail' },
         email,
       ),
