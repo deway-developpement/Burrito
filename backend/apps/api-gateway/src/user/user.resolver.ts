@@ -5,7 +5,7 @@ import { CRUDResolver } from '@nestjs-query/query-graphql';
 import { Inject, UseGuards, UseInterceptors } from '@nestjs/common';
 import { UserDto } from './dto/user.dto';
 import { CurrentUser, GqlAuthGuard } from '../auth/guards/graphql-auth.guard';
-import type { AuthCredentials } from '../auth/interface/auth.type';
+import type { AuthCredentials } from '../../../../libs/common/src/interfaces/auth.type';
 import { UserDateInterceptor } from './interceptor/date.interceptor';
 
 @Resolver(() => UserDto)

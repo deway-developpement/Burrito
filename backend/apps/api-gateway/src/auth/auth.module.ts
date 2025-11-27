@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserModule } from '../user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './strategy/local.strategy';
 import { JwtStrategy } from './strategy/jwt.strategy';
@@ -8,10 +7,22 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { EmptyStrategy } from './strategy/empty.strategy';
 import { AuthController } from './auth.controller';
+import { ClientsModule, Transport } from '@nestjs/microservices';
 
 @Module({
   imports: [
-    UserModule,
+    ClientsModule.registerAsync([
+      {
+        name: 'USER_SERVICE',
+        useFactory: () => ({
+          transport: Transport.REDIS,
+          options: {
+            port: parseInt(process.env.REDIS_PORT || '6379'),
+            host: process.env.REDIS_HOST || 'localhost',
+          },
+        }),
+      },
+    ]),
     PassportModule,
     JwtModule.registerAsync({
       inject: [ConfigService],
