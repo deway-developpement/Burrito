@@ -16,43 +16,73 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
   redis:
     image: redis:7
     container_name: ${REDIS_CONTAINER_NAME:-burrito-redis}
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
   
   api-gateway:
-    build: ./apps/api-gateway
+    build:
+      context: .
+      args:
+        SERVICE_NAME: api-gateway
     depends_on:
       - users-ms
       - forms-ms
-      - evaluations-ms
-      - analytics-ms
-      - notifications-ms
+      # - evaluations-ms
+      # - analytics-ms
+      # - notifications-ms
       - mongo
       - redis
+    ports:
+      - "${API_GATEWAY_PORT:-3000}:3000"
+    environment:
+      - MONGODB_MODE=docker
+      - REDIS_HOST=${REDIS_CONTAINER_NAME:-burrito-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
+      - MONGODB_PORT=${MONGODB_PORT:-27017}
 
   users-ms:
-    build: ./apps/users-ms
+    build:
+      context: .
+      args:
+        - SERVICE_NAME=users-ms
     depends_on: [mongo, redis]
+    environment:
+      - MONGODB_MODE=docker
+      - REDIS_HOST=${REDIS_CONTAINER_NAME:-burrito-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
+      - MONGODB_PORT=${MONGODB_PORT:-27017}
 
   forms-ms:
-    build: ./apps/forms-ms
+    build: 
+      context: .
+      args:
+        SERVICE_NAME: forms-ms
     depends_on: [mongo, redis]
+    environment:
+      - MONGODB_MODE=docker
+      - REDIS_HOST=${REDIS_CONTAINER_NAME:-burrito-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
+      - MONGODB_PORT=${MONGODB_PORT:-27017}
 
-  evaluations-ms:
-    build: ./apps/evaluations-ms
-    depends_on: [mongo, redis]
+  # evaluations-ms:
+  #   build: ./apps/evaluations-ms
+  #   depends_on: [mongo, redis]
 
-  analytics-ms:
-    build: ./apps/analytics-ms
-    depends_on: [mongo, redis]
+  # analytics-ms:
+  #   build: ./apps/analytics-ms
+  #   depends_on: [mongo, redis]
 
-  notifications-ms:
-    build: ./apps/notifications-ms
-    depends_on: [redis]
+  # notifications-ms:
+  #   build: ./apps/notifications-ms
+  #   depends_on: [redis]
 
 volumes:
   mongo-data:
