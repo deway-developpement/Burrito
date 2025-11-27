@@ -37,6 +37,15 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
+    "forms-ms": {
+      "type": "application",
+      "root": "apps/forms-ms",
+      "entryFile": "main",
+      "sourceRoot": "apps/forms-ms/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/forms-ms/tsconfig.app.json"
+      }
+    },
     "users-ms": {
       "type": "application",
       "root": "apps/users-ms",
