@@ -4,3 +4,4 @@ export * from './interfaces/user.type';
 export * from './interfaces/auth.type';
 export * as configuration from './config/configuration';
 export * as validation from './config/validation';
+export * from './interceptors/logger.interceptor';
