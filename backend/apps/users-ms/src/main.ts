@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { UsersMsModule } from './users-ms.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { RedisLoggerInterceptor } from '@app/common';
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
@@ -13,6 +14,7 @@ async function bootstrap() {
       },
     },
   );
+  app.useGlobalInterceptors(new RedisLoggerInterceptor());
   await app.listen();
 }
 
