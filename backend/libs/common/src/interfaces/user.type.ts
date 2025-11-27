@@ -10,8 +10,6 @@ export interface IUser {
 
   readonly email: string;
 
-  readonly password: string;
-
   readonly fullName: string;
 
   readonly userType: UserType;

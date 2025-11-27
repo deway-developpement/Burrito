@@ -21,9 +21,11 @@ export class AuthService {
     password: string,
   ): Promise<IUser | null> {
     // Find the user by email
-    const user = await this.usersService.findByEmail(username);
+    const user = await this.usersService.findByEmail(username, true);
     if (user && (await compare(password, user.password))) {
-      return user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _pw, ...safeUser } = user;
+      return safeUser as IUser;
     }
     return null;
   }
