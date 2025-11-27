@@ -4,7 +4,7 @@ export enum UserType {
   STUDENT = 1,
 }
 
-export interface User {
+export interface IUser {
   // Mongoose always adds an id getter based on _id; explicitly type it so DTO requirements match.
   readonly id: string;
 
@@ -21,4 +21,19 @@ export interface User {
   readonly createdAt: Date;
 
   readonly updatedAt: Date;
+}
+
+export interface ICreateUser {
+  email: string;
+  password: string;
+  fullName: string;
+}
+
+export interface IUpdateUser {
+  id?: string;
+  email?: string;
+  password?: string;
+  fullName?: string;
+  userType?: UserType;
+  refresh_token?: string | null;
 }

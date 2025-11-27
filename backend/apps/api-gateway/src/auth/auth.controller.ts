@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import type { Request } from 'express';
-import { User } from '@app/common';
+import { IUser } from '@app/common';
 
 @Controller('auth')
 export class AuthController {
@@ -10,7 +10,7 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('login')
-  async login(@Req() req: Request & { user: User }) {
+  async login(@Req() req: Request & { user: IUser }) {
     return this.authService.login(req.user);
   }
 
