@@ -16,6 +16,44 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  redis:
+    image: redis:7
+    container_name: ${REDIS_CONTAINER_NAME:-burrito-redis}
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+  
+  api-gateway:
+    build: ./apps/api-gateway
+    depends_on:
+      - users-ms
+      - forms-ms
+      - evaluations-ms
+      - analytics-ms
+      - notifications-ms
+      - mongo
+      - redis
+
+  users-ms:
+    build: ./apps/users-ms
+    depends_on: [mongo, redis]
+
+  forms-ms:
+    build: ./apps/forms-ms
+    depends_on: [mongo, redis]
+
+  evaluations-ms:
+    build: ./apps/evaluations-ms
+    depends_on: [mongo, redis]
+
+  analytics-ms:
+    build: ./apps/analytics-ms
+    depends_on: [mongo, redis]
+
+  notifications-ms:
+    build: ./apps/notifications-ms
+    depends_on: [redis]
 
 volumes:
   mongo-data:
+

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class ApiGatewayService {
-  getHello(): string {
-    return 'Hello World!';
+  getStatus(): string {
+    return 'API Gateway is running';
   }
 }
