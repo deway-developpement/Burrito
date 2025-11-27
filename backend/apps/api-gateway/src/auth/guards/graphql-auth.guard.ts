@@ -8,7 +8,7 @@ import {
 import { GqlExecutionContext } from '@nestjs/graphql';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
-import { AuthCredentials } from '../interface/auth.type';
+import { AuthCredentials } from '../../../../../libs/common/src/interfaces/auth.type';
 
 @Injectable()
 export class GqlAuthGuard extends AuthGuard('jwt') {

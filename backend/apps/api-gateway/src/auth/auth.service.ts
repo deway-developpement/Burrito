@@ -1,19 +1,15 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { UserService } from '../user/user.service';
-import { JwtService } from '@nestjs/jwt';
-import { compare } from 'bcrypt';
-import { ConfigService } from '@nestjs/config';
-import { JwtPayload } from './interface/auth.type';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtPayload } from '@app/common';
 import type { Request } from 'express';
 import { IUser } from '@app/common';
-import { isValidObjectId } from 'mongoose';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UserService,
-    private jwtService: JwtService,
-    private configService: ConfigService,
+    @Inject('USER_SERVICE') // must match ClientsModule.register({ name: 'USER_SERVICE', ... })
+    private readonly userClient: ClientProxy,
   ) {}
 
   async validateUser(
@@ -21,11 +17,13 @@ export class AuthService {
     password: string,
   ): Promise<IUser | null> {
     // Find the user by email
-    const user = await this.usersService.findByEmail(username);
-    if (user && (await compare(password, user.password))) {
-      return user;
-    }
-    return null;
+    const user = await firstValueFrom(
+      this.userClient.send<IUser | null>(
+        { cmd: 'auth.validateUser' },
+        { username, password },
+      ),
+    );
+    return user;
   }
 
   async login(user: IUser) {
@@ -34,36 +32,21 @@ export class AuthService {
       sub: user.id,
       authType: user.userType,
     };
-    const refresh_token = this.jwtService.sign(
-      { sub: user.id },
-      { expiresIn: this.configService.get<number>('jwt.refreshExpiresIn') },
+    return firstValueFrom(
+      this.userClient.send<{ access_token: string; refresh_token: string }>(
+        { cmd: 'auth.login' },
+        payload,
+      ),
     );
-    await this.usersService.updateOne(user.id, {
-      refresh_token: refresh_token,
-    });
-    return {
-      access_token: this.jwtService.sign(payload),
-      refresh_token: refresh_token,
-    };
   }
 
   async refresh(req: Request) {
     if (!req.headers?.refresh_token) throw new UnauthorizedException();
-    const decoded: JwtPayload = this.jwtService.verify(
-      req.headers.refresh_token as string,
+    return firstValueFrom(
+      this.userClient.send<{ access_token: string; refresh_token: string }>(
+        { cmd: 'auth.refresh' },
+        { refreshToken: req.headers.refresh_token as string },
+      ),
     );
-    if (!isValidObjectId(decoded.sub)) {
-      throw new UnauthorizedException();
-    }
-    const user = await this.usersService.findById(decoded.sub);
-    if (req.headers.refresh_token === user?.refresh_token) {
-      return this.login(user);
-    } else {
-      if (user)
-        await this.usersService.updateOne(user.id, {
-          refresh_token: null,
-        });
-      throw new UnauthorizedException();
-    }
   }
 }
