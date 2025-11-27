@@ -14,7 +14,7 @@ export class User extends Document implements IUser {
   @Prop({ unique: true, required: true })
   readonly email!: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, select: false })
   readonly password!: string;
 
   @Prop({ required: true })

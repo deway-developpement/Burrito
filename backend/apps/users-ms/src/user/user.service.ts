@@ -30,9 +30,13 @@ export class UserService extends MongooseQueryService<User> {
     return user;
   }
 
-  async findByEmail(email: string): Promise<User | null> {
-    return this.userModel.findOne({
-      email: email,
-    });
+  async findByEmail(email: string, withPassword = false): Promise<User | null> {
+    return await this.userModel
+      .findOne({
+        email: email,
+      })
+      .select(withPassword ? '+password' : '-password')
+      .exec()
+      .then((user) => user?.toObject() || null);
   }
 }
