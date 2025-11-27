@@ -12,6 +12,7 @@ import { setHttpPlugin } from './plugins/graphQL.plugin';
 import { join } from 'path';
 import { ApiGatewayService } from './api-gateway.service';
 import { ApiGatewayController } from './api-gateway.controller';
+import { FormModule } from './form/form.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { ApiGatewayController } from './api-gateway.controller';
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
     UserModule,
+    FormModule,
     AuthModule,
   ],
   controllers: [ApiGatewayController],

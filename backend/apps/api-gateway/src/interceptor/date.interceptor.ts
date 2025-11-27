@@ -11,7 +11,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Injectable()
-export class UserDateInterceptor implements NestInterceptor {
+export class TimestampToDateInterceptor implements NestInterceptor {
   private convertDates(value: unknown): unknown {
     if (value === null || value === undefined) return value;
 
@@ -33,7 +33,10 @@ export class UserDateInterceptor implements NestInterceptor {
 
       // Date fields anywhere in the tree
       if (
-        (key === 'createdAt' || key === 'updatedAt') &&
+        (key === 'createdAt' ||
+          key === 'updatedAt' ||
+          key === 'startDate' ||
+          key === 'endDate') &&
         typeof val === 'string'
       ) {
         obj[key] = new Date(val);
