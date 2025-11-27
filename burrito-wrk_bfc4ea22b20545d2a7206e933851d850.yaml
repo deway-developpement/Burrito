@@ -40,7 +40,7 @@ collection:
     meta:
       id: req_a2f744b1d8864b12b2ac3bb1b679dd9f
       created: 1677664918079
-      modified: 1764150643500
+      modified: 1764202924201
       isPrivate: false
       description: ""
       sortKey: -1677664918079
@@ -78,6 +78,7 @@ collection:
         value: application/json
     authentication:
       type: bearer
+      disabled: false
       token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
         'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
       prefix: Bearer
@@ -193,7 +194,7 @@ collection:
         meta:
           id: req_375abdaaffd847c1a5916b39b94e9837
           created: 1764149601631
-          modified: 1764150690635
+          modified: 1764154164289
           isPrivate: false
           description: ""
           sortKey: -1648754228033.75
@@ -201,7 +202,42 @@ collection:
         body:
           mimeType: application/graphql
           text: '{"query":"query Whoami {\n  me
-            {\n    id\n\t\temail\n\t\tfullName\n\t\tcreatedAt\n\t\tupdatedAt\n  }\n}","operationName":"Whoami"}'
+            {\n    id\n    email\n    fullName\n    createdAt\n    updatedAt\n  }\n}","operationName":"Whoami"}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          disabled: false
+          token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
+            'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
+          prefix: Bearer
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.graphql_url }}"
+        name: list users with filter
+        meta:
+          id: req_4b6f4d68c14b417f8f65540baf9eb990
+          created: 1764205750174
+          modified: 1764205760053
+          isPrivate: false
+          description: ""
+          sortKey: -1648754228036.875
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"query Users($filter: UserFilter!) {\n  users(filter: $filter)
+            {\n    edges {\n      node
+            {\n        email\n        fullName\n        id\n        updatedAt\n        createdAt\n      }\n    }\n    pageInfo
+            {\n      endCursor\n      hasNextPage\n    }\n  }\n}","operationName":"Users","variables":"{\n  \"filter\":
+            {\n    \"email\": {\n      \"eq\":
+            \"paul.mairesse@free.fr\"\n    }\n  }\n}"}'
         headers:
           - name: Content-Type
             value: application/json
@@ -320,3 +356,15 @@ testSuites:
         code: |-
           const response1 = await insomnia.send();
           expect(response1.status).to.equal(200);
+      - name: User query return 200 with string
+        meta:
+          id: ut_6c734e5303d247e48c4bb05b042eb1f0
+          created: 1764232742060
+          modified: 1764233187145
+          sortKey: -1764232742061
+        requestId: req_4b6f4d68c14b417f8f65540baf9eb990
+        code: |-
+          const response1 = await insomnia.send();
+          expect(response1.status).to.equal(200);
+          const body = JSON.parse(response1.data);
+          expect(body['data']['users']['edges'][0]['node']['email']).to.be.an('string')
