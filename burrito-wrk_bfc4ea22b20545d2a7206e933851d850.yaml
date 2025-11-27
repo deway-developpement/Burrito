@@ -40,10 +40,10 @@ collection:
     meta:
       id: req_a2f744b1d8864b12b2ac3bb1b679dd9f
       created: 1677664918079
-      modified: 1764202924201
+      modified: 1764251998184
       isPrivate: false
       description: ""
-      sortKey: -1677664918079
+      sortKey: -824166339739.5
     method: POST
     body:
       mimeType: application/graphql
@@ -161,17 +161,17 @@ collection:
         meta:
           id: req_ceec3a2a2e2749e7b1a20598f2907ae7
           created: 1648636428683
-          modified: 1764150606568
+          modified: 1764233595200
           isPrivate: false
           description: ""
           sortKey: -1648754228040
         method: POST
         body:
           mimeType: application/graphql
-          text: '{"query":"query ListUsers {\n  users {\n    edges
-            {\n      cursor\n      node
+          text: '{"query":"query ListUsers {\n  users(filter: {}, paging: { first: 10 },
+            sorting: []) {\n    edges {\n      cursor\n      node
             {\n        id\n        email\n        updatedAt\n        fullName\n        createdAt\n      }\n    }\n    pageInfo
-            {\n      hasNextPage\n    }\n  }\n}","operationName":"ListUsers"}'
+            {\n      hasNextPage\n\t\t\tendCursor\n\t\t\tstartCursor\n\t\t\thasPreviousPage\n    }\n  }\n}","operationName":"ListUsers"}'
         headers:
           - name: Content-Type
             value: application/json
@@ -194,7 +194,7 @@ collection:
         meta:
           id: req_375abdaaffd847c1a5916b39b94e9837
           created: 1764149601631
-          modified: 1764154164289
+          modified: 1764236900663
           isPrivate: false
           description: ""
           sortKey: -1648754228033.75
@@ -238,6 +238,124 @@ collection:
             {\n      endCursor\n      hasNextPage\n    }\n  }\n}","operationName":"Users","variables":"{\n  \"filter\":
             {\n    \"email\": {\n      \"eq\":
             \"paul.mairesse@free.fr\"\n    }\n  }\n}"}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          disabled: false
+          token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
+            'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
+          prefix: Bearer
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: forms
+    meta:
+      id: fld_7a8bc7224868474eb40d2a03e3ae4734
+      created: 1764251981168
+      modified: 1764251981168
+      sortKey: -1764251981168
+      description: ""
+    children:
+      - url: "{{ _.graphql_url }}"
+        name: list forms
+        meta:
+          id: req_260468bbec584213861d0e7e142f2cd5
+          created: 1764251990344
+          modified: 1764253407639
+          isPrivate: false
+          description: ""
+          sortKey: -1764251993669
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"query Forms($filter: FormFilter!) {\n  forms(filter: $filter)
+            {\n    edges {\n      node
+            {\n        createdAt\n        description\n        endDate\n        id\n        isActive\n        questions
+            {\n          id\n          label\n          required\n          type\n        }\n        startDate\n        targetCourseId\n        targetTeacherId\n        title\n        updatedAt\n      }\n    }\n    pageInfo
+            {\n      endCursor\n      hasPreviousPage\n      hasNextPage\n    }\n  }\n}","variables":"{\n\t\"filter\":
+            {\n\t}\n}","operationName":"Forms"}'
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          disabled: false
+          token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
+            'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
+          prefix: Bearer
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: "{{ _.graphql_url }}"
+        name: create form
+        meta:
+          id: req_1cbd20ed8b5243f195bb0c0f0c49d916
+          created: 1764252433839
+          modified: 1764254382907
+          isPrivate: false
+          description: ""
+          sortKey: -1764251993569
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: '{"query":"mutation CreateManyForms($input: CreateManyFormsInput!)
+            {\n  createManyForms(input: $input)
+            {\n    id\n    description\n    title\n    createdAt\n    updatedAt\n  }\n}","operationName":"CreateManyForms","variables":"{\n\t\"input\":
+            {\n\t\t\"forms\": [\n\t\t\t{\n\t\t\t\t\"description\": \"Evaluate
+            your teacher’s performance for this
+            semester.\",\n\t\t\t\t\"endDate\":
+            \"2025-02-15T00:00:00.000Z\",\n\t\t\t\t\"isActive\":
+            true,\n\t\t\t\t\"questions\": [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"label\":
+            \"How clear were the explanations?\",\n\t\t\t\t\t\t\"type\":
+            \"RATING\",\n\t\t\t\t\t\t\"required\":
+            true\n\t\t\t\t\t},\n\t\t\t\t\t{\n\t\t\t\t\t\t\"label\": \"Was the
+            teacher available for questions?\",\n\t\t\t\t\t\t\"type\":
+            \"RATING\"\n\t\t\t\t\t},\n\t\t\t\t\t{\n\t\t\t\t\t\t\"label\":
+            \"Additional comments\",\n\t\t\t\t\t\t\"type\":
+            \"TEXT\"\n\t\t\t\t\t}\n\t\t\t\t],\n\t\t\t\t\"startDate\":
+            \"2025-01-01T00:00:00.000Z\",\n\t\t\t\t\"targetCourseId\":
+            \"course_123\",\n\t\t\t\t\"targetTeacherId\":
+            \"teacher_456\",\n\t\t\t\t\"title\": \"Teacher Evaluation — Semester
+            1\"\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"description\": \"Your opinion on
+            the course content and difficulty.\",\n\t\t\t\t\"endDate\":
+            \"2025-06-10T00:00:00.000Z\",\n\t\t\t\t\"isActive\":
+            false,\n\t\t\t\t\"questions\":
+            [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"label\": \"Was the course material
+            relevant?\",\n\t\t\t\t\t\t\"type\":
+            \"RATING\",\n\t\t\t\t\t\t\"required\":
+            true\n\t\t\t\t\t},\n\t\t\t\t\t{\n\t\t\t\t\t\t\"label\": \"What did
+            you like the most?\",\n\t\t\t\t\t\t\"type\":
+            \"TEXT\"\n\t\t\t\t\t},\n\t\t\t\t\t{\n\t\t\t\t\t\t\"label\": \"Rate
+            the overall course difficulty\",\n\t\t\t\t\t\t\"type\":
+            \"RATING\"\n\t\t\t\t\t}\n\t\t\t\t],\n\t\t\t\t\"startDate\":
+            \"2025-05-01T00:00:00.000Z\",\n\t\t\t\t\"targetCourseId\":
+            \"course_789\",\n\t\t\t\t\"targetTeacherId\":
+            null,\n\t\t\t\t\"title\": \"Course Feedback
+            Form\"\n\t\t\t},\n\t\t\t{\n\t\t\t\t\"description\": \"Collect basic
+            student administrative information.\",\n\t\t\t\t\"endDate\":
+            null,\n\t\t\t\t\"isActive\": true,\n\t\t\t\t\"questions\":
+            [\n\t\t\t\t\t{\n\t\t\t\t\t\t\"label\": \"Full
+            name\",\n\t\t\t\t\t\t\"type\": \"TEXT\",\n\t\t\t\t\t\t\"required\":
+            true\n\t\t\t\t\t},\n\t\t\t\t\t{\n\t\t\t\t\t\t\"label\": \"Student
+            ID\",\n\t\t\t\t\t\t\"type\": \"TEXT\",\n\t\t\t\t\t\t\"required\":
+            true\n\t\t\t\t\t},\n\t\t\t\t\t{\n\t\t\t\t\t\t\"label\": \"Do you
+            need special accommodations?\",\n\t\t\t\t\t\t\"type\":
+            \"TEXT\"\n\t\t\t\t\t}\n\t\t\t\t],\n\t\t\t\t\"startDate\":
+            \"2024-09-01T00:00:00.000Z\",\n\t\t\t\t\"targetCourseId\":
+            null,\n\t\t\t\t\"targetTeacherId\": null,\n\t\t\t\t\"title\":
+            \"Administrative Information Form\"\n\t\t\t}\n\t\t]\n\t}\n}"}'
         headers:
           - name: Content-Type
             value: application/json
