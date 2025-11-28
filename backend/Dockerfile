@@ -37,6 +37,13 @@ COPY --from=builder /app/.env ./.env
 
 RUN chown -R node:node /app
 
+# Copy wait-for-it.sh
+COPY wait-for-it.sh /usr/wait-for-it.sh
+# Grant execute permission to wait-for-it.sh
+RUN chmod +x /usr/wait-for-it.sh
+# Allow wait-for-it.sh to be used by non-root user
+RUN chown node:node /usr/wait-for-it.sh
+
 # Use non-root user
 USER node
 
@@ -44,10 +51,10 @@ EXPOSE ${PORT}
 
 ARG SERVICE_NAME
 
-# Copy wait-for-it.sh
-COPY wait-for-it.sh /usr/wait-for-it.sh
-# Grant execute permission to wait-for-it.sh
-RUN chmod +x /usr/wait-for-it.sh
+# Make shortcut to service start
+RUN ln -s /app/dist/apps/${SERVICE_NAME}/main.js /app/dist/main.js
 
-# Start the NestJS app (assumes dist/main.js is the entry)
-CMD ["/usr/wait-for-it.sh", "-t", "3", "mongo:27017", "--","node", "dist/apps/${SERVICE_NAME}/main.js"]
+
+# Start the NestJS app after waiting for MongoDB to be ready
+ENTRYPOINT ["/usr/wait-for-it.sh", "-t", "5", "mongo:27017", "--"]
+CMD ["node", "dist/main.js"]
