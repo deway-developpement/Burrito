@@ -33,7 +33,7 @@ export class InputComponent {
   @Input() placeholder = '';
 
   /** name attribute */
-  @Input() name?: string;
+  @Input() name = '';
 
   /** ngModel value binding */
   @Input() model: any;
