@@ -1,0 +1,12 @@
+<input
+  [attr.type]="type"
+  class="input"
+  [ngClass]="[
+    variant ? 'input--' + variant : '',
+    fullWidth ? 'input--full' : ''
+  ]"
+  [disabled]="disabled"
+  [placeholder]="placeholder"
+  [name]="name"
+  [(ngModel)]="model"
+/>

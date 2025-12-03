@@ -4,10 +4,19 @@
     <span class="home__logo-text">Burrito</span>
   </div>
 
-  <app-button
-    variant="outline"
-    [routerLink]="'/sign-in'"
-  >
-    Sign in
-  </app-button>
+  <div class="home__actions">
+    <app-button
+      variant="outline"
+      [routerLink]="'/sign-in'"
+    >
+      Sign in
+    </app-button>
+
+    <app-button
+      variant="primary"
+      [routerLink]="'/register'"
+    >
+      Register
+    </app-button>
+  </div>
 </header>
