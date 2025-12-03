@@ -2,11 +2,37 @@
 
   <main class="auth__main">
     <section class="auth__card">
-      <h1 class="auth__title">Sign in to Burrito</h1>
+      <h1 class="auth__title">Create your Burrito account</h1>
+      <p class="auth__subtitle">Join and start using Burrito in just a few seconds.</p>
+
       <form
         class="auth__form"
         (ngSubmit)="onSubmit()"
       >
+        <div class="auth__field-group">
+          <label class="auth__field auth__field--half">
+            <span class="auth__label">First name</span>
+            <input
+              class="auth__input"
+              type="text"
+              name="firstName"
+              [(ngModel)]="firstName"
+              required
+            />
+          </label>
+
+          <label class="auth__field auth__field--half">
+            <span class="auth__label">Last name</span>
+            <input
+              class="auth__input"
+              type="text"
+              name="lastName"
+              [(ngModel)]="lastName"
+              required
+            />
+          </label>
+        </div>
+
         <label class="auth__field">
           <span class="auth__label">Email</span>
           <input
@@ -34,18 +60,17 @@
             type="submit"
             variant="primary"
           >
-            Sign in
+            Create account
           </app-button>
 
           <button
             type="button"
             class="auth__forgot"
           >
-            Forgot your password?
+            Already have an account?
           </button>
         </div>
       </form>
-
     </section>
   </main>
 
