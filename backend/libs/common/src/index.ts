@@ -6,3 +6,5 @@ export * from './interfaces/form.type';
 export * as configuration from './config/configuration';
 export * as validation from './config/validation';
 export * from './interceptors/logger.interceptor';
+export * from './metrics/metrics.service';
+export * from './metrics/metrics.controller';
