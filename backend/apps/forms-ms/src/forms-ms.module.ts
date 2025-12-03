@@ -6,6 +6,9 @@ import { validation } from '@app/common';
 import { FormsMsController } from './forms-ms.controller';
 import { FormsMsService } from './forms-ms.service';
 import { FormModule } from './form/form.module';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { MetricsController } from '@app/common';
+import { PrometheusService } from '@app/common';
 
 @Module({
   imports: [
@@ -22,9 +25,10 @@ import { FormModule } from './form/form.module';
         };
       },
     }),
+    PrometheusModule.register({ defaultMetrics: { enabled: true } }),
     FormModule,
   ],
-  controllers: [FormsMsController],
-  providers: [FormsMsService],
+  controllers: [FormsMsController, MetricsController],
+  providers: [FormsMsService, PrometheusService],
 })
 export class FormsMsModule {}

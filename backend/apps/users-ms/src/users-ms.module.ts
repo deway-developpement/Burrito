@@ -7,6 +7,9 @@ import { ConfigModule } from '@nestjs/config';
 import { configuration } from '@app/common';
 import { validation } from '@app/common';
 import { AuthModule } from './auth/auth.module';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { MetricsController } from '@app/common';
+import { PrometheusService } from '@app/common';
 
 @Module({
   imports: [
@@ -23,10 +26,11 @@ import { AuthModule } from './auth/auth.module';
         };
       },
     }),
+    PrometheusModule.register({ defaultMetrics: { enabled: true } }),
     UserModule,
     AuthModule,
   ],
-  controllers: [UsersMsController],
-  providers: [UsersMsService],
+  controllers: [UsersMsController, MetricsController],
+  providers: [UsersMsService, PrometheusService],
 })
 export class UsersMsModule {}

@@ -1,0 +1,9 @@
+namespace: monitoring
+
+configMapGenerator:
+  - name: grafana-dashboard-burrito-uptime
+    files:
+      - burrito-uptime.json
+    options:
+      labels:
+        grafana_dashboard: "1"

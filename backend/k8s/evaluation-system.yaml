@@ -1,0 +1,367 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: evaluation-system
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: burrito-config
+  namespace: evaluation-system
+data:
+  MONGODB_MODE: docker
+  MONGODB_CONTAINER_NAME: mongo
+  MONGODB_PORT: "27017"
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  DATABASE_NAME: burrito
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: burrito-secrets
+  namespace: evaluation-system
+type: Opaque
+stringData:
+  DATABASE_USERNAME: root
+  DATABASE_PASSWORD: root
+  JWT_SECRET: Girp&87Vws7Wx5v7+/.jNw3We7:;1pAY5967CdZm0DGhN2$^kFxNqWKrGp
+  JWT_EXPIRES_IN: 30min
+  JWT_REFRESH_EXPIRES_IN: 30d
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  namespace: evaluation-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9216"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:7.0
+          ports:
+            - containerPort: 27017
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: burrito-secrets
+                  key: DATABASE_USERNAME
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: burrito-secrets
+                  key: DATABASE_PASSWORD
+            - name: MONGO_INITDB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: burrito-config
+                  key: DATABASE_NAME
+          volumeMounts:
+            - name: mongo-data
+              mountPath: /data/db
+        - name: mongodb-exporter
+          image: percona/mongodb_exporter:0.39
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--mongodb.uri=mongodb://$(DATABASE_USERNAME):$(DATABASE_PASSWORD)@localhost:27017/admin"
+          ports:
+            - name: metrics
+              containerPort: 9216
+          env:
+            - name: DATABASE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: burrito-secrets
+                  key: DATABASE_USERNAME
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: burrito-secrets
+                  key: DATABASE_PASSWORD
+      volumes:
+        - name: mongo-data
+          persistentVolumeClaim:
+            claimName: mongo-data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-data
+  namespace: evaluation-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  namespace: evaluation-system
+spec:
+  selector:
+    app: mongo
+  ports:
+    - name: mongo
+      port: 27017
+      targetPort: 27017
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: evaluation-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9121"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: redis
+          image: redis:7
+          ports:
+            - containerPort: 6379
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 10
+            periodSeconds: 10
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.58.0
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: REDIS_ADDR
+              value: "redis://localhost:6379"
+          ports:
+            - name: metrics
+              containerPort: 9121
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: evaluation-system
+spec:
+  selector:
+    app: redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: evaluation-system
+spec:
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: api-gateway
+          image: burrito-api-gateway:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          envFrom:
+            - configMapRef:
+                name: burrito-config
+            - secretRef:
+                name: burrito-secrets
+          env:
+            - name: port
+              value: "3000"
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  namespace: evaluation-system
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - name: http
+      port: 80
+      targetPort: 3000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-gateway
+  namespace: evaluation-system
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: burrito.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 80
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: api-gateway
+  namespace: evaluation-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: api-gateway
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: users-ms
+  namespace: evaluation-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: users-ms
+  template:
+    metadata:
+      labels:
+        app: users-ms
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: users-ms
+          image: burrito-users-ms:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: burrito-config
+            - secretRef:
+                name: burrito-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: users-ms
+  namespace: evaluation-system
+spec:
+  selector:
+    app: users-ms
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forms-ms
+  namespace: evaluation-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forms-ms
+  template:
+    metadata:
+      labels:
+        app: forms-ms
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: forms-ms
+          image: burrito-forms-ms:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: burrito-config
+            - secretRef:
+                name: burrito-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: forms-ms
+  namespace: evaluation-system
+spec:
+  selector:
+    app: forms-ms
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000

@@ -13,6 +13,9 @@ import { join } from 'path';
 import { ApiGatewayService } from './api-gateway.service';
 import { ApiGatewayController } from './api-gateway.controller';
 import { FormModule } from './form/form.module';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { MetricsController } from '@app/common';
+import { PrometheusService } from '@app/common';
 
 @Module({
   imports: [
@@ -30,12 +33,13 @@ import { FormModule } from './form/form.module';
       debug: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
     }),
+    PrometheusModule.register({ defaultMetrics: { enabled: true } }),
     UserModule,
     FormModule,
     AuthModule,
   ],
-  controllers: [ApiGatewayController],
-  providers: [ApiGatewayService, setHttpPlugin],
+  controllers: [ApiGatewayController, MetricsController],
+  providers: [ApiGatewayService, setHttpPlugin, PrometheusService],
 })
 export class ApiGatewayModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
