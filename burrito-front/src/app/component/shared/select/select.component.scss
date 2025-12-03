@@ -1,0 +1,54 @@
+@use 'burrito-theme' as theme;
+
+.select {
+  border-radius: 10px;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.92rem;
+  border: 1px solid rgba(theme.$text-dark, 0.2);
+  background-color: theme.$white;
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+  cursor: pointer;
+  min-width: 140px;
+
+  &:focus {
+    outline: none;
+    border-color: theme.$orange;
+    box-shadow: 0 0 0 2px rgba(theme.$orange, 0.25);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  &--primary {
+    background: theme.$white;
+    color: theme.$text-dark;
+
+    &:focus {
+      border-color: theme.$orange;
+    }
+  }
+
+  &--outline {
+    background: rgba(theme.$white, 0.6);
+    border: 1px solid rgba(theme.$orange, 0.4);
+    backdrop-filter: blur(10px);
+  }
+
+  &--ghost {
+    background: transparent;
+    border: 1px solid transparent;
+
+    &:focus {
+      border-color: rgba(theme.$orange, 0.4);
+    }
+  }
+
+  &--full {
+    width: 100%;
+  }
+}

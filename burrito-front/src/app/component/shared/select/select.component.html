@@ -1,0 +1,21 @@
+<select
+  class="select"
+  [ngClass]="[
+    variant ? 'select--' + variant : '',
+    fullWidth ? 'select--full' : ''
+  ]"
+  [disabled]="disabled"
+  [ngModel]="value"
+  (ngModelChange)="onChange($event)"
+>
+  <option value="" disabled selected *ngIf="!value">
+    {{ placeholder }}
+  </option>
+
+  <option
+    *ngFor="let option of options"
+    [value]="option.value"
+  >
+    {{ option.label }}
+  </option>
+</select>
