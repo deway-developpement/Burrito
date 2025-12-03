@@ -2,11 +2,12 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 import { ButtonComponent } from '../../component/shared/button/button.component';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [FormsModule, BackgroundDivComponent, ButtonComponent],
+  imports: [FormsModule, BackgroundDivComponent, ButtonComponent, RouterLink],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss'],
 })
