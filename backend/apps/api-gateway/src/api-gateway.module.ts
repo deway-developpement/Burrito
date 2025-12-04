@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { GraphQLModule } from '@nestjs/graphql';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default';
+import { DirectiveLocation, GraphQLDirective, GraphQLString } from 'graphql';
 import { ConfigModule } from '@nestjs/config';
 import { configuration } from '@app/common';
 import { validation } from '@app/common';
@@ -16,6 +17,7 @@ import { FormModule } from './form/form.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { MetricsController } from '@app/common';
 import { PrometheusService } from '@app/common';
+import { EvaluationModule } from './evaluation/evaluation.module';
 
 @Module({
   imports: [
@@ -32,10 +34,25 @@ import { PrometheusService } from '@app/common';
       playground: false,
       debug: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      buildSchemaOptions: {
+        directives: [
+          new GraphQLDirective({
+            name: 'auth',
+            locations: [
+              DirectiveLocation.OBJECT,
+              DirectiveLocation.FIELD_DEFINITION,
+            ],
+            args: {
+              role: { type: GraphQLString },
+            },
+          }),
+        ],
+      },
     }),
     PrometheusModule.register({ defaultMetrics: { enabled: true } }),
     UserModule,
     FormModule,
+    EvaluationModule,
     AuthModule,
   ],
   controllers: [ApiGatewayController, MetricsController],

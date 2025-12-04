@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  GatewayTimeoutException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
+import { MICROSERVICE_TIMEOUT_MS } from '../constants';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   Query,
@@ -13,7 +18,13 @@ import {
   DeepPartial,
   DeleteManyResponse,
 } from '@nestjs-query/core';
-import { firstValueFrom } from 'rxjs';
+import {
+  Observable,
+  TimeoutError,
+  catchError,
+  firstValueFrom,
+  timeout,
+} from 'rxjs';
 import { UserDto } from './dto/user.dto';
 import { IUser } from '@app/common';
 
@@ -29,7 +40,7 @@ export class UserService {
    * Called by CRUDResolver for list queries with filters, paging, sorting...
    */
   async query(query: Query<UserDto>): Promise<UserDto[]> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<UserDto[]>({ cmd: 'user.query' }, query),
     );
   }
@@ -38,7 +49,7 @@ export class UserService {
    * Called by CRUDResolver for single item fetch by id.
    */
   async findById(id: string): Promise<IUser | undefined> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<IUser | undefined>({ cmd: 'user.findById' }, id),
     );
   }
@@ -51,7 +62,7 @@ export class UserService {
     filter: Filter<UserDto>,
     query: AggregateQuery<UserDto>,
   ): Promise<AggregateResponse<UserDto>[]> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<AggregateResponse<UserDto>[]>(
         { cmd: 'user.aggregate' },
         { filter, aggregate: query },
@@ -63,7 +74,7 @@ export class UserService {
    * Used for total count (pagination meta).
    */
   async count(query: Filter<UserDto>): Promise<number> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<number>({ cmd: 'user.count' }, query),
     );
   }
@@ -88,7 +99,7 @@ export class UserService {
     dto: UserDto | UserDto[],
     query: Query<Relation>,
   ): Promise<Map<UserDto, Relation[]> | Relation[]> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<Map<UserDto, Relation[]> | Relation[]>(
         { cmd: 'user.queryRelations' },
         { relationName, dto, query },
@@ -120,7 +131,7 @@ export class UserService {
   ): Promise<
     AggregateResponse<Relation>[] | Map<UserDto, AggregateResponse<Relation>[]>
   > {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<
         | AggregateResponse<Relation>[]
         | Map<UserDto, AggregateResponse<Relation>[]>
@@ -150,7 +161,7 @@ export class UserService {
     dto: UserDto | UserDto[],
     filter: Filter<Relation>,
   ): Promise<number | Map<UserDto, number>> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<number | Map<UserDto, number>>(
         { cmd: 'user.countRelations' },
         { relationName, dto, filter },
@@ -177,7 +188,7 @@ export class UserService {
     relationName: string,
     dto: UserDto | UserDto[],
   ): Promise<Relation | undefined | Map<UserDto, Relation | undefined>> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<
         Relation | undefined | Map<UserDto, Relation | undefined>
       >({ cmd: 'user.findRelation' }, { relationName, dto }),
@@ -190,7 +201,7 @@ export class UserService {
     relationIds: (string | number)[],
     opts?: ModifyRelationOptions<UserDto, Relation>,
   ): Promise<UserDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<UserDto>(
         { cmd: 'user.addRelations' },
         { relationName, id, relationIds, opts },
@@ -204,7 +215,7 @@ export class UserService {
     relationId: string,
     opts?: ModifyRelationOptions<UserDto, Relation>,
   ): Promise<UserDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<UserDto>(
         { cmd: 'user.setRelation' },
         { relationName, id, relationId, opts },
@@ -218,7 +229,7 @@ export class UserService {
     relationIds: (string | number)[],
     opts?: ModifyRelationOptions<UserDto, Relation>,
   ): Promise<UserDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<UserDto>(
         { cmd: 'user.setRelations' },
         { relationName, id, relationIds, opts },
@@ -232,7 +243,7 @@ export class UserService {
     relationId: string | number,
     opts?: ModifyRelationOptions<UserDto, Relation>,
   ): Promise<UserDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<UserDto>(
         { cmd: 'user.removeRelation' },
         { relationName, id, relationId, opts },
@@ -246,7 +257,7 @@ export class UserService {
     relationIds: (string | number)[],
     opts?: ModifyRelationOptions<UserDto, Relation>,
   ): Promise<UserDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<UserDto>(
         { cmd: 'user.removeRelations' },
         { relationName, id, relationIds, opts },
@@ -255,7 +266,7 @@ export class UserService {
   }
 
   async getById(id: string): Promise<UserDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<UserDto>({ cmd: 'user.getById' }, id),
     );
   }
@@ -264,20 +275,20 @@ export class UserService {
    * If later you re-enable writes, you can wire these:
    */
   async createOne(dto: Partial<UserDto>): Promise<UserDto> {
-    const user = await firstValueFrom(
+    const user = await this.sendWithTimeout(
       this.userClient.send<IUser>({ cmd: 'user.createOne' }, dto),
     );
     return user;
   }
 
   async createMany(dtos: Partial<UserDto>[]): Promise<UserDto[]> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<UserDto[]>({ cmd: 'user.createMany' }, dtos),
     );
   }
 
   async updateOne(id: string, update: Partial<IUser>): Promise<IUser> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<IUser>({ cmd: 'user.updateOne' }, { id, update }),
     );
   }
@@ -286,7 +297,7 @@ export class UserService {
     update: DeepPartial<UserDto>,
     filter: Filter<UserDto>,
   ): Promise<UpdateManyResponse> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<UpdateManyResponse>(
         { cmd: 'user.updateMany' },
         { update, filter },
@@ -295,13 +306,13 @@ export class UserService {
   }
 
   async deleteOne(id: string): Promise<UserDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<UserDto>({ cmd: 'user.deleteOne' }, id),
     );
   }
 
   async deleteMany(filter: Filter<UserDto>): Promise<DeleteManyResponse> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<DeleteManyResponse>(
         { cmd: 'user.deleteMany' },
         filter,
@@ -314,10 +325,24 @@ export class UserService {
    */
 
   async findByEmail(email: string): Promise<IUser | undefined> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.userClient.send<IUser | undefined>(
         { cmd: 'user.findByEmail' },
         email,
+      ),
+    );
+  }
+
+  private async sendWithTimeout<T>(observable: Observable<T>): Promise<T> {
+    return firstValueFrom(
+      observable.pipe(
+        timeout(MICROSERVICE_TIMEOUT_MS),
+        catchError((err) => {
+          if (err instanceof TimeoutError) {
+            throw new GatewayTimeoutException('User service timed out');
+          }
+          throw err;
+        }),
       ),
     );
   }

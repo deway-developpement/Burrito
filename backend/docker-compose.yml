@@ -72,9 +72,18 @@ services:
       - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
       - MONGODB_PORT=${MONGODB_PORT:-27017}
 
-  # evaluations-ms:
-  #   build: ./apps/evaluations-ms
-  #   depends_on: [mongo, redis]
+  evaluations-ms:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: evaluations-ms
+    depends_on: [mongo, redis]
+    environment:
+      - MONGODB_MODE=docker
+      - REDIS_HOST=${REDIS_CONTAINER_NAME:-burrito-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
+      - MONGODB_PORT=${MONGODB_PORT:-27017}
 
   # analytics-ms:
   #   build: ./apps/analytics-ms

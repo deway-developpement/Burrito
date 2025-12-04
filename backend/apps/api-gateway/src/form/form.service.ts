@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  GatewayTimeoutException,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
+import { MICROSERVICE_TIMEOUT_MS } from '../constants';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   QueryService,
@@ -11,7 +16,13 @@ import {
   UpdateManyResponse,
   DeleteManyResponse,
 } from '@nestjs-query/core';
-import { firstValueFrom } from 'rxjs';
+import {
+  Observable,
+  TimeoutError,
+  catchError,
+  firstValueFrom,
+  timeout,
+} from 'rxjs';
 import { FormDto } from './dto/form.dto';
 import { CreateFormInput } from './dto/create-form.input';
 import { UpdateFormInput } from './dto/update-form.input';
@@ -26,13 +37,13 @@ export class FormService {
   // === READ APIs ===
 
   async query(query: Query<FormDto>): Promise<FormDto[]> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto[]>({ cmd: 'form.query' }, query),
     );
   }
 
   async findById(id: string): Promise<FormDto | undefined> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto | undefined>({ cmd: 'form.findById' }, id),
     );
   }
@@ -41,7 +52,7 @@ export class FormService {
     filter: Filter<FormDto>,
     query: AggregateQuery<FormDto>,
   ): Promise<AggregateResponse<FormDto>[]> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<AggregateResponse<FormDto>[]>(
         { cmd: 'form.aggregate' },
         { filter, aggregate: query },
@@ -50,7 +61,7 @@ export class FormService {
   }
 
   async count(query: Filter<FormDto>): Promise<number> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<number>({ cmd: 'form.count' }, query),
     );
   }
@@ -75,7 +86,7 @@ export class FormService {
     dtoOrDtos: FormDto | FormDto[],
     query: Query<Relation>,
   ): Promise<Relation[] | Map<FormDto, Relation[]>> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<Relation[] | Map<FormDto, Relation[]>>(
         { cmd: 'form.queryRelations' },
         { RelationClass, relationName, dtoOrDtos, query },
@@ -108,7 +119,7 @@ export class FormService {
   ): Promise<
     AggregateResponse<Relation>[] | Map<FormDto, AggregateResponse<Relation>[]>
   > {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<
         | AggregateResponse<Relation>[]
         | Map<FormDto, AggregateResponse<Relation>[]>
@@ -139,7 +150,7 @@ export class FormService {
     dtoOrDtos: FormDto | FormDto[],
     query: Filter<Relation>,
   ): Promise<number | Map<FormDto, number>> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<number | Map<FormDto, number>>(
         { cmd: 'form.countRelations' },
         { RelationClass, relationName, dtoOrDtos, query },
@@ -164,7 +175,7 @@ export class FormService {
     relationName: string,
     dtoOrDtos: FormDto | FormDto[],
   ): Promise<Relation | Map<FormDto, Relation>> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<Relation | Map<FormDto, Relation>>(
         { cmd: 'form.findRelation' },
         { RelationClass, relationName, dtoOrDtos },
@@ -178,7 +189,7 @@ export class FormService {
     relationIds: (string | number)[],
     opts?: ModifyRelationOptions<FormDto, Relation>,
   ): Promise<FormDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto>(
         { cmd: 'form.addRelations' },
         {
@@ -197,7 +208,7 @@ export class FormService {
     relationId: string,
     opts?: ModifyRelationOptions<FormDto, Relation>,
   ): Promise<FormDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto>(
         { cmd: 'form.setRelations' },
         {
@@ -216,7 +227,7 @@ export class FormService {
     relationIds: (string | number)[],
     opts?: ModifyRelationOptions<FormDto, Relation>,
   ): Promise<FormDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto>(
         { cmd: 'form.setRelations' },
         {
@@ -235,7 +246,7 @@ export class FormService {
     relationId: string | number,
     opts?: ModifyRelationOptions<FormDto, Relation>,
   ): Promise<FormDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto>(
         { cmd: 'form.removeRelation' },
         {
@@ -254,7 +265,7 @@ export class FormService {
     relationIds: (string | number)[],
     opts?: ModifyRelationOptions<FormDto, Relation>,
   ): Promise<FormDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto>(
         { cmd: 'form.removeRelations' },
         {
@@ -268,7 +279,7 @@ export class FormService {
   }
 
   async getById(id: string): Promise<FormDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto>({ cmd: 'form.getById' }, id),
     );
   }
@@ -276,19 +287,19 @@ export class FormService {
   // === WRITE APIs (used by CRUDResolver for mutations) ===
 
   async createOne(dto: CreateFormInput): Promise<FormDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto>({ cmd: 'form.createOne' }, dto),
     );
   }
 
   async createMany(dtos: CreateFormInput[]): Promise<FormDto[]> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto[]>({ cmd: 'form.createMany' }, dtos),
     );
   }
 
   async updateOne(id: string, update: UpdateFormInput): Promise<FormDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto>({ cmd: 'form.updateOne' }, { id, update }),
     );
   }
@@ -297,7 +308,7 @@ export class FormService {
     update: UpdateFormInput,
     filter: Filter<FormDto>,
   ): Promise<UpdateManyResponse> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<UpdateManyResponse>(
         { cmd: 'form.updateMany' },
         { update, filter },
@@ -306,16 +317,27 @@ export class FormService {
   }
 
   async deleteOne(id: string): Promise<FormDto> {
-    return firstValueFrom(
+    return this.sendWithTimeout(
       this.formClient.send<FormDto>({ cmd: 'form.deleteOne' }, id),
     );
   }
 
   async deleteMany(filter: Filter<FormDto>): Promise<DeleteManyResponse> {
+    return this.sendWithTimeout(
+      this.formClient.send<DeleteManyResponse>({ cmd: 'form.deleteMany' }, filter),
+    );
+  }
+
+  private async sendWithTimeout<T>(observable: Observable<T>): Promise<T> {
     return firstValueFrom(
-      this.formClient.send<DeleteManyResponse>(
-        { cmd: 'form.deleteMany' },
-        filter,
+      observable.pipe(
+        timeout(MICROSERVICE_TIMEOUT_MS),
+        catchError((err) => {
+          if (err instanceof TimeoutError) {
+            throw new GatewayTimeoutException('Form service timed out');
+          }
+          throw err;
+        }),
       ),
     );
   }
