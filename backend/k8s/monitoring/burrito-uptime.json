@@ -102,8 +102,8 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "avg_over_time(kube_pod_status_ready{namespace=\"evaluation-system\",condition=\"true\"}[5m])",
-          "legendFormat": "{{pod}}",
+          "expr": "kube_deployment_status_replicas_available{namespace=\"evaluation-system\"}\n/\nkube_deployment_spec_replicas{namespace=\"evaluation-system\"}",
+          "legendFormat": "{{deployment}}",
           "refId": "A"
         }
       ],

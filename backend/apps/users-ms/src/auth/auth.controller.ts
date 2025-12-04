@@ -21,4 +21,9 @@ export class AuthController {
   refresh(data: { refreshToken: string }) {
     return this.authService.refresh(data.refreshToken);
   }
+
+  @MessagePattern({ cmd: 'auth.generateFormHash' })
+  generateFormHash(data: { userId: string; formId: string }): Promise<string> {
+    return this.authService.generateFormHash(data.userId, data.formId);
+  }
 }

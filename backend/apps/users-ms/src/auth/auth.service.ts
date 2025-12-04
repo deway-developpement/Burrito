@@ -4,9 +4,9 @@ import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from '@app/common';
-import type { Request } from 'express';
 import { IUser } from '@app/common';
 import { isValidObjectId } from 'mongoose';
+import { subtle } from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -63,5 +63,27 @@ export class AuthService {
         });
       throw new UnauthorizedException();
     }
+  }
+
+  async generateFormHash(userId: string, formId: string): Promise<string> {
+    const secret =
+      this.configService.get<string>('jwt.secret') || 'default-secret';
+
+    const encoder = new TextEncoder();
+    const key = await subtle.importKey(
+      'raw',
+      encoder.encode(secret),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign'],
+    );
+
+    const signature = await subtle.sign(
+      'HMAC',
+      key,
+      encoder.encode(userId + formId),
+    );
+
+    return Buffer.from(signature).toString('base64');
   }
 }

@@ -28,6 +28,15 @@
         "tsConfigPath": "libs/common/tsconfig.lib.json"
       }
     },
+    "evaluations-ms": {
+      "type": "application",
+      "root": "apps/evaluations-ms",
+      "entryFile": "main",
+      "sourceRoot": "apps/evaluations-ms/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/evaluations-ms/tsconfig.app.json"
+      }
+    },
     "forms-ms": {
       "type": "application",
       "root": "apps/forms-ms",

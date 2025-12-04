@@ -8,7 +8,7 @@ import {
   mixin,
 } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { AuthGuard } from '@nestjs/passport';
+import { AuthGuard, IAuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { AuthCredentials } from '../../../../../libs/common/src/interfaces/auth.type';
 import { UserType } from '../../../../../libs/common/src';
@@ -53,6 +53,81 @@ export class GqlSkipFieldGuard extends AuthGuard('Empty') {
     ctx.getContext().ignoreError = true;
     return ctx.getContext().req;
   }
+}
+
+@Injectable()
+export class GqlCurrentUserGuard extends AuthGuard('jwt') {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const can = (await super.canActivate(context)) as boolean;
+    if (!can) return false;
+
+    const ctx = GqlExecutionContext.create(context);
+    const req = ctx.getContext().req as Request & { user?: AuthCredentials };
+    const user = req.user;
+
+    if (!user) return false;
+
+    return user.id === ctx.getArgs().input.id;
+  }
+
+  getRequest(context: ExecutionContext): Request {
+    const ctx = GqlExecutionContext.create(context);
+    return ctx.getContext().req;
+  }
+}
+
+export function GqlOrGuard(
+  ...guards: Array<Type<IAuthGuard> | IAuthGuard>
+): Type<any> {
+  @Injectable()
+  class OrGuard extends AuthGuard('jwt') {
+    private guardInstances: IAuthGuard[];
+
+    constructor() {
+      super();
+      this.guardInstances = guards.map((guard) =>
+        typeof guard === 'function' ? new guard() : guard,
+      );
+    }
+
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+      for (const guard of this.guardInstances) {
+        if (await guard.canActivate(context)) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
+  return mixin(OrGuard);
+}
+
+export function GqlAndGuard(
+  ...guards: Array<Type<IAuthGuard> | IAuthGuard>
+): Type<any> {
+  @Injectable()
+  class AndGuard extends AuthGuard('jwt') {
+    private guardInstances: IAuthGuard[];
+
+    constructor() {
+      super();
+      this.guardInstances = guards.map((guard) =>
+        typeof guard === 'function' ? new guard() : guard,
+      );
+    }
+
+    async canActivate(context: ExecutionContext): Promise<boolean> {
+      for (const guard of this.guardInstances) {
+        if (!(await guard.canActivate(context))) {
+          return false;
+        }
+      }
+      return true;
+    }
+  }
+
+  return mixin(AndGuard);
 }
 
 export const CurrentUser = createParamDecorator(
