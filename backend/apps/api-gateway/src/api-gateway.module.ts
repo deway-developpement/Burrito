@@ -14,13 +14,25 @@ import { join } from 'path';
 import { ApiGatewayService } from './api-gateway.service';
 import { ApiGatewayController } from './api-gateway.controller';
 import { FormModule } from './form/form.module';
-import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import {
+  makeCounterProvider,
+  PrometheusModule,
+} from '@willsoto/nestjs-prometheus';
 import { MetricsController } from '@app/common';
 import { PrometheusService } from '@app/common';
 import { EvaluationModule } from './evaluation/evaluation.module';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+        base: { service: 'api-gateway' },
+        autoLogging: false,
+        redact: ['req.headers.authorization'],
+      },
+    }),
     ConfigModule.forRoot({
       envFilePath: '.env',
       load: [configuration.configuration],
@@ -56,7 +68,16 @@ import { EvaluationModule } from './evaluation/evaluation.module';
     AuthModule,
   ],
   controllers: [ApiGatewayController, MetricsController],
-  providers: [ApiGatewayService, setHttpPlugin, PrometheusService],
+  providers: [
+    ApiGatewayService,
+    setHttpPlugin,
+    PrometheusService,
+    makeCounterProvider({
+      name: 'http_requests_total',
+      help: 'Total HTTP requests through the gateway',
+      labelNames: ['method', 'route', 'status'],
+    }),
+  ],
 })
 export class ApiGatewayModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
