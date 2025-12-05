@@ -30,4 +30,7 @@ prometheus:
 alertmanager:
   enabled: false
 
+prometheus-node-exporter:
+  enabled: false
+
 # kube-state-metrics is enabled by default and provides the deployment replica metrics used in the dashboard
