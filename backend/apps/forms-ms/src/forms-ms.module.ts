@@ -7,11 +7,19 @@ import { FormsMsController } from './forms-ms.controller';
 import { FormsMsService } from './forms-ms.service';
 import { FormModule } from './form/form.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
-import { MetricsController } from '@app/common';
-import { PrometheusService } from '@app/common';
+import { MetricsController, PrometheusService, RedisLoggerInterceptor } from '@app/common';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+        base: { service: 'forms-ms' },
+        autoLogging: false,
+        redact: ['req.headers.authorization'],
+      },
+    }),
     ConfigModule.forRoot({
       envFilePath: '.env',
       load: [configuration.configuration],
@@ -29,6 +37,6 @@ import { PrometheusService } from '@app/common';
     FormModule,
   ],
   controllers: [FormsMsController, MetricsController],
-  providers: [FormsMsService, PrometheusService],
+  providers: [FormsMsService, PrometheusService, RedisLoggerInterceptor],
 })
 export class FormsMsModule {}

@@ -15,31 +15,27 @@ data:
       - url: http://loki.monitoring.svc.cluster.local:3100/loki/api/v1/push
 
     scrape_configs:
-      - job_name: kubernetes-pods
+      - job_name: kubernetes-pods-evaluation-system
         kubernetes_sd_configs:
           - role: pod
+            selectors:
+              - role: pod
+                field: spec.nodeName=${NODE_NAME}
         relabel_configs:
+          - source_labels: [__meta_kubernetes_namespace]
+            regex: evaluation-system
+            action: keep
           - source_labels: [__meta_kubernetes_namespace]
             target_label: namespace
           - source_labels: [__meta_kubernetes_pod_name]
             target_label: pod
-          - action: replace
-            replacement: /var/log/pods/*$1*/*/*.log
-            separator: /
-            source_labels:
-              - __meta_kubernetes_pod_uid
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          - source_labels: [__meta_kubernetes_pod_container_name]
+            target_label: container
+          - source_labels: [__meta_kubernetes_pod_uid]
             target_label: __path__
-
-      - job_name: static-direct-test
-        static_configs:
-          - targets:
-              - localhost
-            labels:
-              job: static-direct-test
-              namespace: evaluation-system
-              pod: api-gateway-manual
-              container: api-gateway
-              __path__: /var/log/containers/api-gateway-6656d6c4f8-hr52n_evaluation-system_api-gateway-*.log
+            replacement: /var/log/pods/*$1*/*/*.log
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -52,7 +48,7 @@ metadata:
   name: promtail
 rules:
   - apiGroups: [""]
-    resources: ["nodes", "nodes/proxy", "pods", "namespaces", "containers"]
+    resources: ["nodes", "nodes/proxy", "pods", "namespaces"]
     verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -90,6 +86,7 @@ spec:
           imagePullPolicy: IfNotPresent
           args:
             - -config.file=/etc/promtail/promtail.yaml
+            - -config.expand-env=true
             - -log.level=debug
           volumeMounts:
             - name: config
@@ -101,6 +98,11 @@ spec:
             - name: docker-containers
               mountPath: /var/lib/docker/containers
               readOnly: true
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
       volumes:
         - name: config
           configMap:
