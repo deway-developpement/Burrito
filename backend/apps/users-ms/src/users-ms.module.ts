@@ -8,11 +8,19 @@ import { configuration } from '@app/common';
 import { validation } from '@app/common';
 import { AuthModule } from './auth/auth.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
-import { MetricsController } from '@app/common';
-import { PrometheusService } from '@app/common';
+import { MetricsController, PrometheusService, RedisLoggerInterceptor } from '@app/common';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+        base: { service: 'users-ms' },
+        autoLogging: false,
+        redact: ['req.headers.authorization'],
+      },
+    }),
     ConfigModule.forRoot({
       envFilePath: '.env',
       load: [configuration.configuration],
@@ -31,6 +39,6 @@ import { PrometheusService } from '@app/common';
     AuthModule,
   ],
   controllers: [UsersMsController, MetricsController],
-  providers: [UsersMsService, PrometheusService],
+  providers: [UsersMsService, PrometheusService, RedisLoggerInterceptor],
 })
 export class UsersMsModule {}

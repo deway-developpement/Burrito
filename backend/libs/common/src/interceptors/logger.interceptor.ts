@@ -1,19 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import {
-  CallHandler,
-  ExecutionContext,
-  Injectable,
-  Logger,
-  NestInterceptor,
-} from '@nestjs/common';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { RedisContext } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
 
 @Injectable()
 export class RedisLoggerInterceptor implements NestInterceptor {
-  private readonly logger = new Logger('REDIS');
+  constructor(
+    @InjectPinoLogger(RedisLoggerInterceptor.name)
+    private readonly logger: PinoLogger,
+  ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const now = Date.now();
@@ -24,18 +22,20 @@ export class RedisLoggerInterceptor implements NestInterceptor {
     const channel = JSON.parse(rawChannel).cmd;
 
     // Log when request is received
-    this.logger.log(`Incoming message on channel "${channel}".`);
+    this.logger.info({ channel }, 'Incoming message');
 
     return next.handle().pipe(
       tap({
         next: () => {
-          this.logger.log(
-            `Handled message in ${Date.now() - now}ms on channel ${channel}.`,
+          this.logger.info(
+            { channel, durationMs: Date.now() - now },
+            'Handled message',
           );
         },
         error: (err) => {
           this.logger.warn(
-            `Error handling message after ${Date.now() - now}ms on channel ${channel}: ${err?.message}`,
+            { channel, durationMs: Date.now() - now, err: err?.message },
+            'Error handling message',
           );
         },
       }),

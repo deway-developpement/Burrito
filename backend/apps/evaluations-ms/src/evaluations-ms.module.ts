@@ -1,14 +1,23 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
-import { configuration, validation, MetricsController, PrometheusService } from '@app/common';
+import { configuration, validation, MetricsController, PrometheusService, RedisLoggerInterceptor } from '@app/common';
 import { EvaluationsMsController } from './evaluations-ms.controller';
 import { EvaluationsMsService } from './evaluations-ms.service';
 import { EvaluationModule } from './evaluation/evaluation.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { LoggerModule } from 'nestjs-pino';
 
 @Module({
   imports: [
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+        base: { service: 'evaluations-ms' },
+        autoLogging: false,
+        redact: ['req.headers.authorization'],
+      },
+    }),
     ConfigModule.forRoot({
       envFilePath: '.env',
       load: [configuration.configuration],
@@ -24,6 +33,6 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     EvaluationModule,
   ],
   controllers: [EvaluationsMsController, MetricsController],
-  providers: [EvaluationsMsService, PrometheusService],
+  providers: [EvaluationsMsService, PrometheusService, RedisLoggerInterceptor],
 })
 export class EvaluationsMsModule {}

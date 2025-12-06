@@ -9,6 +9,17 @@ configMapGenerator:
         grafana_dashboard: "1"
         dashboard_version: "v1.0"
         app: "burrito"
+  - name: grafana-dashboard-eval-logs
+    files:
+      - grafana-dashboard-eval-logs.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+        dashboard_version: "v1.0"
+        app: "burrito"
 
 resources:
   - service-monitor-api-gateway.yaml
+  - loki.yaml
+  - promtail.yaml
+  - loki-datasource.yaml

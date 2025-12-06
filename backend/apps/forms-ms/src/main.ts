@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { RedisLoggerInterceptor } from '@app/common';
+import { Logger } from 'nestjs-pino';
 import { FormsMsModule } from './forms-ms.module';
 
 async function bootstrap() {
@@ -12,9 +13,11 @@ async function bootstrap() {
         port: parseInt(process.env.REDIS_PORT || '6379'),
         host: process.env.REDIS_HOST || 'localhost',
       },
+      bufferLogs: true,
     },
   );
-  app.useGlobalInterceptors(new RedisLoggerInterceptor());
+  app.useLogger(app.get(Logger));
+  app.useGlobalInterceptors(app.get(RedisLoggerInterceptor));
   await app.listen();
 }
 
