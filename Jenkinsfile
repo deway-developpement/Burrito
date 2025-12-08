@@ -43,7 +43,8 @@ spec:
   }
 
   environment {
-    KUBECONFIG_CRED = 'kubeconfig-burrito' // secret-text credential containing kubeconfig
+    KUBECONFIG_CRED   = 'kubeconfig-burrito' // secret-text credential containing kubeconfig
+    CONTAINERD_SOCKET = '/run/k3s/containerd/containerd.sock'
   }
 
   stages {
@@ -85,10 +86,9 @@ spec:
             services.each { svc ->
               sh """
                 set -e
-                export CONTAINERD_SOCKET=/run/k3s/containerd/containerd.sock
                 cd backend
-                nerdctl --address \\$CONTAINERD_SOCKET --namespace k8s.io build --build-arg SERVICE_NAME=${svc} -t burrito-${svc}:${tag} .
-                nerdctl --address \\$CONTAINERD_SOCKET --namespace k8s.io tag burrito-${svc}:${tag} burrito-${svc}:latest
+                nerdctl --address ${env.CONTAINERD_SOCKET} --namespace k8s.io build --build-arg SERVICE_NAME=${svc} -t burrito-${svc}:${tag} .
+                nerdctl --address ${env.CONTAINERD_SOCKET} --namespace k8s.io tag burrito-${svc}:${tag} burrito-${svc}:latest
               """
             }
           }
