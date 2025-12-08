@@ -132,6 +132,7 @@ spec:
               --containerd-worker=true \
               --containerd-worker-addr "${CONTAINERD_SOCKET}" \
               --oci-worker=false \
+              --otel-socket-path "" \
               >/tmp/buildkitd.log 2>&1 &
             BKPID=$!
             sleep 2
