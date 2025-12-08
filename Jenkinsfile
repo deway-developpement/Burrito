@@ -99,7 +99,12 @@ spec:
 
             # Start buildkitd pointing at containerd
             rm -f /tmp/buildkitd.sock
-            buildkitd --address "${BUILDKIT_HOST}" --containerd-address "${CONTAINERD_SOCKET}" --oci-worker-snapshotter overlayfs >/tmp/buildkitd.log 2>&1 &
+            buildkitd \
+              --addr "${BUILDKIT_HOST}" \
+              --containerd-worker=true \
+              --containerd-worker-addr "${CONTAINERD_SOCKET}" \
+              --oci-worker=false \
+              >/tmp/buildkitd.log 2>&1 &
             BKPID=$!
             sleep 2
             trap 'if kill -0 $BKPID 2>/dev/null; then kill $BKPID; fi' EXIT
