@@ -24,3 +24,4 @@ lerna-debug.log*
 .tmp
 # Snyk Security Extension - AI Rules (auto-generated)
 .github/instructions/snyk_rules.instructions.md
+backend/infra/terraform/.terraform.lock.hcl

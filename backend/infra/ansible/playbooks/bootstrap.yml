@@ -1,0 +1,64 @@
+- hosts: burrito
+  become: true
+  vars:
+    cert_manager_version: v1.13.3
+    cert_manager_chart_version: v1.13.3
+  tasks:
+    - name: Install base dependencies
+      apt:
+        name:
+          - curl
+          - gnupg
+          - ca-certificates
+          - apt-transport-https
+        update_cache: true
+
+    - name: Install k3s (single node)
+      shell: |
+        curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--write-kubeconfig-mode 644 --tls-san burrito.deway.fr" sh -
+      args:
+        creates: /usr/local/bin/k3s
+
+    - name: Install Helm 4
+      shell: |
+        curl -fsSL https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-4 | bash
+      args:
+        creates: /usr/local/bin/helm
+
+    - name: Install cert-manager CRDs
+      shell: |
+        kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/{{ cert_manager_version }}/cert-manager.crds.yaml
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    - name: Install/upgrade cert-manager
+      shell: |
+        helm repo add jetstack https://charts.jetstack.io
+        helm repo update
+        helm upgrade --install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version {{ cert_manager_chart_version }}
+      environment:
+        KUBECONFIG: /etc/rancher/k3s/k3s.yaml
+
+    - name: Ensure local kubeconfig directory exists
+      delegate_to: localhost
+      run_once: true
+      become: false
+      file:
+        path: "{{ kubeconfig_local_path | dirname }}"
+        state: directory
+        mode: "0700"
+
+    - name: Fetch kubeconfig to control machine
+      fetch:
+        src: /etc/rancher/k3s/k3s.yaml
+        dest: "{{ kubeconfig_local_path }}"
+        flat: true
+
+    - name: Point kubeconfig at public API endpoint
+      delegate_to: localhost
+      run_once: true
+      become: false
+      lineinfile:
+        path: "{{ kubeconfig_local_path }}"
+        regexp: "^\\s*server:.*"
+        line: "    server: {{ k3s_api_endpoint }}"
