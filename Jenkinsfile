@@ -83,7 +83,7 @@ spec:
             set -e
             BUILDKIT_VERSION="0.13.2"
             CONTAINERD_SOCKET="${CONTAINERD_SOCKET}"
-            BUILDKIT_HOST="unix:///tmp/buildkitd.sock"
+            export BUILDKIT_HOST="unix:///tmp/buildkitd.sock"
 
             # Install nerdctl if missing
             if ! command -v nerdctl >/dev/null 2>&1; then
@@ -102,15 +102,17 @@ spec:
             buildkitd --address "${BUILDKIT_HOST}" --containerd-address "${CONTAINERD_SOCKET}" --oci-worker-snapshotter overlayfs >/tmp/buildkitd.log 2>&1 &
             BKPID=$!
             sleep 2
-            trap "kill $BKPID || true" EXIT
+            trap 'if kill -0 $BKPID 2>/dev/null; then kill $BKPID; fi' EXIT
 
             cd backend
             for svc in api-gateway users-ms forms-ms evaluations-ms; do
-              nerdctl --address "${CONTAINERD_SOCKET}" --namespace k8s.io --buildkit-host "${BUILDKIT_HOST}" build --build-arg SERVICE_NAME=${svc} -t burrito-${svc}:${BUILD_NUMBER} .
-              nerdctl --address "${CONTAINERD_SOCKET}" --namespace k8s.io --buildkit-host "${BUILDKIT_HOST}" tag burrito-${svc}:${BUILD_NUMBER} burrito-${svc}:latest
+              nerdctl --address "${CONTAINERD_SOCKET}" --namespace k8s.io build --build-arg SERVICE_NAME=${svc} -t burrito-${svc}:${BUILD_NUMBER} .
+              nerdctl --address "${CONTAINERD_SOCKET}" --namespace k8s.io tag burrito-${svc}:${BUILD_NUMBER} burrito-${svc}:latest
             done
 
-            kill $BKPID || true
+            if kill -0 $BKPID 2>/dev/null; then
+              kill $BKPID
+            fi
           '''
         }
       }
