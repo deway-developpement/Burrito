@@ -12,6 +12,9 @@ spec:
     tty: true
     command:
       - cat
+    securityContext:
+      privileged: true
+      allowPrivilegeEscalation: true
     volumeMounts:
       - name: containerd-sock
         mountPath: /run/k3s/containerd/containerd.sock
