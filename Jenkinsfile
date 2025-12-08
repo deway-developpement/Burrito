@@ -25,9 +25,7 @@ spec:
   }
 
   options {
-    ansiColor('xterm')
     buildDiscarder(logRotator(numToKeepStr: '20'))
-    timestamps()
     timeout(time: 30, unit: 'MINUTES')
   }
 
