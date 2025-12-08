@@ -132,7 +132,7 @@ spec:
               --containerd-worker=true \
               --containerd-worker-addr "${CONTAINERD_SOCKET}" \
               --oci-worker=false \
-              --otel-socket-path "" \
+              --otel-socket-path /run/buildkit/otel-grpc.sock \
               >/tmp/buildkitd.log 2>&1 &
             BKPID=$!
             sleep 2
@@ -147,6 +147,13 @@ spec:
             done
             if [ ! -S /tmp/buildkitd.sock ]; then
               echo "buildkitd failed to start; log follows:"
+              cat /tmp/buildkitd.log
+              exit 1
+            fi
+
+            # Verify buildkitd is reachable before building
+            if ! buildctl --addr "${BUILDKIT_HOST}" debug workers; then
+              echo "buildkitd reachable check failed; log follows:"
               cat /tmp/buildkitd.log
               exit 1
             fi
