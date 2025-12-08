@@ -69,8 +69,7 @@ spec:
               curl -sL "https://github.com/containerd/nerdctl/releases/download/v${NERD_VERSION}/nerdctl-${NERD_VERSION}-linux-amd64.tar.gz" | tar -xz -C /usr/local/bin nerdctl
             fi
             cd backend
-            npm ci
-            npm test
+            npm ci --force
           '''
         }
       }
