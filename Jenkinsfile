@@ -110,6 +110,7 @@ spec:
             export BUILDKIT_HOST="unix:///tmp/buildkitd.sock"
             export TMPDIR="/var/lib/buildkit/tmp"
             mkdir -p /var/lib/buildkit/tmp /run/buildkit
+            rm -f /run/buildkit/otel-grpc.sock
 
             # Install nerdctl if missing
             if ! command -v nerdctl >/dev/null 2>&1; then
@@ -132,7 +133,7 @@ spec:
               --containerd-worker=true \
               --containerd-worker-addr "${CONTAINERD_SOCKET}" \
               --oci-worker=false \
-              --otel-socket-path "" \
+              --otel-socket-path /run/buildkit/otel-grpc.sock \
               >/tmp/buildkitd.log 2>&1 &
             BKPID=$!
             sleep 2
