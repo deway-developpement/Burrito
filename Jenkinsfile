@@ -22,6 +22,9 @@ spec:
       - name: k3s-data
         mountPath: /var/lib/rancher
         readOnly: false
+      - name: buildkit-data
+        mountPath: /var/lib/buildkit
+        readOnly: false
   volumes:
     - name: containerd-sock
       hostPath:
@@ -29,6 +32,9 @@ spec:
     - name: k3s-data
       hostPath:
         path: /var/lib/rancher
+    - name: buildkit-data
+      hostPath:
+        path: /var/lib/buildkit
 """
     }
   }
@@ -107,6 +113,7 @@ spec:
             fi
 
             # Start buildkitd pointing at containerd
+            mkdir -p /var/lib/buildkit
             rm -f /tmp/buildkitd.sock
             buildkitd \
               --addr "${BUILDKIT_HOST}" \
