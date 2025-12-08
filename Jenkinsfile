@@ -15,7 +15,7 @@ spec:
     volumeMounts:
       - name: containerd-sock
         mountPath: /run/k3s/containerd/containerd.sock
-        readOnly: true
+        readOnly: false
   volumes:
     - name: containerd-sock
       hostPath:
@@ -103,6 +103,19 @@ spec:
             BKPID=$!
             sleep 2
             trap 'if kill -0 $BKPID 2>/dev/null; then kill $BKPID; fi' EXIT
+
+            # Wait for buildkitd socket
+            for i in $(seq 1 10); do
+              if [ -S /tmp/buildkitd.sock ]; then
+                break
+              fi
+              sleep 1
+            done
+            if [ ! -S /tmp/buildkitd.sock ]; then
+              echo "buildkitd failed to start; log follows:"
+              cat /tmp/buildkitd.log
+              exit 1
+            fi
 
             cd backend
             for svc in api-gateway users-ms forms-ms evaluations-ms; do
