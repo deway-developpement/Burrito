@@ -19,12 +19,15 @@ spec:
       - name: containerd-sock
         mountPath: /run/k3s/containerd/containerd.sock
         readOnly: false
+        mountPropagation: Bidirectional
       - name: k3s-data
         mountPath: /var/lib/rancher
         readOnly: false
+        mountPropagation: Bidirectional
       - name: buildkit-data
         mountPath: /var/lib/buildkit
         readOnly: false
+        mountPropagation: Bidirectional
   volumes:
     - name: containerd-sock
       hostPath:
@@ -99,6 +102,8 @@ spec:
             BUILDKIT_VERSION="0.13.2"
             CONTAINERD_SOCKET="${CONTAINERD_SOCKET}"
             export BUILDKIT_HOST="unix:///tmp/buildkitd.sock"
+            export TMPDIR="/var/lib/buildkit/tmp"
+            mkdir -p /var/lib/buildkit/tmp
 
             # Install nerdctl if missing
             if ! command -v nerdctl >/dev/null 2>&1; then
@@ -117,6 +122,7 @@ spec:
             rm -f /tmp/buildkitd.sock
             buildkitd \
               --addr "${BUILDKIT_HOST}" \
+              --root /var/lib/buildkit \
               --containerd-worker=true \
               --containerd-worker-addr "${CONTAINERD_SOCKET}" \
               --oci-worker=false \
