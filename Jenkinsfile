@@ -79,19 +79,39 @@ spec:
     stage('Build Images (containerd local)') {
       steps {
         container('builder') {
-          script {
-            def services = ['api-gateway', 'users-ms', 'forms-ms', 'evaluations-ms']
-            def tag = "${env.BUILD_NUMBER}"
+          sh '''
+            set -e
+            BUILDKIT_VERSION="0.13.2"
+            CONTAINERD_SOCKET="${CONTAINERD_SOCKET}"
+            BUILDKIT_HOST="unix:///tmp/buildkitd.sock"
 
-            services.each { svc ->
-              sh """
-                set -e
-                cd backend
-                nerdctl --address ${env.CONTAINERD_SOCKET} --namespace k8s.io build --build-arg SERVICE_NAME=${svc} -t burrito-${svc}:${tag} .
-                nerdctl --address ${env.CONTAINERD_SOCKET} --namespace k8s.io tag burrito-${svc}:${tag} burrito-${svc}:latest
-              """
-            }
-          }
+            # Install nerdctl if missing
+            if ! command -v nerdctl >/dev/null 2>&1; then
+              NERD_VERSION="1.7.7"
+              curl -sL "https://github.com/containerd/nerdctl/releases/download/v${NERD_VERSION}/nerdctl-${NERD_VERSION}-linux-amd64.tar.gz" | tar -xz -C /usr/local/bin nerdctl
+            fi
+
+            # Install buildkit binaries if missing
+            if ! command -v buildkitd >/dev/null 2>&1; then
+              curl -sL "https://github.com/moby/buildkit/releases/download/v${BUILDKIT_VERSION}/buildkit-v${BUILDKIT_VERSION}.linux-amd64.tar.gz" | tar -xz -C /usr/local
+              ln -sf /usr/local/bin/buildctl /usr/local/bin/buildctl-daemonless.sh || true
+            fi
+
+            # Start buildkitd pointing at containerd
+            rm -f /tmp/buildkitd.sock
+            buildkitd --address "${BUILDKIT_HOST}" --containerd-address "${CONTAINERD_SOCKET}" --oci-worker-snapshotter overlayfs >/tmp/buildkitd.log 2>&1 &
+            BKPID=$!
+            sleep 2
+            trap "kill $BKPID || true" EXIT
+
+            cd backend
+            for svc in api-gateway users-ms forms-ms evaluations-ms; do
+              nerdctl --address "${CONTAINERD_SOCKET}" --namespace k8s.io --buildkit-host "${BUILDKIT_HOST}" build --build-arg SERVICE_NAME=${svc} -t burrito-${svc}:${BUILD_NUMBER} .
+              nerdctl --address "${CONTAINERD_SOCKET}" --namespace k8s.io --buildkit-host "${BUILDKIT_HOST}" tag burrito-${svc}:${BUILD_NUMBER} burrito-${svc}:latest
+            done
+
+            kill $BKPID || true
+          '''
         }
       }
     }
