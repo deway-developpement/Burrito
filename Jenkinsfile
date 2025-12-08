@@ -16,10 +16,16 @@ spec:
       - name: containerd-sock
         mountPath: /run/k3s/containerd/containerd.sock
         readOnly: false
+      - name: k3s-data
+        mountPath: /var/lib/rancher
+        readOnly: false
   volumes:
     - name: containerd-sock
       hostPath:
         path: /run/k3s/containerd/containerd.sock
+    - name: k3s-data
+      hostPath:
+        path: /var/lib/rancher
 """
     }
   }
