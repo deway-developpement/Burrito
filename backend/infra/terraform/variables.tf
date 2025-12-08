@@ -65,3 +65,20 @@ variable "microservice_replicas" {
   description = "Replica count for the sample microservice deployment"
   default     = 2
 }
+
+variable "burrito_repo_url" {
+  type        = string
+  description = "Git URL for the Burrito repository (used by the Jenkins pipeline)"
+}
+
+variable "burrito_repo_branch" {
+  type        = string
+  description = "Branch to build for the Burrito pipeline job"
+  default     = "main"
+}
+
+variable "k8s_namespace" {
+  type        = string
+  description = "Kubernetes namespace for Burrito workloads"
+  default     = "evaluation-system"
+}
