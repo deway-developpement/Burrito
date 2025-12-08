@@ -28,6 +28,10 @@ spec:
         mountPath: /var/lib/buildkit
         readOnly: false
         mountPropagation: Bidirectional
+      - name: buildkit-run
+        mountPath: /run/buildkit
+        readOnly: false
+        mountPropagation: Bidirectional
   volumes:
     - name: containerd-sock
       hostPath:
@@ -38,6 +42,8 @@ spec:
     - name: buildkit-data
       hostPath:
         path: /var/lib/buildkit
+    - name: buildkit-run
+      emptyDir: {}
 """
     }
   }
@@ -103,7 +109,7 @@ spec:
             CONTAINERD_SOCKET="${CONTAINERD_SOCKET}"
             export BUILDKIT_HOST="unix:///tmp/buildkitd.sock"
             export TMPDIR="/var/lib/buildkit/tmp"
-            mkdir -p /var/lib/buildkit/tmp
+            mkdir -p /var/lib/buildkit/tmp /run/buildkit
 
             # Install nerdctl if missing
             if ! command -v nerdctl >/dev/null 2>&1; then
