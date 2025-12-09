@@ -9,7 +9,7 @@ pipeline {
           containers:
           - name: builder
             # An image that already has nerdctl installed
-            image: cyphernode/nerdctl:latest
+            image: ghcr.io/containerd/nerdctl:latest
             command: ["cat"]
             tty: true
             env:
