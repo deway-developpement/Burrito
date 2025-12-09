@@ -69,8 +69,8 @@ pipeline {
 
               # nerdctl build talks to the remote BuildKit daemon
               nerdctl \
-                --buildkit-host "${BUILDKIT_HOST}" \
                 build \
+                --buildkit-host "${BUILDKIT_HOST}" \
                 --build-arg SERVICE_NAME=${svc} \
                 -t burrito-${svc}:${BUILD_NUMBER} \
                 -t burrito-${svc}:latest \
