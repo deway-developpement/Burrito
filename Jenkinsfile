@@ -73,37 +73,35 @@ pipeline {
       }
     }
     
-    // ... Deployment stage remains similar ...
-  }
+    stage('Deploy to Kubernetes') {
+      steps {
+        container('builder') {
+          withCredentials([string(credentialsId: env.KUBECONFIG_CRED, variable: 'KUBECONFIG_CONTENT')]) {
+            sh '''
+              set -e
+              export KUBECONFIG=/tmp/kubeconfig
+              printf "%s" "$KUBECONFIG_CONTENT" > "$KUBECONFIG"
+              chmod 600 "$KUBECONFIG"
 
-  stage('Deploy to Kubernetes') {
-    steps {
-      container('builder') {
-        withCredentials([string(credentialsId: env.KUBECONFIG_CRED, variable: 'KUBECONFIG_CONTENT')]) {
-          sh '''
-            set -e
-            export KUBECONFIG=/tmp/kubeconfig
-            printf "%s" "$KUBECONFIG_CONTENT" > "$KUBECONFIG"
-            chmod 600 "$KUBECONFIG"
+              if [ -n "$KUBE_CONTEXT" ]; then
+                kubectl config use-context "$KUBE_CONTEXT"
+              fi
 
-            if [ -n "$KUBE_CONTEXT" ]; then
-              kubectl config use-context "$KUBE_CONTEXT"
-            fi
+              # Ensure base manifests are present
+              kubectl apply -f backend/k8s/evaluation-system.yaml
 
-            # Ensure base manifests are present
-            kubectl apply -f backend/k8s/evaluation-system.yaml
+              # Update deployments with freshly built images
+              kubectl set image deployment/api-gateway api-gateway=burrito-api-gateway:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
+              kubectl set image deployment/users-ms users-ms=burrito-users-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
+              kubectl set image deployment/forms-ms forms-ms=burrito-forms-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
+              kubectl set image deployment/evaluations-ms evaluations-ms=burrito-evaluations-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
 
-            # Update deployments with freshly built images
-            kubectl set image deployment/api-gateway api-gateway=burrito-api-gateway:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-            kubectl set image deployment/users-ms users-ms=burrito-users-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-            kubectl set image deployment/forms-ms forms-ms=burrito-forms-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-            kubectl set image deployment/evaluations-ms evaluations-ms=burrito-evaluations-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-
-            kubectl rollout status deployment/api-gateway -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/users-ms -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/forms-ms -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/evaluations-ms -n "$K8S_NAMESPACE"
-          '''
+              kubectl rollout status deployment/api-gateway -n "$K8S_NAMESPACE"
+              kubectl rollout status deployment/users-ms -n "$K8S_NAMESPACE"
+              kubectl rollout status deployment/forms-ms -n "$K8S_NAMESPACE"
+              kubectl rollout status deployment/evaluations-ms -n "$K8S_NAMESPACE"
+            '''
+          }
         }
       }
     }
