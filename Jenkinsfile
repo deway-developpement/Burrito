@@ -1,74 +1,37 @@
 pipeline {
   agent {
     kubernetes {
-      defaultContainer 'builder'
+      // We define 2 containers: one for the client (nerdctl), one for the daemon (buildkitd)
       yaml """
-apiVersion: v1
-kind: Pod
-spec:
-  containers:
-  - name: builder
-    image: node:18-bullseye
-    tty: true
-    command:
-      - cat
-    securityContext:
-      privileged: true
-      allowPrivilegeEscalation: true
-    volumeMounts:
-      - name: containerd-sock
-        mountPath: /run/k3s/containerd/containerd.sock
-        readOnly: false
-        mountPropagation: Bidirectional
-      - name: k3s-data
-        mountPath: /var/lib/rancher
-        readOnly: false
-        mountPropagation: Bidirectional
-      - name: buildkit-data
-        mountPath: /var/lib/buildkit
-        readOnly: false
-        mountPropagation: Bidirectional
-      - name: buildkit-run
-        mountPath: /run/buildkit
-        readOnly: false
-        mountPropagation: Bidirectional
-  volumes:
-    - name: containerd-sock
-      hostPath:
-        path: /run/k3s/containerd/containerd.sock
-    - name: k3s-data
-      hostPath:
-        path: /var/lib/rancher
-    - name: buildkit-data
-      hostPath:
-        path: /var/lib/buildkit
-    - name: buildkit-run
-      emptyDir: {}
-"""
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: builder
+            # An image that already has nerdctl installed
+            image: cyphernode/nerdctl:latest
+            command: ["cat"]
+            tty: true
+            env:
+              - name: BUILDKIT_HOST
+                value: "tcp://localhost:1234" # Connect to the sidecar
+          
+          - name: buildkitd
+            # Official BuildKit image
+            image: moby/buildkit:latest
+            args: 
+              - --addr 
+              - tcp://0.0.0.0:1234
+            securityContext:
+              privileged: true # BuildKit still needs this to create nested containers (overlayfs)
+            ports:
+              - containerPort: 1234
+        """
     }
   }
 
-  options {
-    buildDiscarder(logRotator(numToKeepStr: '20'))
-    timeout(time: 30, unit: 'MINUTES')
-  }
-
   parameters {
-    string(
-      name: 'K8S_NAMESPACE',
-      defaultValue: 'evaluation-system',
-      description: 'Target Kubernetes namespace'
-    )
-    string(
-      name: 'KUBE_CONTEXT',
-      defaultValue: '',
-      description: 'Optional kube-context override (leave empty to use default from kubeconfig)'
-    )
-  }
-
-  environment {
-    KUBECONFIG_CRED   = 'kubeconfig-burrito' // secret-text credential containing kubeconfig
-    CONTAINERD_SOCKET = '/run/k3s/containerd/containerd.sock'
+    string(name: 'K8S_NAMESPACE', defaultValue: 'evaluation-system', description: 'Target Kubernetes namespace')
   }
 
   stages {
@@ -78,130 +41,69 @@ spec:
       }
     }
 
-    stage('Install & Test') {
+    stage('Build Images') {
       steps {
         container('builder') {
-          sh '''
-            set -e
-            # Install kubectl (lightweight)
-            if ! command -v kubectl >/dev/null 2>&1; then
-              curl -sLo /usr/local/bin/kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-              chmod +x /usr/local/bin/kubectl
-            fi
-            # Install nerdctl (static binary)
-            if ! command -v nerdctl >/dev/null 2>&1; then
-              NERD_VERSION="1.7.7"
-              curl -sL "https://github.com/containerd/nerdctl/releases/download/v${NERD_VERSION}/nerdctl-${NERD_VERSION}-linux-amd64.tar.gz" | tar -xz -C /usr/local/bin nerdctl
-            fi
-            cd backend
-            npm ci --force
-          '''
-        }
-      }
-    }
+          script {
+            // No need to install nerdctl or buildkitd manually!
+            
+            // 1. Wait for buildkitd sidecar to be ready
+            sh 'while ! nerdctl info > /dev/null 2>&1; do sleep 1; echo "Waiting for buildkitd..."; done'
 
-    stage('Build Images (containerd local)') {
-      steps {
-        container('builder') {
-          sh '''
-            set -e
-            BUILDKIT_VERSION="0.13.2"
-            CONTAINERD_SOCKET="${CONTAINERD_SOCKET}"
-            export BUILDKIT_HOST="unix:///tmp/buildkitd.sock"
-            export TMPDIR="/var/lib/buildkit/tmp"
-            mkdir -p /var/lib/buildkit/tmp /run/buildkit
-            rm -f /run/buildkit/otel-grpc.sock
-
-            # Install nerdctl if missing
-            if ! command -v nerdctl >/dev/null 2>&1; then
-              NERD_VERSION="1.7.7"
-              curl -sL "https://github.com/containerd/nerdctl/releases/download/v${NERD_VERSION}/nerdctl-${NERD_VERSION}-linux-amd64.tar.gz" | tar -xz -C /usr/local/bin nerdctl
-            fi
-
-            # Install buildkit binaries if missing
-            if ! command -v buildkitd >/dev/null 2>&1; then
-              curl -sL "https://github.com/moby/buildkit/releases/download/v${BUILDKIT_VERSION}/buildkit-v${BUILDKIT_VERSION}.linux-amd64.tar.gz" | tar -xz -C /usr/local
-              ln -sf /usr/local/bin/buildctl /usr/local/bin/buildctl-daemonless.sh || true
-            fi
-
-            # Start buildkitd pointing at containerd
-            mkdir -p /var/lib/buildkit
-            rm -f /tmp/buildkitd.sock
-            buildkitd \
-              --addr "${BUILDKIT_HOST}" \
-              --root /var/lib/buildkit \
-              --containerd-worker=true \
-              --containerd-worker-addr "${CONTAINERD_SOCKET}" \
-              --oci-worker=false \
-              --otel-socket-path /run/buildkit/otel-grpc.sock \
-              >/tmp/buildkitd.log 2>&1 &
-            BKPID=$!
-            sleep 2
-            trap 'if kill -0 $BKPID 2>/dev/null; then kill $BKPID; fi' EXIT
-
-            # Wait for buildkitd socket
-            for i in $(seq 1 10); do
-              if [ -S /tmp/buildkitd.sock ]; then
-                break
-              fi
-              sleep 1
-            done
-            if [ ! -S /tmp/buildkitd.sock ]; then
-              echo "buildkitd failed to start; log follows:"
-              cat /tmp/buildkitd.log
-              exit 1
-            fi
-
-            # Verify buildkitd is reachable before building
-            if ! buildctl --addr "${BUILDKIT_HOST}" debug workers; then
-              echo "buildkitd reachable check failed; log follows:"
-              cat /tmp/buildkitd.log
-              exit 1
-            fi
-
-            cd backend
-            for svc in api-gateway users-ms forms-ms evaluations-ms; do
-              nerdctl --address "${CONTAINERD_SOCKET}" --namespace k8s.io build --build-arg SERVICE_NAME=${svc} -t burrito-${svc}:${BUILD_NUMBER} .
-              nerdctl --address "${CONTAINERD_SOCKET}" --namespace k8s.io tag burrito-${svc}:${BUILD_NUMBER} burrito-${svc}:latest
-            done
-
-            if kill -0 $BKPID 2>/dev/null; then
-              kill $BKPID
-            fi
-          '''
-        }
-      }
-    }
-
-    stage('Deploy to Kubernetes') {
-      steps {
-        container('builder') {
-          withCredentials([string(credentialsId: env.KUBECONFIG_CRED, variable: 'KUBECONFIG_CONTENT')]) {
-            sh '''
-              set -e
-              export KUBECONFIG=/tmp/kubeconfig
-              printf "%s" "$KUBECONFIG_CONTENT" > "$KUBECONFIG"
-              chmod 600 "$KUBECONFIG"
-
-              if [ -n "$KUBE_CONTEXT" ]; then
-                kubectl config use-context "$KUBE_CONTEXT"
-              fi
-
-              # Ensure base manifests are present
-              kubectl apply -f backend/k8s/evaluation-system.yaml
-
-              # Update deployments with freshly built images
-              kubectl set image deployment/api-gateway api-gateway=burrito-api-gateway:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-              kubectl set image deployment/users-ms users-ms=burrito-users-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-              kubectl set image deployment/forms-ms forms-ms=burrito-forms-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-              kubectl set image deployment/evaluations-ms evaluations-ms=burrito-evaluations-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-
-              kubectl rollout status deployment/api-gateway -n "$K8S_NAMESPACE"
-              kubectl rollout status deployment/users-ms -n "$K8S_NAMESPACE"
-              kubectl rollout status deployment/forms-ms -n "$K8S_NAMESPACE"
-              kubectl rollout status deployment/evaluations-ms -n "$K8S_NAMESPACE"
-            '''
+            dir('backend') {
+              def services = ['api-gateway', 'users-ms', 'forms-ms', 'evaluations-ms']
+              
+              services.each { svc ->
+                echo "Building ${svc}..."
+                
+                // Using BuildKit cache imports/exports for maximum efficiency
+                sh """
+                  nerdctl build \\
+                    --namespace k8s.io \\
+                    --build-arg SERVICE_NAME=${svc} \\
+                    --output type=image,name=burrito-${svc}:${env.BUILD_NUMBER},push=false \\
+                    --export-cache type=inline \\
+                    .
+                """
+                // Note: If you have a registry, add --push=true and change the name to registry/image
+              }
+            }
           }
+        }
+      }
+    }
+    
+    // ... Deployment stage remains similar ...
+  }
+
+  stage('Deploy to Kubernetes') {
+    steps {
+      container('builder') {
+        withCredentials([string(credentialsId: env.KUBECONFIG_CRED, variable: 'KUBECONFIG_CONTENT')]) {
+          sh '''
+            set -e
+            export KUBECONFIG=/tmp/kubeconfig
+            printf "%s" "$KUBECONFIG_CONTENT" > "$KUBECONFIG"
+            chmod 600 "$KUBECONFIG"
+
+            if [ -n "$KUBE_CONTEXT" ]; then
+              kubectl config use-context "$KUBE_CONTEXT"
+            fi
+
+            # Ensure base manifests are present
+            kubectl apply -f backend/k8s/evaluation-system.yaml
+
+            # Update deployments with freshly built images
+            kubectl set image deployment/api-gateway api-gateway=burrito-api-gateway:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
+            kubectl set image deployment/users-ms users-ms=burrito-users-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
+            kubectl set image deployment/forms-ms forms-ms=burrito-forms-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
+            kubectl set image deployment/evaluations-ms evaluations-ms=burrito-evaluations-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
+
+            kubectl rollout status deployment/api-gateway -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/users-ms -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/forms-ms -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/evaluations-ms -n "$K8S_NAMESPACE"
+          '''
         }
       }
     }
