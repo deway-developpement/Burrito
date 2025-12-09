@@ -20,8 +20,7 @@ pipeline {
 
   environment {
     // Versions to install
-    NERDCTL_VERSION = '2.2.0'
-    BUILDKIT_VERSION = '0.16.0'
+    BUILDKIT_VERSION = '0.26.2'
 
     // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
     BUILDKIT_HOST = 'tcp://buildkit:1234'
@@ -39,13 +38,6 @@ pipeline {
         container('builder') {
           sh '''
             set -e
-            # Install nerdctl (client)
-            if ! command -v nerdctl >/dev/null 2>&1; then
-              echo "Installing nerdctl..."
-              curl -sL "https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/nerdctl-${NERDCTL_VERSION}-linux-amd64.tar.gz" \
-                | tar -xz -C /usr/local/bin nerdctl
-            fi
-
             # Install buildctl (BuildKit client required by nerdctl)
             if ! command -v buildctl >/dev/null 2>&1; then
               echo "Installing buildctl..."
@@ -75,14 +67,16 @@ pipeline {
               echo "Building Service: $svc"
               echo "-------------------------------------------------"
 
-              # nerdctl build talks to the remote BuildKit daemon
-              nerdctl \
+              # Use buildctl directly to talk to the remote BuildKit daemon
+              buildctl \
+                --addr "${BUILDKIT_HOST}" \
                 build \
-                --buildkit-host "${BUILDKIT_HOST}" \
-                --build-arg SERVICE_NAME=${svc} \
-                -t burrito-${svc}:${BUILD_NUMBER} \
-                -t burrito-${svc}:latest \
-                .
+                --frontend dockerfile.v0 \
+                --local context=. \
+                --local dockerfile=. \
+                --opt filename=Dockerfile \
+                --opt "build-arg:SERVICE_NAME=${svc}" \
+                --output "type=image,name=burrito-${svc}:${BUILD_NUMBER},name=burrito-${svc}:latest,push=false"
             done
           '''
         }
