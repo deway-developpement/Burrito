@@ -170,3 +170,98 @@ resource "helm_release" "kube_prometheus_stack" {
 
   depends_on = [kubernetes_manifest.letsencrypt_issuer]
 }
+
+resource "kubernetes_deployment" "buildkitd" {
+  metadata {
+    name      = "buildkitd"
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
+    labels = {
+      app = "buildkitd"
+    }
+  }
+
+  spec {
+    replicas = 1
+
+    selector {
+      match_labels = {
+        app = "buildkitd"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "buildkitd"
+        }
+      }
+
+      spec {
+        container {
+          name  = "buildkitd"
+          image = "moby/buildkit:v0.16.0" # or whatever version you prefer
+
+          # Expose TCP endpoint for remote clients (Jenkins)
+          args = [
+            "--addr", "tcp://0.0.0.0:1234",
+            "--containerd-worker=true",
+            "--containerd-worker-addr=/run/k3s/containerd/containerd.sock",
+            "--oci-worker=false",
+          ]
+
+          port {
+            container_port = 1234
+            name           = "buildkit"
+          }
+
+          # Needs elevated privileges to talk to host containerd
+          security_context {
+            privileged = true
+          }
+
+          # Mount k3s/containerd socket
+          volume_mount {
+            name       = "containerd-sock"
+            mount_path = "/run/k3s/containerd/containerd.sock"
+            read_only  = true
+          }
+        }
+
+        volume {
+          name = "containerd-sock"
+
+          host_path {
+            # Path of containerd socket on your k3s node
+            path = "/run/k3s/containerd/containerd.sock"
+            type = "Socket"
+          }
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "buildkitd" {
+  metadata {
+    name      = "buildkit"
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
+    labels = {
+      app = "buildkitd"
+    }
+  }
+
+  spec {
+    selector = {
+      app = "buildkitd"
+    }
+
+    port {
+      name        = "buildkit"
+      port        = 1234
+      target_port = 1234
+      protocol    = "TCP"
+    }
+
+    type = "ClusterIP"
+  }
+}

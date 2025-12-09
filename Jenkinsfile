@@ -1,27 +1,15 @@
 pipeline {
   agent {
     kubernetes {
-      // We define 2 containers: one for the client (nerdctl), one for the daemon (buildkitd)
       yaml """
         apiVersion: v1
         kind: Pod
         spec:
           containers:
           - name: builder
-            # We use a base image that has standard tools (curl, tar)
             image: node:18-bullseye
             tty: true
             command: ["cat"]
-            securityContext:
-              privileged: true # REQUIRED to access the host socket
-            volumeMounts:
-              # Mount the Host's containerd socket so we can write images directly to K8s
-              - name: containerd-sock
-                mountPath: /run/k3s/containerd/containerd.sock
-          volumes:
-            - name: containerd-sock
-              hostPath:
-                path: /run/k3s/containerd/containerd.sock
         """
     }
   }
@@ -31,11 +19,11 @@ pipeline {
   }
 
   environment {
-    // The path INSIDE the container where we mounted the socket
-    HOST_CONTAINERD_SOCK = '/run/k3s/containerd/containerd.sock'
     // Versions to install
     NERDCTL_VERSION = '2.2.0'
-    BUILDKIT_VERSION = '0.13.2'
+
+    // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
+    BUILDKIT_HOST = 'tcp://buildkit:1234'
   }
 
   stages {
@@ -50,16 +38,11 @@ pipeline {
         container('builder') {
           sh '''
             set -e
-            # 1. Install nerdctl (Client)
+            # Install nerdctl (client)
             if ! command -v nerdctl >/dev/null 2>&1; then
               echo "Installing nerdctl..."
-              curl -sL "https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/nerdctl-${NERDCTL_VERSION}-linux-amd64.tar.gz" | tar -xz -C /usr/local/bin nerdctl
-            fi
-
-            # 2. Install buildkitd (Builder Daemon)
-            if ! command -v buildkitd >/dev/null 2>&1; then
-              echo "Installing buildkit..."
-              curl -sL "https://github.com/moby/buildkit/releases/download/v${BUILDKIT_VERSION}/buildkit-v${BUILDKIT_VERSION}.linux-amd64.tar.gz" | tar -xz -C /usr/local/bin
+              curl -sL "https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/nerdctl-${NERDCTL_VERSION}-linux-amd64.tar.gz" \
+                | tar -xz -C /usr/local/bin nerdctl
             fi
           '''
         }
@@ -71,31 +54,11 @@ pipeline {
         container('builder') {
           sh '''
             set -e
-            
-            # --- START BUILDKIT DAEMON ---
-            # We start buildkitd inside the pod, but tell it to use the HOST's containerd as its worker.
-            # This is the magic trick that puts images directly into K8s.
-            
-            mkdir -p /run/buildkit
-            rm -f /run/buildkit/buildkitd.sock
 
-            echo "Starting buildkitd connected to host containerd..."
-            buildkitd \
-              --addr unix:///run/buildkit/buildkitd.sock \
-              --containerd-worker=true \
-              --containerd-worker-addr "${HOST_CONTAINERD_SOCK}" \
-              --oci-worker=false \
-              > /tmp/buildkitd.log 2>&1 &
-            
-            PID=$!
-            
-            # Wait for it to allow connections
-            timeout 30s bash -c 'until buildctl --addr unix:///run/buildkit/buildkitd.sock debug workers >/dev/null 2>&1; do sleep 1; done'
-            echo "Buildkit is ready and connected to Host!"
+            echo "Using BuildKit at: ${BUILDKIT_HOST}"
 
-            # --- BUILD LOOP ---
             cd backend
-            
+
             # Define your services list here
             SERVICES="api-gateway users-ms forms-ms evaluations-ms"
 
@@ -103,32 +66,21 @@ pipeline {
               echo "-------------------------------------------------"
               echo "Building Service: $svc"
               echo "-------------------------------------------------"
-              
-              # nerdctl build acts exactly like docker build
-              # We point it to our local buildkitd socket
-              
+
+              # nerdctl build talks to the remote BuildKit daemon
               nerdctl \
-                --address "${HOST_CONTAINERD_SOCK}" \
-                --buildkit-host "unix:///run/buildkit/buildkitd.sock" \
-                --namespace k8s.io \
+                --buildkit-host "${BUILDKIT_HOST}" \
                 build \
                 --build-arg SERVICE_NAME=${svc} \
                 -t burrito-${svc}:${BUILD_NUMBER} \
                 -t burrito-${svc}:latest \
                 .
             done
-
-            # Verify images are actually in the host runtime
-            echo "Verifying images in k8s.io namespace:"
-            nerdctl --address "${HOST_CONTAINERD_SOCK}" --namespace k8s.io images | grep burrito
-
-            # Cleanup daemon
-            kill $PID
           '''
         }
       }
     }
-    
+
     stage('Deploy to Kubernetes') {
       steps {
         container('builder') {
