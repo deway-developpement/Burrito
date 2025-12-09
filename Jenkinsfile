@@ -6,6 +6,9 @@ pipeline {
         apiVersion: v1
         kind: Pod
         spec:
+          volumes:
+          - name: buildkit-socket
+            emptyDir: {}
           containers:
           - name: builder
             # An image that already has nerdctl installed
@@ -14,18 +17,22 @@ pipeline {
             tty: true
             env:
               - name: BUILDKIT_HOST
-                value: "tcp://localhost:1234" # Connect to the sidecar
+                value: "unix:///run/buildkit/buildkitd.sock"
+            volumeMounts:
+            - name: buildkit-socket
+              mountPath: /run/buildkit
           
           - name: buildkitd
             # Official BuildKit image
             image: moby/buildkit:latest
             args: 
               - --addr 
-              - tcp://0.0.0.0:1234
+              - unix:///run/buildkit/buildkitd.sock
             securityContext:
               privileged: true # BuildKit still needs this to create nested containers (overlayfs)
-            ports:
-              - containerPort: 1234
+            volumeMounts:
+            - name: buildkit-socket
+              mountPath: /run/buildkit
         """
     }
   }
@@ -48,7 +55,11 @@ pipeline {
             // No need to install nerdctl or buildkitd manually!
             
             // 1. Wait for buildkitd sidecar to be ready
-            sh 'while ! nerdctl info > /dev/null 2>&1; do sleep 1; echo "Waiting for buildkitd..."; done'
+            sh '''
+              echo "Waiting for buildkit socket..."
+              timeout 60s bash -c 'until [ -S /run/buildkit/buildkitd.sock ]; do sleep 1; done'
+              nerdctl info
+            '''
 
             dir('backend') {
               def services = ['api-gateway', 'users-ms', 'forms-ms', 'evaluations-ms']
