@@ -34,8 +34,8 @@ pipeline {
     // The path INSIDE the container where we mounted the socket
     HOST_CONTAINERD_SOCK = '/run/k3s/containerd/containerd.sock'
     // Versions to install
-    NERDCTL_VERSION = 'latest'
-    BUILDKIT_VERSION = 'latest'
+    NERDCTL_VERSION = '2.2.0'
+    BUILDKIT_VERSION = '0.13.2'
   }
 
   stages {
