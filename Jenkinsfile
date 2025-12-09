@@ -21,6 +21,7 @@ pipeline {
   environment {
     // Versions to install
     NERDCTL_VERSION = '2.2.0'
+    BUILDKIT_VERSION = '0.16.0'
 
     // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
     BUILDKIT_HOST = 'tcp://buildkit:1234'
@@ -43,6 +44,13 @@ pipeline {
               echo "Installing nerdctl..."
               curl -sL "https://github.com/containerd/nerdctl/releases/download/v${NERDCTL_VERSION}/nerdctl-${NERDCTL_VERSION}-linux-amd64.tar.gz" \
                 | tar -xz -C /usr/local/bin nerdctl
+            fi
+
+            # Install buildctl (BuildKit client required by nerdctl)
+            if ! command -v buildctl >/dev/null 2>&1; then
+              echo "Installing buildctl..."
+              curl -sL "https://github.com/moby/buildkit/releases/download/v${BUILDKIT_VERSION}/buildkit-v${BUILDKIT_VERSION}.linux-amd64.tar.gz" \
+                | tar -xz -C /usr/local
             fi
           '''
         }
