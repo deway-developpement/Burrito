@@ -382,6 +382,45 @@ resource "kubernetes_namespace" "evaluation_system" {
   }
 }
 
+resource "kubernetes_ingress_v1" "api_gateway" {
+  metadata {
+    name      = "api-gateway"
+    namespace = kubernetes_namespace.evaluation_system.metadata[0].name
+    annotations = {
+      "cert-manager.io/cluster-issuer" = "letsencrypt"
+    }
+  }
+
+  spec {
+    ingress_class_name = "traefik"
+
+    rule {
+      host = var.api_gateway_domain
+
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+
+          backend {
+            service {
+              name = "api-gateway" # Service name in evaluation-system
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+
+    tls {
+      hosts       = [var.api_gateway_domain]
+      secret_name = "api-gateway-tls"
+    }
+  }
+}
+
 resource "kubernetes_role" "jenkins_deployer" {
   metadata {
     name      = "jenkins-deployer"

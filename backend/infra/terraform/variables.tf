@@ -88,3 +88,9 @@ variable "registry_domain" {
   description = "Public hostname for the container registry ingress"
   default     = "registry.burrito.deway.fr"
 }
+
+variable "api_gateway_domain" {
+  type        = string
+  description = "Public hostname for the API Gateway ingress"
+  default     = "api.burrito.deway.fr"
+}
