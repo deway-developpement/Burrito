@@ -15,6 +15,8 @@ jobs:
           JENKINS_USER: ${{ secrets.JENKINS_USER }}
           JENKINS_API_TOKEN: ${{ secrets.JENKINS_API_TOKEN }}
           JENKINS_JOB: ${{ secrets.JENKINS_JOB }}
+          # Optional: URL query string for parameterized builds, e.g. "BRANCH=main&ENV=prod"
+          JENKINS_PARAMS: ${{ secrets.JENKINS_PARAMS }}
         run: |
           set -euo pipefail
 
@@ -27,10 +29,29 @@ jobs:
             "${JENKINS_URL}/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)" || true)
 
           echo "Triggering Jenkins job ${JENKINS_JOB}..."
-          TRIGGER_HEADERS=$(curl -isSf -X POST --user "${JENKINS_USER}:${JENKINS_API_TOKEN}" \
+          BUILD_ENDPOINT="build"
+          BUILD_URL_TRIGGER="${JENKINS_URL}/job/${JENKINS_JOB}/${BUILD_ENDPOINT}"
+          if [ -n "${JENKINS_PARAMS:-}" ]; then
+            BUILD_ENDPOINT="buildWithParameters"
+            BUILD_URL_TRIGGER="${JENKINS_URL}/job/${JENKINS_JOB}/${BUILD_ENDPOINT}?${JENKINS_PARAMS}"
+          fi
+
+          TRIGGER_RESPONSE=$(mktemp)
+          TRIGGER_HEADERS=$(curl -isS -X POST --user "${JENKINS_USER}:${JENKINS_API_TOKEN}" \
             ${CRUMB_HEADER:+-H "$CRUMB_HEADER"} \
-            -o /dev/null -D - \
-            "${JENKINS_URL}/job/${JENKINS_JOB}/build")
+            -o /dev/null -D - -w "\n%{http_code}" \
+            "${BUILD_URL_TRIGGER}" | tee "${TRIGGER_RESPONSE}")
+
+          STATUS_CODE=$(tail -n1 "${TRIGGER_RESPONSE}")
+          TRIGGER_HEADERS=$(printf "%s" "${TRIGGER_HEADERS}" | sed '$d') # drop status code line from headers
+
+          if [ "${STATUS_CODE}" != "201" ] && [ "${STATUS_CODE}" != "302" ]; then
+            echo "Failed to trigger Jenkins job. HTTP status: ${STATUS_CODE}"
+            echo "Headers:"
+            echo "${TRIGGER_HEADERS}"
+            echo "URL called: ${BUILD_URL_TRIGGER}"
+            exit 1
+          fi
 
           QUEUE_URL=$(printf "%s" "${TRIGGER_HEADERS}" | awk '/[Ll]ocation:/{print $2}' | tr -d '\r')
 
