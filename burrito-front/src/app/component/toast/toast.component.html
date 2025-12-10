@@ -1,0 +1,15 @@
+@if (toastService.isVisible()) {
+  <div class="toast-container" [class]="toastService.type()">
+    <div class="content">
+      @if (toastService.type() === 'success') {
+        <span class="icon">✅</span>
+      } @else {
+        <span class="icon">⚠️</span>
+      }
+      
+      <span class="message">{{ toastService.message() }}</span>
+    </div>
+    
+    <button class="close-btn" (click)="toastService.close()">×</button>
+  </div>
+}
