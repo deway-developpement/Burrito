@@ -25,7 +25,7 @@ pipeline {
 
     // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
     BUILDKIT_HOST = 'tcp://buildkit:1234'
-    REGISTRY_HOST = 'https://registry.burrito.deway.fr'
+    REGISTRY_HOST = 'registry.burrito.deway.fr'
   }
 
   stages {
