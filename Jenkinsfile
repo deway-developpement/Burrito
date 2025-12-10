@@ -87,7 +87,7 @@ pipeline {
     stage('Deploy to Kubernetes') {
       steps {
         container('builder') {
-          withCredentials([string(credentialsId: env.KUBECONFIG_CRED, variable: 'KUBECONFIG_CONTENT')]) {
+          withCredentials([string(credentialsId: 'kubeconfig-burrito', variable: 'KUBECONFIG_CONTENT')]) {
             sh '''
               set -e
               export KUBECONFIG=/tmp/kubeconfig
