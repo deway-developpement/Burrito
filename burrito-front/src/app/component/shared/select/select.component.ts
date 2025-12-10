@@ -10,7 +10,7 @@ export interface SelectOption {
 @Component({
   selector: 'app-select',
   standalone: true,
-  imports: [NgClass, NgForOf, FormsModule],
+  imports: [NgClass, FormsModule],
   templateUrl: './select.component.html',
   styleUrls: ['./select.component.scss'],
 })
@@ -29,6 +29,9 @@ export class SelectComponent {
 
   /** options to display */
   @Input() options: SelectOption[] = [];
+
+  /** required flag */
+  @Input() required = false;
 
   /** current selected value */
   @Input() value: string | number | null = null;

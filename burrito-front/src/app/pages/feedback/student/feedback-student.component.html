@@ -1,0 +1,266 @@
+<app-background-div class="feedback">
+  <main class="feedback__main">
+    <section class="feedback__hero">
+      <div class="feedback__heading">
+        <p class="feedback__eyebrow">Feedback</p>
+        <h1 class="feedback__title">Share feedback on your teacher</h1>
+        <p class="feedback__lead">
+          Help other students choose the right class and help teachers improve through constructive reviews.
+        </p>
+        <div class="feedback__badges">
+          <span class="pill pill--accent">Takes 2 minutes</span>
+          <span class="pill">Anonymous by default</span>
+          <span class="pill pill--soft">Be specific, be kind</span>
+        </div>
+      </div>
+
+      <div class="feedback__card feedback__card--side">
+        <div class="feedback__card-top">
+          <span class="pill pill--ghost">Overall feeling</span>
+          <app-star-rating [(rating)]="overallRating"></app-star-rating>
+          @if (submitAttempted && overallRating <= 0) {
+            <p class="field-error">Select an overall rating.</p>
+          }
+          <!-- @if (overallRating) {
+              <p class="feedback__rating-hint">{{ overallRating }}/5 selected</p>
+          } -->
+        </div>
+
+        <h4 class="feedback__side-title">Tips for impactful feedback</h4>
+        <ul class="feedback__tips">
+          <li>Mention the course, year, or class group.</li>
+          <li>Balance strengths with clear suggestions to improve.</li>
+          <li>No personal info, insults, or doxxing.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="feedback__card">
+      <form class="feedback-form" (ngSubmit)="onSubmit()">
+        <div class="feedback-form__section feedback-form__section--grid">
+          <div class="section-header">
+            <h2>About the class</h2>
+            <p>Context keeps feedback fair and useful.</p>
+          </div>
+
+          <div class="feedback-form__fields">
+            <label class="form-field">
+              <span class="form-label">Teacher name</span>
+              <app-input
+                variant="primary"
+                placeholder="e.g. Ms. Ramirez"
+                name="teacherName"
+                [fullWidth]="true"
+                [required]="true"
+                [(model)]="teacherName"
+              ></app-input>
+              @if (submitAttempted && !teacherName.trim()) {
+                <span class="field-error">Teacher name is required.</span>
+              }
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">Subject</span>
+              <app-input
+                variant="primary"
+                placeholder="e.g. Algebra II"
+                name="subject"
+                [fullWidth]="true"
+                [required]="true"
+                [(model)]="subject"
+              ></app-input>
+              @if (submitAttempted && !subject.trim()) {
+                <span class="field-error">Subject is required.</span>
+              }
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">Level</span>
+              <app-select
+                [options]="levelOptions"
+                placeholder="Select level"
+                [fullWidth]="true"
+                [required]="true"
+                [(value)]="courseLevel"
+              ></app-select>
+              @if (submitAttempted && !courseLevel) {
+                <span class="field-error">Please choose a level.</span>
+              }
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">Class or group</span>
+              <app-input
+                variant="outline"
+                placeholder="e.g. 2B, Freshman seminar"
+                name="classGroup"
+                [fullWidth]="true"
+                [required]="true"
+                [(model)]="classGroup"
+              ></app-input>
+              @if (submitAttempted && !classGroup.trim()) {
+                <span class="field-error">Class or group is required.</span>
+              }
+            </label>
+          </div>
+        </div>
+
+        <div class="feedback-form__section">
+          <div class="section-header">
+            <h3>Detailed ratings</h3>
+            <p>Focus on what matters most in class.</p>
+          </div>
+
+          <div class="rating-grid">
+            <div class="metric">
+              <div class="metric__label">Clarity of explanations</div>
+              <p class="metric__hint">Pace, examples, and how questions are handled.</p>
+              <app-select
+                [options]="ratingOptions"
+                placeholder="Rate clarity"
+                [fullWidth]="true"
+                [required]="true"
+                [(value)]="clarityRating"
+              ></app-select>
+              @if (submitAttempted && !clarityRating) {
+                <span class="field-error">Please rate clarity.</span>
+              }
+            </div>
+
+            <div class="metric">
+              <div class="metric__label">Course organization</div>
+              <p class="metric__hint">Structure, materials, and fairness of assessments.</p>
+              <app-select
+                [options]="ratingOptions"
+                placeholder="Rate organization"
+                [fullWidth]="true"
+                [required]="true"
+                [(value)]="organizationRating"
+              ></app-select>
+              @if (submitAttempted && !organizationRating) {
+                <span class="field-error">Please rate organization.</span>
+              }
+            </div>
+
+            <div class="metric">
+              <div class="metric__label">Support and attitude</div>
+              <p class="metric__hint">Availability, respect, and inclusion.</p>
+              <app-select
+                [options]="ratingOptions"
+                placeholder="Rate support"
+                [fullWidth]="true"
+                [required]="true"
+                [(value)]="supportRating"
+              ></app-select>
+              @if (submitAttempted && !supportRating) {
+                <span class="field-error">Please rate support.</span>
+              }
+            </div>
+
+            <div class="metric">
+              <div class="metric__label">Workload</div>
+              <p class="metric__hint">How heavy is the expected work.</p>
+              <app-select
+                [options]="workloadOptions"
+                placeholder="Workload"
+                [fullWidth]="true"
+                [required]="true"
+                [(value)]="workload"
+              ></app-select>
+              @if (submitAttempted && !workload) {
+                <span class="field-error">Please select workload.</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="feedback-form__section">
+          <div class="section-header">
+            <h3>Comments</h3>
+            <p>Short, concrete notes are the most helpful.</p>
+          </div>
+
+          <div class="textarea-grid">
+            <label class="form-field">
+              <span class="form-label">What worked well?</span>
+              <textarea
+                class="form-textarea"
+                name="positives"
+                rows="3"
+                placeholder="e.g. Clear slides, weekly recaps, flexible office hours"
+                required
+                [(ngModel)]="positives"
+              ></textarea>
+              @if (submitAttempted && !positives.trim()) {
+                <span class="field-error">Add at least one positive.</span>
+              }
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">What could improve?</span>
+              <textarea
+                class="form-textarea"
+                name="improvements"
+                rows="3"
+                placeholder="e.g. More examples before exercises, clearer grading rubrics"
+                required
+                [(ngModel)]="improvements"
+              ></textarea>
+              @if (submitAttempted && !improvements.trim()) {
+                <span class="field-error">Add something to improve.</span>
+              }
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">Advice for future students</span>
+              <textarea
+                class="form-textarea"
+                name="advice"
+                rows="2"
+                placeholder="e.g. Join study groups early, read chapters before labs"
+                required
+                [(ngModel)]="advice"
+              ></textarea>
+              @if (submitAttempted && !advice.trim()) {
+                <span class="field-error">Share an advice.</span>
+              }
+            </label>
+          </div>
+        </div>
+
+        <div class="feedback-form__section feedback-form__section--footer">
+          <label class="consent">
+            <input
+              type="checkbox"
+              name="respectRules"
+              [(ngModel)]="respectRules"
+              required
+            />
+            <div>
+              <span class="form-label">Keep it respectful</span>
+              <p class="consent__hint">No insults, no private information, stay constructive.</p>
+            </div>
+          </label>
+          @if (submitAttempted && !respectRules) {
+            <p class="field-error">Please confirm you agree to the rules.</p>
+          }
+
+            <div class="feedback-form__actions">
+              <div class="hint">
+                You can adjust your answers before submitting.
+              </div>
+              @if (submitAttempted && formInvalid) {
+                <p class="feedback-form__error">Please fill in all required fields before submitting.</p>
+              }
+              <app-button
+                type="submit"
+                variant="primary"
+              >
+                Submit feedback
+              </app-button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+</app-background-div>

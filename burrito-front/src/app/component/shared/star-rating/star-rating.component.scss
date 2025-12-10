@@ -1,0 +1,28 @@
+@use 'burrito-theme' as theme;
+.star-rating {
+  display: inline-flex;
+  gap: 0.4rem;
+  user-select: none;
+  //padding-left: 0.3rem 0.6rem;
+  padding: 0.0rem 0.6rem 0.3rem;
+  border-radius: 999px;
+  background: rgba(theme.$orange, 0.12);
+  color: theme.$orange;
+
+}
+
+.star {
+  font-size: 2rem;
+  cursor: pointer;
+  transition: transform 0.1s ease, filter 0.1s ease;
+  color: theme.$white;
+
+  &.star-filled {
+    color: theme.$orange;
+    filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
+  }
+
+  &:hover {
+    transform: scale(1.1);
+  }
+}
