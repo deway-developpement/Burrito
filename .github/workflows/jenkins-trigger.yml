@@ -28,13 +28,25 @@ jobs:
           CRUMB_HEADER=$(curl -sSf --user "${JENKINS_USER}:${JENKINS_API_TOKEN}" \
             "${JENKINS_URL}/crumbIssuer/api/xml?xpath=concat(//crumbRequestField,\":\",//crumb)" || true)
 
+          if [ -n "${CRUMB_HEADER}" ]; then
+            echo "Crumb retrieved from Jenkins."
+          else
+            echo "No crumb header returned; proceeding without crumb."
+          fi
+
           echo "Triggering Jenkins job ${JENKINS_JOB}..."
-          BUILD_ENDPOINT="build"
-          BUILD_URL_TRIGGER="${JENKINS_URL}/job/${JENKINS_JOB}/${BUILD_ENDPOINT}"
+          BUILD_ENDPOINT="buildWithParameters"
+          PARAMS="K8S_NAMESPACE=evaluation-system"
+          JOB_PATH="/job/${JENKINS_JOB}/${BUILD_ENDPOINT}"
+          BUILD_URL_TRIGGER="${JENKINS_URL}${JOB_PATH}?${PARAMS}"
           if [ -n "${JENKINS_PARAMS:-}" ]; then
             BUILD_ENDPOINT="buildWithParameters"
-            BUILD_URL_TRIGGER="${JENKINS_URL}/job/${JENKINS_JOB}/${BUILD_ENDPOINT}?${JENKINS_PARAMS}"
+            JOB_PATH="/job/${JENKINS_JOB}/${BUILD_ENDPOINT}"
+            BUILD_URL_TRIGGER="${JENKINS_URL}${JOB_PATH}?${JENKINS_PARAMS}"
           fi
+
+          echo "Trigger URL path: ${JOB_PATH}"
+          echo "Using endpoint: ${BUILD_ENDPOINT}"
 
           TRIGGER_RESPONSE=$(mktemp)
           TRIGGER_HEADERS=$(curl -isS -X POST --user "${JENKINS_USER}:${JENKINS_API_TOKEN}" \
