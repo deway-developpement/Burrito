@@ -95,33 +95,29 @@ pipeline {
 
     stage('Deploy to Kubernetes') {
       steps {
-        stage('Deploy to Kubernetes') {
-          steps {
-            container('builder') {
-              sh '''
-                set -e
+        container('builder') {
+          sh '''
+            set -e
 
-                # Use in-cluster config (service account)
-                kubectl apply -f backend/k8s/evaluation-system.yaml
+            # Use in-cluster config (service account)
+            kubectl apply -f backend/k8s/evaluation-system.yaml
 
-                kubectl set image deployment/api-gateway \
-                  api-gateway=${REGISTRY_HOST}/burrito-api-gateway:${BUILD_NUMBER} \
-                  -n "$K8S_NAMESPACE"
+            kubectl set image deployment/api-gateway \
+              api-gateway=${REGISTRY_HOST}/burrito-api-gateway:${BUILD_NUMBER} \
+              -n "$K8S_NAMESPACE"
 
-                kubectl set image deployment/users-ms \
-                  users-ms=${REGISTRY_HOST}/burrito-users-ms:${BUILD_NUMBER} \
-                  -n "$K8S_NAMESPACE"
+            kubectl set image deployment/users-ms \
+              users-ms=${REGISTRY_HOST}/burrito-users-ms:${BUILD_NUMBER} \
+              -n "$K8S_NAMESPACE"
 
-                kubectl set image deployment/forms-ms \
-                  forms-ms=${REGISTRY_HOST}/burrito-forms-ms:${BUILD_NUMBER} \
-                  -n "$K8S_NAMESPACE"
+            kubectl set image deployment/forms-ms \
+              forms-ms=${REGISTRY_HOST}/burrito-forms-ms:${BUILD_NUMBER} \
+              -n "$K8S_NAMESPACE"
 
-                kubectl set image deployment/evaluations-ms \
-                  evaluations-ms=${REGISTRY_HOST}/burrito-evaluations-ms:${BUILD_NUMBER} \
-                  -n "$K8S_NAMESPACE"
-              '''
-            }
-          }
+            kubectl set image deployment/evaluations-ms \
+              evaluations-ms=${REGISTRY_HOST}/burrito-evaluations-ms:${BUILD_NUMBER} \
+              -n "$K8S_NAMESPACE"
+          '''
         }
       }
     }
