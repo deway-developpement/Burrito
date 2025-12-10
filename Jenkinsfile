@@ -24,6 +24,7 @@ pipeline {
 
     // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
     BUILDKIT_HOST = 'tcp://buildkit:1234'
+    REGISTRY_HOST = 'registry.burrito.deway.fr'
   }
 
   stages {
@@ -76,7 +77,7 @@ pipeline {
                 --local dockerfile=. \
                 --opt filename=Dockerfile \
                 --opt "build-arg:SERVICE_NAME=${svc}" \
-                --output "type=image,name=burrito-${svc}:${BUILD_NUMBER},name=burrito-${svc}:latest,push=false"
+                --output "type=image,name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},name=${REGISTRY_HOST}/burrito-${svc}:latest,push=true"
             done
           '''
         }
@@ -101,10 +102,21 @@ pipeline {
               kubectl apply -f backend/k8s/evaluation-system.yaml
 
               # Update deployments with freshly built images
-              kubectl set image deployment/api-gateway api-gateway=burrito-api-gateway:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-              kubectl set image deployment/users-ms users-ms=burrito-users-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-              kubectl set image deployment/forms-ms forms-ms=burrito-forms-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
-              kubectl set image deployment/evaluations-ms evaluations-ms=burrito-evaluations-ms:${BUILD_NUMBER} -n "$K8S_NAMESPACE"
+              kubectl set image deployment/api-gateway \
+                api-gateway=${REGISTRY_HOST}/burrito-api-gateway:${BUILD_NUMBER} \
+                -n "$K8S_NAMESPACE"
+
+              kubectl set image deployment/users-ms \
+                users-ms=${REGISTRY_HOST}/burrito-users-ms:${BUILD_NUMBER} \
+                -n "$K8S_NAMESPACE"
+
+              kubectl set image deployment/forms-ms \
+                forms-ms=${REGISTRY_HOST}/burrito-forms-ms:${BUILD_NUMBER} \
+                -n "$K8S_NAMESPACE"
+
+              kubectl set image deployment/evaluations-ms \
+                evaluations-ms=${REGISTRY_HOST}/burrito-evaluations-ms:${BUILD_NUMBER} \
+                -n "$K8S_NAMESPACE"
 
               kubectl rollout status deployment/api-gateway -n "$K8S_NAMESPACE"
               kubectl rollout status deployment/users-ms -n "$K8S_NAMESPACE"

@@ -82,3 +82,9 @@ variable "k8s_namespace" {
   description = "Kubernetes namespace for Burrito workloads"
   default     = "evaluation-system"
 }
+
+variable "registry_domain" {
+  type        = string
+  description = "Public hostname for the container registry ingress"
+  default     = "registry.burrito.deway.fr"
+}

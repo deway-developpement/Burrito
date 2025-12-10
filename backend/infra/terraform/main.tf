@@ -204,9 +204,8 @@ resource "kubernetes_deployment" "buildkitd" {
           # Expose TCP endpoint for remote clients (Jenkins)
           args = [
             "--addr", "tcp://0.0.0.0:1234",
-            "--containerd-worker=true",
-            "--containerd-worker-addr=/run/k3s/containerd/containerd.sock",
-            "--oci-worker=false",
+            "--oci-worker=true",
+            "--containerd-worker=false",
           ]
 
           port {
@@ -214,27 +213,18 @@ resource "kubernetes_deployment" "buildkitd" {
             name           = "buildkit"
           }
 
-          # Needs elevated privileges to talk to host containerd
-          security_context {
-            privileged = true
-          }
-
-          # Mount k3s/containerd socket
+          # Simple cache directory inside the pod
           volume_mount {
-            name       = "containerd-sock"
-            mount_path = "/run/k3s/containerd/containerd.sock"
-            read_only  = true
+            name       = "buildkit-cache"
+            mount_path = "/var/lib/buildkit"
+            read_only  = false
           }
         }
 
         volume {
-          name = "containerd-sock"
+          name = "buildkit-cache"
 
-          host_path {
-            # Path of containerd socket on your k3s node
-            path = "/run/k3s/containerd/containerd.sock"
-            type = "Socket"
-          }
+          empty_dir {}
         }
       }
     }
@@ -263,5 +253,121 @@ resource "kubernetes_service" "buildkitd" {
     }
 
     type = "ClusterIP"
+  }
+}
+
+resource "kubernetes_deployment" "registry" {
+  metadata {
+    name      = "registry"
+    namespace = kubernetes_namespace.app.metadata[0].name
+    labels = {
+      app = "registry"
+    }
+  }
+
+  spec {
+    replicas = 1
+
+    selector {
+      match_labels = {
+        app = "registry"
+      }
+    }
+
+    template {
+      metadata {
+        labels = {
+          app = "registry"
+        }
+      }
+
+      spec {
+        container {
+          name  = "registry"
+          image = "registry:2"
+
+          port {
+            container_port = 5000
+            name           = "registry"
+          }
+
+          volume_mount {
+            name       = "registry-storage"
+            mount_path = "/var/lib/registry"
+          }
+        }
+
+        volume {
+          name = "registry-storage"
+
+          empty_dir {}
+        }
+      }
+    }
+  }
+}
+
+resource "kubernetes_service" "registry" {
+  metadata {
+    name      = "registry"
+    namespace = kubernetes_namespace.app.metadata[0].name
+    labels = {
+      app = "registry"
+    }
+  }
+
+  spec {
+    selector = {
+      app = "registry"
+    }
+
+    port {
+      name        = "registry"
+      port        = 5000
+      target_port = 5000
+      protocol    = "TCP"
+    }
+
+    type = "ClusterIP"
+  }
+}
+
+resource "kubernetes_ingress_v1" "registry" {
+  metadata {
+    name      = "registry"
+    namespace = kubernetes_namespace.app.metadata[0].name
+    annotations = {
+      "cert-manager.io/cluster-issuer" = "letsencrypt"
+    }
+  }
+
+  spec {
+    ingress_class_name = "traefik"
+
+    rule {
+      host = var.registry_domain
+
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+
+          backend {
+            service {
+              name = kubernetes_service.registry.metadata[0].name
+
+              port {
+                number = 5000
+              }
+            }
+          }
+        }
+      }
+    }
+
+    tls {
+      hosts       = [var.registry_domain]
+      secret_name = "registry-tls"
+    }
   }
 }
