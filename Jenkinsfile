@@ -128,5 +128,18 @@ pipeline {
         }
       }
     }
+
+    stage('Deploy Monitoring') {
+      steps {
+        container('builder') {
+          sh '''
+            set -e
+
+            # Deploy monitoring components (namespace and helm release are managed by Terraform)
+            kubectl apply -k backend/k8s/monitoring
+          '''
+        }
+      }
+    }
   }
 }
