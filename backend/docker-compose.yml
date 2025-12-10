@@ -45,6 +45,8 @@ services:
       - REDIS_PORT=${REDIS_PORT:-6379}
       - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
       - MONGODB_PORT=${MONGODB_PORT:-27017}
+    volumes:
+      - ./.env:/app/.env:ro
 
   users-ms:
     build:
@@ -58,6 +60,8 @@ services:
       - REDIS_PORT=${REDIS_PORT:-6379}
       - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
       - MONGODB_PORT=${MONGODB_PORT:-27017}
+    volumes:
+      - ./.env:/app/.env:ro
 
   forms-ms:
     build: 
@@ -71,6 +75,8 @@ services:
       - REDIS_PORT=${REDIS_PORT:-6379}
       - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
       - MONGODB_PORT=${MONGODB_PORT:-27017}
+    volumes:
+      - ./.env:/app/.env:ro
 
   evaluations-ms:
     build:
@@ -84,6 +90,8 @@ services:
       - REDIS_PORT=${REDIS_PORT:-6379}
       - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
       - MONGODB_PORT=${MONGODB_PORT:-27017}
+    volumes:
+      - ./.env:/app/.env:ro
 
   # analytics-ms:
   #   build: ./apps/analytics-ms

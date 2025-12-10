@@ -199,7 +199,7 @@ resource "kubernetes_deployment" "buildkitd" {
       spec {
         container {
           name  = "buildkitd"
-          image = "moby/buildkit:v0.16.0" # or whatever version you prefer
+          image = "moby/buildkit:latest" # or whatever version you prefer
 
           # Expose TCP endpoint for remote clients (Jenkins)
           args = [
@@ -211,6 +211,10 @@ resource "kubernetes_deployment" "buildkitd" {
           port {
             container_port = 1234
             name           = "buildkit"
+          }
+
+          security_context {
+            privileged = true
           }
 
           # Simple cache directory inside the pod
