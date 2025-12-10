@@ -375,3 +375,162 @@ resource "kubernetes_ingress_v1" "registry" {
     }
   }
 }
+
+resource "kubernetes_namespace" "evaluation_system" {
+  metadata {
+    name = "evaluation-system"
+  }
+}
+
+resource "kubernetes_role" "jenkins_deployer" {
+  metadata {
+    name      = "jenkins-deployer"
+    namespace = kubernetes_namespace.evaluation_system.metadata[0].name
+  }
+
+  rule {
+    api_groups = [""]
+    resources = [
+      "services",
+      "configmaps",
+      "secrets",
+      "pods",
+      "pods/log",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = ["apps"]
+    resources = [
+      "deployments",
+      "replicasets",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = ["autoscaling"]
+    resources = [
+      "horizontalpodautoscalers",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = ["networking.k8s.io"]
+    resources = [
+      "ingresses",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = [""]
+    resources = [
+      "services",
+      "configmaps",
+      "secrets",
+      "pods",
+      "pods/log",
+      "persistentvolumeclaims",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+}
+
+resource "kubernetes_role_binding" "jenkins_deployer_binding" {
+  metadata {
+    name      = "jenkins-deployer-binding"
+    namespace = kubernetes_namespace.evaluation_system.metadata[0].name
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = kubernetes_role.jenkins_deployer.metadata[0].name
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "default" # SA name in the jenkins namespace
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
+  }
+}
+
+resource "kubernetes_cluster_role" "jenkins_namespace_reader" {
+  metadata {
+    name = "jenkins-namespace-reader"
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["namespaces"]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "patch",
+      "update",
+      "create",
+    ]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "jenkins_namespace_reader_binding" {
+  metadata {
+    name = "jenkins-namespace-reader-binding"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.jenkins_namespace_reader.metadata[0].name
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "default" # same SA as in the error: jenkins:default
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
+  }
+}

@@ -25,7 +25,7 @@ pipeline {
 
     // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
     BUILDKIT_HOST = 'tcp://buildkit:1234'
-    REGISTRY_HOST = 'registry.burrito.deway.fr'
+    REGISTRY_HOST = 'registry.app.svc.cluster.local:5000'
   }
 
   stages {
@@ -86,7 +86,7 @@ pipeline {
                 --local dockerfile=. \
                 --opt filename=Dockerfile \
                 --opt "build-arg:SERVICE_NAME=${svc}" \
-                --output "type=image,name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},name=${REGISTRY_HOST}/burrito-${svc}:latest,push=true"
+                --output "type=image,name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},name=${REGISTRY_HOST}/burrito-${svc}:latest,push=true,registry.insecure=true"
             done
           '''
         }
