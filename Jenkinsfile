@@ -21,6 +21,7 @@ pipeline {
   environment {
     // Versions to install
     BUILDKIT_VERSION = '0.26.2'
+    KUBECTL_VERSION  = 'v1.34.1'
 
     // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
     BUILDKIT_HOST = 'tcp://buildkit:1234'
@@ -44,6 +45,14 @@ pipeline {
               echo "Installing buildctl..."
               curl -sL "https://github.com/moby/buildkit/releases/download/v${BUILDKIT_VERSION}/buildkit-v${BUILDKIT_VERSION}.linux-amd64.tar.gz" \
                 | tar -xz -C /usr/local
+            fi
+
+            # Install kubectl
+            if ! command -v kubectl >/dev/null 2>&1; then
+              echo "Installing kubectl..."
+              curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+              install -m 0755 kubectl /usr/local/bin/kubectl
+              rm kubectl
             fi
           '''
         }
