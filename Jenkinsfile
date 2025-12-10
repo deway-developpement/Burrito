@@ -25,7 +25,7 @@ pipeline {
 
     // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
     BUILDKIT_HOST = 'tcp://buildkit:1234'
-    REGISTRY_HOST = 'registry.app.svc.cluster.local:5000'
+    REGISTRY_HOST = 'https://registry.burrito.deway.fr'
   }
 
   stages {
@@ -86,7 +86,7 @@ pipeline {
                 --local dockerfile=. \
                 --opt filename=Dockerfile \
                 --opt "build-arg:SERVICE_NAME=${svc}" \
-                --output "type=image,name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},name=${REGISTRY_HOST}/burrito-${svc}:latest,push=true,registry.insecure=true"
+                --output "type=image,name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},name=${REGISTRY_HOST}/burrito-${svc}:latest,push=true"
             done
           '''
         }
@@ -117,6 +117,13 @@ pipeline {
             kubectl set image deployment/evaluations-ms \
               evaluations-ms=${REGISTRY_HOST}/burrito-evaluations-ms:${BUILD_NUMBER} \
               -n "$K8S_NAMESPACE"
+
+            echo "Deployment updated successfully."
+
+            kubectl rollout status deployment/api-gateway -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/users-ms -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/forms-ms -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/evaluations-ms -n "$K8S_NAMESPACE"
           '''
         }
       }

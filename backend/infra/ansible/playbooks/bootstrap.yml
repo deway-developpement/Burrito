@@ -62,3 +62,14 @@
         path: "{{ kubeconfig_local_path }}"
         regexp: "^\\s*server:.*"
         line: "    server: {{ k3s_api_endpoint }}"
+
+    - name: Clear etc/hosts entry for burrito.deway.fr
+      lineinfile:
+        path: /etc/hosts
+        regexp: "^.*burrito.deway.fr.*$"
+        state: absent
+    
+    - name: Add etc/hosts entry for burrito.deway.fr
+      lineinfile:
+        path: /etc/hosts
+        line: "127.0.0.1 burrito.deway.fr grafana.burrito.deway.fr registry.burrito.deway.fr jenkins.burrito.deway.fr api.burrito.deway.fr"
