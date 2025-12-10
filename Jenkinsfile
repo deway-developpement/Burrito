@@ -86,7 +86,7 @@ pipeline {
                 --local dockerfile=. \
                 --opt filename=Dockerfile \
                 --opt "build-arg:SERVICE_NAME=${svc}" \
-                --output "type=image,name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-${svc}:latest,push=true"
+                --output type=image,"name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-${svc}:latest",push=true
             done
           '''
         }
