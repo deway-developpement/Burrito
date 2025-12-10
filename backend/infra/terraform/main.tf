@@ -1,7 +1,7 @@
 locals {
   jenkins_namespace    = "jenkins"
   monitoring_namespace = "monitoring"
-  app_namespace        = "app"
+  app_namespace        = "evaluation-system"
   traefik_cluster_ip   = data.kubernetes_service.traefik.spec[0].cluster_ip
 }
 
@@ -24,9 +24,53 @@ resource "kubernetes_namespace" "monitoring" {
   }
 }
 
-resource "kubernetes_namespace" "app" {
+# Allow Jenkins (default SA in jenkins namespace) to deploy/patch monitoring stack
+resource "kubernetes_cluster_role" "jenkins_monitoring_deployer" {
   metadata {
-    name = local.app_namespace
+    name = "jenkins-monitoring-deployer"
+  }
+
+  rule {
+    api_groups = ["monitoring.coreos.com"]
+    resources  = ["servicemonitors", "podmonitors"]
+    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["configmaps", "services", "serviceaccounts", "pods", "secrets", "nodes", "nodes/proxy"]
+    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  }
+
+  rule {
+    api_groups = ["apps"]
+    resources  = ["deployments", "daemonsets", "statefulsets"]
+    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  }
+
+  # Needed for promtail ClusterRole/ClusterRoleBinding in monitoring kustomize
+  rule {
+    api_groups = ["rbac.authorization.k8s.io"]
+    resources  = ["clusterroles", "clusterrolebindings", "roles", "rolebindings"]
+    verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
+  }
+}
+
+resource "kubernetes_cluster_role_binding" "jenkins_monitoring_deployer" {
+  metadata {
+    name = "jenkins-monitoring-deployer"
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "ClusterRole"
+    name      = kubernetes_cluster_role.jenkins_monitoring_deployer.metadata[0].name
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "default"
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
   }
 }
 
@@ -263,7 +307,7 @@ resource "kubernetes_service" "buildkitd" {
 resource "kubernetes_deployment" "registry" {
   metadata {
     name      = "registry"
-    namespace = kubernetes_namespace.app.metadata[0].name
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
     labels = {
       app = "registry"
     }
@@ -314,7 +358,7 @@ resource "kubernetes_deployment" "registry" {
 resource "kubernetes_service" "registry" {
   metadata {
     name      = "registry"
-    namespace = kubernetes_namespace.app.metadata[0].name
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
     labels = {
       app = "registry"
     }
@@ -339,7 +383,7 @@ resource "kubernetes_service" "registry" {
 resource "kubernetes_ingress_v1" "registry" {
   metadata {
     name      = "registry"
-    namespace = kubernetes_namespace.app.metadata[0].name
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
     annotations = {
       "cert-manager.io/cluster-issuer" = "letsencrypt"
     }
@@ -378,7 +422,7 @@ resource "kubernetes_ingress_v1" "registry" {
 
 resource "kubernetes_namespace" "evaluation_system" {
   metadata {
-    name = "evaluation-system"
+    name = local.app_namespace
   }
 }
 
