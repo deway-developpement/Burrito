@@ -92,10 +92,19 @@ services:
       - MONGODB_PORT=${MONGODB_PORT:-27017}
     volumes:
       - ./.env:/app/.env:ro
-
-  # analytics-ms:
-  #   build: ./apps/analytics-ms
-  #   depends_on: [mongo, redis]
+  intelligence-ms:
+    build:
+      context: ./apps/intelligence-ms
+      dockerfile: Dockerfile
+    depends_on: [mongo, redis]
+    environment:
+      - MONGODB_MODE=docker
+      - REDIS_HOST=${REDIS_CONTAINER_NAME:-burrito-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
+      - MONGODB_PORT=${MONGODB_PORT:-27017}
+    volumes:
+      - ./.env:/app/.env:ro
 
   # notifications-ms:
   #   build: ./apps/notifications-ms
