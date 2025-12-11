@@ -5,18 +5,36 @@
   </div>
 
   <div class="home__actions">
-    <app-button
-      variant="outline"
-      [routerLink]="'/sign-in'"
-    >
-      Sign in
-    </app-button>
+    
+    @if (userService.currentUser(); as user) {
+      
+      <span class="home__welcome">
+        Welcome, <strong>{{ user.fullName }}</strong>
+      </span>
 
-    <app-button
-      variant="primary"
-      [routerLink]="'/register'"
-    >
-      Register
-    </app-button>
+      <app-button 
+        variant="outline" 
+        (click)="logout()"
+      >
+        Logout
+      </app-button>
+
+    } @else {
+
+      <app-button
+        variant="outline"
+        [routerLink]="'/sign-in'"
+      >
+        Sign in
+      </app-button>
+
+      <app-button
+        variant="primary"
+        [routerLink]="'/register'"
+      >
+        Register
+      </app-button>
+    }
+
   </div>
 </header>
