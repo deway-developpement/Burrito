@@ -36,3 +36,10 @@
   background: rgba(theme.$orange, 0.12);
   color: theme.$orange;
 }
+
+.home__welcome {
+  font-size: 0.9rem;
+  color: theme.$text-dark; // or whatever your text color variable is
+  margin-right: 0.5rem;
+  
+}

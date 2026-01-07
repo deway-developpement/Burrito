@@ -1,0 +1,57 @@
+syntax = "proto3";
+
+package analytics;
+
+service AnalyticsService {
+  rpc AnalyzeQuestion(AnalysisRequest) returns (AnalysisResponse);
+  rpc GetSentimentStats(EmptyRequest) returns (SentimentStatsResponse);
+  rpc GetFrequentIdeas(EmptyRequest) returns (FrequentIdeasResponse);
+}
+
+message AnalysisRequest {
+  string question_id = 1;
+  string question_text = 2;
+  repeated string answer_text = 3;
+}
+
+message AnswerAnalysis {
+  int32 index = 1;
+  string answer_text = 2;
+  float sentiment_score = 3;
+  string sentiment_label = 4;
+  repeated string extracted_ideas = 5;
+}
+
+message AnalysisResponse {
+  string question_id = 1;
+  repeated AnswerAnalysis answers = 2;
+  float aggregate_sentiment_score = 3;
+  string aggregate_sentiment_label = 4;
+  repeated string aggregated_extracted_ideas = 5;
+  bool success = 6;
+  string error_message = 7;
+}
+
+message EmptyRequest {}
+
+message SentimentStats {
+  string sentiment = 1;
+  int32 count = 2;
+  float percentage = 3;
+}
+
+message SentimentStatsResponse {
+  repeated SentimentStats stats = 1;
+  int32 total_analyzed = 2;
+}
+
+message IdeaFrequency {
+  string idea = 1;
+  int32 frequency = 2;
+  float percentage = 3;
+}
+
+message FrequentIdeasResponse {
+  repeated IdeaFrequency ideas = 1;
+  int32 total_ideas = 2;
+}

@@ -1,4 +1,6 @@
 name: Trigger Jenkins Build
+permissions:
+  contents: none
 
 on:
   push:

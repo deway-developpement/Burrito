@@ -1,0 +1,67 @@
+.toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  min-width: 300px;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  animation: slideIn 0.3s ease-out;
+  z-index: 1000; // Ensure it's above everything
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+
+  // Themes
+  &.success {
+    background-color: #2ecc71; // Green
+    border-left: 6px solid #27ae60;
+  }
+
+  &.error {
+    background-color: #e74c3c; // Red
+    border-left: 6px solid #c0392b;
+  }
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  .icon {
+    font-size: 1.2rem;
+  }
+
+  .message {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+}
+
+.close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+  margin-left: 10px;
+  
+  &:hover {
+    color: white;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
