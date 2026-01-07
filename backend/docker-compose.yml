@@ -32,8 +32,8 @@ services:
     depends_on:
       - users-ms
       - forms-ms
-      # - evaluations-ms
-      # - analytics-ms
+      - evaluations-ms
+      - analytics-ms
       # - notifications-ms
       - mongo
       - redis
@@ -92,6 +92,28 @@ services:
       - MONGODB_PORT=${MONGODB_PORT:-27017}
     volumes:
       - ./.env:/app/.env:ro
+
+  analytics-ms:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: analytics-ms
+    depends_on: [mongo, redis, forms-ms, evaluations-ms]
+    environment:
+      - MONGODB_MODE=docker
+      - REDIS_HOST=${REDIS_CONTAINER_NAME:-burrito-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
+      - MONGODB_PORT=${MONGODB_PORT:-27017}
+      - ANALYTICS_SNAPSHOT_TTL_SECONDS=${ANALYTICS_SNAPSHOT_TTL_SECONDS:-3600}
+      - ANALYTICS_TIME_BUCKET=${ANALYTICS_TIME_BUCKET:-day}
+      - ANALYTICS_ENABLE_INTELLIGENCE=${ANALYTICS_ENABLE_INTELLIGENCE:-false}
+      - ANALYTICS_INTELLIGENCE_TIMEOUT_MS=${ANALYTICS_INTELLIGENCE_TIMEOUT_MS:-5000}
+      - INTELLIGENCE_GRPC_HOST=${INTELLIGENCE_GRPC_HOST:-intelligence-ms}
+      - INTELLIGENCE_GRPC_PORT=${INTELLIGENCE_GRPC_PORT:-50051}
+    volumes:
+      - ./.env:/app/.env:ro
+
   intelligence-ms:
     build:
       context: ./apps/intelligence-ms
@@ -112,4 +134,3 @@ services:
 
 volumes:
   mongo-data:
-
