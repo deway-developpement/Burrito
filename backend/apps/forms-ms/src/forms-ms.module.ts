@@ -7,7 +7,11 @@ import { FormsMsController } from './forms-ms.controller';
 import { FormsMsService } from './forms-ms.service';
 import { FormModule } from './form/form.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
-import { MetricsController, PrometheusService, RedisLoggerInterceptor } from '@app/common';
+import {
+  MetricsController,
+  PrometheusService,
+  RedisLoggerInterceptor,
+} from '@app/common';
 import { LoggerModule } from 'nestjs-pino';
 
 @Module({
