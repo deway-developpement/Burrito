@@ -14,11 +14,14 @@ import {
 import type { AuthCredentials } from '../../../../libs/common/src/interfaces/auth.type';
 import { TimestampToDateInterceptor } from '../interceptor/date.interceptor';
 import { UserType } from '../../../../libs/common/src';
+import { UpdateUserInput } from './dto/update-user.input';
 
 @Resolver(() => UserDto)
 @Directive('@auth(role: "ADMIN")')
 @UseInterceptors(TimestampToDateInterceptor)
 export class UserResolver extends CRUDResolver(UserDto, {
+  UpdateDTOClass: UpdateUserInput,
+  CreateDTOClass: CreateUserInput,
   read: { guards: [GqlAuthGuard] },
   create: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
   update: {
