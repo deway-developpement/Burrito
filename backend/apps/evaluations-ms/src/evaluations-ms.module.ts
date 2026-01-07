@@ -1,7 +1,13 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
-import { configuration, validation, MetricsController, PrometheusService, RedisLoggerInterceptor } from '@app/common';
+import {
+  configuration,
+  validation,
+  MetricsController,
+  PrometheusService,
+  RedisLoggerInterceptor,
+} from '@app/common';
 import { EvaluationsMsController } from './evaluations-ms.controller';
 import { EvaluationsMsService } from './evaluations-ms.service';
 import { EvaluationModule } from './evaluation/evaluation.module';
