@@ -1,0 +1,75 @@
+<div class="cookie-container">
+  <div class="cookie-card">
+    <header class="cookie-header">
+      <h1>Cookie Policy</h1>
+      <p class="subtitle">Project Burito - Teacher Evaluation System</p>
+      <span class="last-updated">Last updated: January 2026</span>
+    </header>
+
+    <div class="cookie-content">
+      <section>
+        <h2>1. No Tracking, No Banners</h2>
+        <p>
+          You may have noticed that <strong>Burito</strong> does not annoy you with a "Accept Cookies" pop-up. 
+          This is intentional. We believe in a clean, distraction-free educational environment.
+        </p>
+        <div class="highlight-box">
+          <p>
+            <strong>We do not track you.</strong> We do not use third-party analytics (like Google Analytics), 
+            advertising pixels, or marketing trackers. Therefore, we do not require your consent.
+          </p>
+        </div>
+      </section>
+
+      <section>
+        <h2>2. What We Store</h2>
+        <p>
+          To make the application work, we only store strictly necessary technical data on your device 
+          (Local Storage or Session Cookies). This data is essential for:
+        </p>
+        <ul>
+          <li><strong>Authentication:</strong> Keeping you logged in securely while you navigate.</li>
+          <li><strong>Security:</strong> Preventing Cross-Site Request Forgery (CSRF) attacks.</li>
+          <li><strong>Preferences:</strong> Temporarily saving your language choice (e.g., FR/EN).</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>3. Local Storage vs. Cookies</h2>
+        <p>
+          Instead of traditional cookies, Burito primarily uses <strong>Local Storage</strong>. 
+          This is a modern technology that allows us to save your session token directly in your browser.
+        </p>
+        <p>
+          Unlike tracking cookies, this data:
+        </p>
+        <ul>
+          <li>Never leaves your browser to go to third-party servers.</li>
+          <li>Is automatically cleared when you log out.</li>
+          <li>Is strictly invisible to other websites.</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>4. Managing Your Data</h2>
+        <p>
+          Since we do not use persistent tracking cookies, there is nothing to "opt-out" of. 
+          However, you can always clear your browser's Local Storage or cache through your browser settings 
+          if you wish to remove all traces of your session immediately.
+        </p>
+      </section>
+
+      <section>
+        <h2>5. Contact</h2>
+        <p>
+          If you have technical questions about how we handle session storage, please refer to our 
+          <a routerLink="/legal/privacy">Privacy Policy</a> or contact the administrator.
+        </p>
+      </section>
+    </div>
+
+    <footer class="cookie-footer">
+      <button class="btn-back" (click)="goBack()">Back to Home</button>
+    </footer>
+  </div>
+</div>
