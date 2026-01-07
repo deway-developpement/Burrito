@@ -7,6 +7,9 @@ import { TermsOfServiceComponent } from './pages/terms/terms-of-service.componen
 import { LegalMentionsComponent } from './pages/legal/legal-mentions.component';
 import { CookiePolicyComponent } from './pages/cookie/cookie-policy.component';
 import { ContactComponent } from './pages/contact/contact.component';
+import { AdminHomeComponent } from './pages/adminHome/admin-home.component';
+import { ManageTeachersComponent } from './pages/manage/teacher/manage-teachers.component';
+import { ManageStudentsComponent } from './pages/manage/student/manage-students.component';
 
 export const routes: Routes = [
   {
@@ -40,6 +43,19 @@ export const routes: Routes = [
   {
     path: 'contact',
     component: ContactComponent
+  },
+  {
+    path: 'admin',
+    component: AdminHomeComponent
+  },
+  {
+    path: 'admin/manage/teachers',
+    component: ManageTeachersComponent
+  },
+  {
+    path: 'admin/manage/students',
+    component: ManageStudentsComponent
   }
+
 
 ];
