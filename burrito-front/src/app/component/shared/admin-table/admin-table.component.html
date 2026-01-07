@@ -1,0 +1,41 @@
+<section class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th *ngFor="let col of columns" [class.text-center]="col.type === 'badge'" [class.text-right]="col.type === 'actions'">
+          {{ col.label }}
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of data">
+        <td *ngFor="let col of columns" [ngSwitch]="col.type">
+          
+          <div *ngSwitchCase="'user'" class="user-info">
+            <div class="avatar">{{ row[col.key].charAt(0) }}</div>
+            <span class="name">{{ row[col.key] }}</span>
+          </div>
+
+          <span *ngSwitchCase="'status'" class="status-badge" 
+                [ngClass]="row[col.key] === 'Active' ? 'active' : 'inactive'">
+            {{ row[col.key] }}
+          </span>
+
+          <div *ngSwitchCase="'badge'" class="text-center">
+            <span class="badge-pill">{{ row[col.key] }}</span>
+          </div>
+
+          <div *ngSwitchCase="'actions'" class="text-right">
+            <button class="action-btn edit" (click)="edit.emit(row.id)" title="Edit">✏️</button>
+            <button class="action-btn delete" (click)="delete.emit(row.id)" title="Delete">🗑️</button>
+          </div>
+
+          <span *ngSwitchDefault [class.text-muted]="col.key === 'email'">
+            {{ row[col.key] }}
+          </span>
+
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</section>
