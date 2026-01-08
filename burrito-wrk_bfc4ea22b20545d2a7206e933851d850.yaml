@@ -307,7 +307,7 @@ collection:
         meta:
           id: req_260468bbec584213861d0e7e142f2cd5
           created: 1764251990344
-          modified: 1764805563112
+          modified: 1767882314298
           isPrivate: false
           description: ""
           sortKey: -1764251993669
@@ -316,7 +316,7 @@ collection:
           mimeType: application/graphql
           text: '{"query":"query Forms {\n  forms {\n    edges {\n      node
             {\n        createdAt\n        description\n        endDate\n        id\n        isActive\n        questions
-            {\n          id\n          label\n          required\n          type\n        }\n        startDate\n        targetCourseId\n        targetTeacherId\n        title\n        updatedAt\n      }\n    }\n    pageInfo
+            {\n          id\n          label\n          required\n          type\n        }\n        startDate\n        targetCourseId\n        targetTeacherId\n\t\t\t\tuserRespondedToForm\n        title\n        updatedAt\n      }\n    }\n    pageInfo
             {\n      endCursor\n      hasPreviousPage\n      hasNextPage\n    }\n  }\n}","operationName":"Forms"}'
         headers:
           - name: Content-Type
@@ -495,42 +495,6 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: "{{ _.graphql_url }}"
-        name: answer exist to a form
-        meta:
-          id: req_dc1e2c5541994374b9f8522860d31f06
-          created: 1764805588197
-          modified: 1764806089523
-          isPrivate: false
-          description: ""
-          sortKey: -1758569565465.25
-        method: POST
-        body:
-          mimeType: application/graphql
-          text: "{\"query\":\"query Query($formId: String!)
-            {\\n  userRespondedToForm(formId:
-            $formId)\\n}\",\"operationName\":\"Query\",\"variables\":\"{\\n\\t\\\
-            \"formId\\\": \\\"{% response 'body',
-            'req_260468bbec584213861d0e7e142f2cd5',
-            'b64::JC5kYXRhLmZvcm1zLmVkZ2VzLjAubm9kZS5pZA==::46b', 'always', 60
-            %}\\\"\\n}\"}"
-        headers:
-          - name: Content-Type
-            value: application/json
-        authentication:
-          type: bearer
-          disabled: false
-          token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
-            'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
-          prefix: Bearer
-        settings:
-          renderRequestBody: true
-          encodeUrl: true
-          followRedirects: global
-          cookies:
-            send: true
-            store: true
-          rebuildPath: true
   - name: Analytics
     meta:
       id: fld_ee4a08fab3bb4a3abb2ee6b1cb072dd9
@@ -615,11 +579,11 @@ environments:
   meta:
     id: env_9d96ae23a64e4648a209e386a2286863
     created: 1683818182775
-    modified: 1764756876312
+    modified: 1767873748800
     isPrivate: false
   data:
-    protocole: http
-    domain: burrito.local
+    protocole: https
+    domain: api.burrito.deway.fr
     path: ""
     protocole_local: http
     domain_local: localhost:3000
