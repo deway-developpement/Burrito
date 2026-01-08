@@ -40,12 +40,11 @@ Indexes:
 Membership document:
 - _id
 - groupId (string/ObjectId as string)
-- memberType ("teacher" | "student")
 - memberId (string/ObjectId as string)
 
 Indexes:
-- unique: groupId + memberType + memberId
-- lookup: memberType + memberId
+- unique: groupId + memberId
+- lookup: memberId
 - lookup: groupId
 
 ## GraphQL Composition Strategy
@@ -54,12 +53,12 @@ Use explicit field resolvers in the GraphQL gateway/BFF.
 
 ### Resolver patterns
 User.groups:
-- membershipSvc.listByMember(user.id, memberType)
+- membershipSvc.listByMember(user.id)
 - groupSvc.batchGet(groupIds)
 
 Group.members:
 - membershipSvc.listByGroup(group.id)
-- userSvc.batchGet(teacherIds, studentIds)
+- userSvc.batchGet(memberIds)
 
 ### Performance
 - Use DataLoader in the gateway to batch and cache service calls
@@ -132,12 +131,11 @@ GraphQL types (gateway):
 - `Group` (DTO)
 - `CreateGroupInput`
 - `UpdateGroupInput`
-- `MemberType` enum (or reuse `UserType` and exclude ADMIN)
 - Optional inputs: `AddUserToGroupInput`, `RemoveUserFromGroupInput`
 
 Mutation examples (gateway):
-- `addUserToGroup(groupId, memberId, memberType): Group | Boolean`
-- `removeUserFromGroup(groupId, memberId, memberType): Group | Boolean`
+- `addUserToGroup(input: AddUserToGroupInput): Group`
+- `removeUserFromGroup(input: RemoveUserFromGroupInput): Group`
 
 Group DTO fields:
 - id, name, description?, createdAt, updatedAt
@@ -165,10 +163,8 @@ If queries are extremely hot:
 ## Risks / Notes
 - Avoid duplicating membership data across services as source of truth
 - Keep IDs consistent across services (stringified ObjectId recommended)
-- Use strict validation for memberType
 - Membership is hidden from schema; guard the membership mutations and field resolvers
 - No Group module exists in the current api-gateway; add it before wiring `Group.members`
-- Decide whether `memberType` mirrors `UserType` from `@app/common` or uses its own enum
 
 ## Open Questions
-- Are groups limited to teachers/students, or will member types expand?
+- Should membership ever store extra metadata (roles, status, timestamps)?

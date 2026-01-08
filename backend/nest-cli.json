@@ -63,6 +63,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/analytics-ms/tsconfig.app.json"
       }
+    },
+    "groups-ms": {
+      "type": "application",
+      "root": "apps/groups-ms",
+      "entryFile": "main",
+      "sourceRoot": "apps/groups-ms/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/groups-ms/tsconfig.app.json"
+      }
     }
   }
 }

@@ -1,4 +1,12 @@
-import { Resolver, Mutation, Query, Args, Directive } from '@nestjs/graphql';
+import {
+  Resolver,
+  Mutation,
+  Query,
+  Args,
+  Directive,
+  ResolveField,
+  Parent,
+} from '@nestjs/graphql';
 import { UserService } from './user.service';
 import { CreateUserInput } from './dto/create-user.input';
 import { CRUDResolver } from '@nestjs-query/query-graphql';
@@ -15,6 +23,9 @@ import type { AuthCredentials } from '../../../../libs/common/src/interfaces/aut
 import { TimestampToDateInterceptor } from '../interceptor/date.interceptor';
 import { UserType } from '../../../../libs/common/src';
 import { UpdateUserInput } from './dto/update-user.input';
+import { GroupDto } from '../group/dto/group.dto';
+import { MembershipsByMemberLoader } from '../loaders/memberships-by-member.loader';
+import { GroupByIdLoader } from '../loaders/group-by-id.loader';
 
 @Resolver(() => UserDto)
 @Directive('@auth(role: "ADMIN")')
@@ -31,7 +42,11 @@ export class UserResolver extends CRUDResolver(UserDto, {
   },
   delete: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
 }) {
-  constructor(@Inject(UserService) private readonly userService: UserService) {
+  constructor(
+    @Inject(UserService) private readonly userService: UserService,
+    private readonly membershipsByMemberLoader: MembershipsByMemberLoader,
+    private readonly groupByIdLoader: GroupByIdLoader,
+  ) {
     super(userService);
   }
 
@@ -47,5 +62,22 @@ export class UserResolver extends CRUDResolver(UserDto, {
   @Query(() => UserDto)
   async me(@CurrentUser() user: AuthCredentials): Promise<UserDto | undefined> {
     return this.userService.findById(user.id);
+  }
+
+  @ResolveField(() => [GroupDto])
+  async groups(@Parent() user: UserDto): Promise<GroupDto[]> {
+    const memberships = await this.membershipsByMemberLoader.load(user.id);
+    const groupIds = Array.from(
+      new Set(memberships.map((membership) => membership.groupId)),
+    );
+
+    if (groupIds.length === 0) {
+      return [];
+    }
+
+    const groups = await this.groupByIdLoader.loadMany(groupIds);
+    return groups.filter(
+      (group): group is GroupDto => !(group instanceof Error) && Boolean(group),
+    );
   }
 }
