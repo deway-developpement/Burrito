@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserResolver } from './user.resolver';
 import { ClientsModule, Transport } from '@nestjs/microservices';
@@ -6,6 +6,9 @@ import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { UserDto } from './dto/user.dto';
 import { UpdateUserInput } from './dto/update-user.input';
 import { CreateUserInput } from './dto/create-user.input';
+import { MembershipModule } from '../membership/membership.module';
+import { GroupModule } from '../group/group.module';
+import { UserByIdLoader } from '../loaders/user-by-id.loader';
 
 @Module({
   imports: [
@@ -33,8 +36,10 @@ import { CreateUserInput } from './dto/create-user.input';
         },
       ],
     }),
+    MembershipModule,
+    forwardRef(() => GroupModule),
   ],
-  providers: [UserResolver, UserService],
-  exports: [UserService],
+  providers: [UserResolver, UserService, UserByIdLoader],
+  exports: [UserService, UserByIdLoader],
 })
 export class UserModule {}

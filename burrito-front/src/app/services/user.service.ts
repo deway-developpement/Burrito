@@ -7,7 +7,9 @@ import { tap, catchError, of, map } from 'rxjs';
 const GET_ME = gql`
   query ExampleQuery {
     me {
+      id
       fullName
+      userType
     }
   }
 `;
@@ -21,8 +23,12 @@ const CREATE_STUDENT = gql`
 `;
 
 interface UserProfile {
+  id?: string;
   fullName: string;
+  userType: UserType;
 }
+
+type UserType = 'STUDENT' | 'TEACHER' | 'ADMIN';
 
 interface MeResponse {
   me: UserProfile;

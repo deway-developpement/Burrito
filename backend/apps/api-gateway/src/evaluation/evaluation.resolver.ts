@@ -37,16 +37,6 @@ export class EvaluationResolver extends CRUDResolver(EvaluationDto, {
     super(service);
   }
 
-  @Query(() => Boolean)
-  @UseGuards(GqlAuthGuard)
-  async userRespondedToForm(
-    @CurrentUser() user: { id: string },
-    @Args('formId') formId: string,
-    @Args('userId', { type: () => String, nullable: true }) userId: string,
-  ): Promise<boolean> {
-    return this.service.userRespondedToForm(formId, userId || user.id);
-  }
-
   @Mutation(() => EvaluationDto)
   @UseGuards(GqlAuthGuard)
   async submitEvaluation(

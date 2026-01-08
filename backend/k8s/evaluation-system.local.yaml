@@ -461,3 +461,47 @@ spec:
     - name: http
       port: 3000
       targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: groups-ms
+  namespace: evaluation-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: groups-ms
+  template:
+    metadata:
+      labels:
+        app: groups-ms
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: groups-ms
+          image: burrito-groups-ms:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: burrito-config
+            - secretRef:
+                name: burrito-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: groups-ms
+  namespace: evaluation-system
+spec:
+  selector:
+    app: groups-ms
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000

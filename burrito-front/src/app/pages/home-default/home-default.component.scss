@@ -1,0 +1,116 @@
+@use 'burrito-theme' as theme; // si besoin: @use 'src/styles/burrito-theme' as theme;
+
+.home {
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+  }
+
+  &__logo-icon {
+    font-size: 1.4rem;
+  }
+
+  &__logo-text {
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    background: rgba(theme.$orange, 0.12);
+    color: theme.$orange;
+  }
+
+  &__main {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.hero {
+  display: grid;
+  gap: 2rem;
+  align-items: center;
+
+  @media (min-width: 900px) {
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+  }
+
+  &__content {
+    max-width: 540px;
+  }
+
+  &__title {
+    font-size: clamp(2.1rem, 4vw, 3rem);
+    line-height: 1.1;
+    margin-bottom: 1rem;
+  }
+
+  &__subtitle {
+    font-size: 0.98rem;
+    color: theme.$text-muted;
+    margin-bottom: 1.5rem;
+    max-width: 32rem;
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+  }
+
+  &__note {
+    font-size: 0.85rem;
+    color: theme.$text-muted;
+  }
+
+  &__card {
+    background: theme.$white;
+    border-radius: theme.$radius-lg;
+    padding: 1.75rem 1.5rem;
+    box-shadow: theme.$shadow-soft;
+    border: 1px solid rgba(theme.$orange, 0.16);
+    max-width: 380px;
+    justify-self: center;
+
+    @media (min-width: 900px) {
+      justify-self: end;
+    }
+  }
+
+  &__card-title {
+    font-size: 1.1rem;
+    margin-bottom: 0.9rem;
+  }
+
+  &__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      position: relative;
+      padding-left: 1.4rem;
+      font-size: 0.92rem;
+      color: theme.$text-muted;
+      margin-bottom: 0.55rem;
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 0.2rem;
+        top: 0.55rem;
+        transform: translateY(-50%);
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 999px;
+        background: theme.$orange;
+        opacity: 0.9;
+      }
+    }
+  }
+}

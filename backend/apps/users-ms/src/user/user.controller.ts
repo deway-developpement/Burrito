@@ -18,6 +18,11 @@ export class UserController {
     return this.userService.findById(id);
   }
 
+  @MessagePattern({ cmd: 'user.findByIds' })
+  findByIds(ids: string[]) {
+    return this.userService.findByIds(ids);
+  }
+
   @MessagePattern({ cmd: 'user.createOne' })
   createOne(dto: Partial<User>) {
     return this.userService.create({

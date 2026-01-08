@@ -54,6 +54,15 @@ export class UserService {
     );
   }
 
+  async findByIds(ids: string[]): Promise<UserDto[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return this.sendWithTimeout(
+      this.userClient.send<UserDto[]>({ cmd: 'user.findByIds' }, ids),
+    );
+  }
+
   /**
    * Used by nestjs-query for aggregate endpoints (if enabled).
    * Safe to implement even if you don’t expose the GraphQL aggregate queries yet.
