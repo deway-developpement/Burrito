@@ -127,24 +127,25 @@ collection:
         meta:
           id: req_a57e004d7de14aa09881d8d312e66105
           created: 1648578766958
-          modified: 1764770922356
+          modified: 1767795448192
           isPrivate: false
           description: ""
           sortKey: -1648754227983.75
         method: POST
         body:
           mimeType: application/graphql
-          text: '{"query":"mutation CreateUser($createUserInput: CreateUserInput!)
-            {\n  createUser(createUserInput: $createUserInput)
-            {\n    id\n    email\n    fullName\n    updatedAt\n    createdAt\n  }\n}","operationName":"CreateUser","variables":"{\n\t\"createUserInput\":
-            {\n\t\t\"email\": \"axel.loones@free.fr\",\n\t\t\"fullName\":
-            \"Axel\",\n\t\t\"password\": \"Axel\"\n\t}\n}"}'
+          text: '{"query":"mutation CreateUser($createUserInput: CreateOneUserInput!)
+            {\n  createOneUser(input: $createUserInput)
+            {\n    id\n    email\n    fullName\n    updatedAt\n    createdAt\n  }\n}\n","operationName":"CreateUser","variables":"{\n\t\"createUserInput\":
+            {\n\t\t\"user\": {\n\t\t\t\"email\":
+            \"axel.loones@free.fr\",\n\t\t\t\"fullName\":
+            \"Axel\",\n\t\t\t\"password\": \"Axel123!\"\n\t\t}\n\t}\n}"}'
         headers:
           - name: Content-Type
             value: application/json
         authentication:
           type: bearer
-          disabled: true
+          disabled: false
           token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
             'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 58 %}"
           prefix: Bearer
@@ -161,7 +162,7 @@ collection:
         meta:
           id: req_ceec3a2a2e2749e7b1a20598f2907ae7
           created: 1648636428683
-          modified: 1764772156358
+          modified: 1764807355829
           isPrivate: false
           description: ""
           sortKey: -1648754228040
@@ -199,7 +200,7 @@ collection:
         meta:
           id: req_375abdaaffd847c1a5916b39b94e9837
           created: 1764149601631
-          modified: 1764236900663
+          modified: 1767867715672
           isPrivate: false
           description: ""
           sortKey: -1648754228033.75
@@ -207,7 +208,7 @@ collection:
         body:
           mimeType: application/graphql
           text: '{"query":"query Whoami {\n  me
-            {\n    id\n    email\n    fullName\n    createdAt\n    updatedAt\n  }\n}","operationName":"Whoami"}'
+            {\n    id\n    email\n    fullName\n\t\tuserType\n    createdAt\n    updatedAt\n  }\n}","operationName":"Whoami"}'
         headers:
           - name: Content-Type
             value: application/json
@@ -339,7 +340,7 @@ collection:
         meta:
           id: req_1cbd20ed8b5243f195bb0c0f0c49d916
           created: 1764252433839
-          modified: 1764254382907
+          modified: 1767793644567
           isPrivate: false
           description: ""
           sortKey: -1764251993569
@@ -530,12 +531,85 @@ collection:
             send: true
             store: true
           rebuildPath: true
+  - name: Analytics
+    meta:
+      id: fld_ee4a08fab3bb4a3abb2ee6b1cb072dd9
+      created: 1767792694876
+      modified: 1767792694876
+      sortKey: -1767792694876
+      description: ""
+    children:
+      - url: "{{ _.graphql_url }}"
+        name: Analytics Snapshot
+        meta:
+          id: req_0b4641eaf87d4fa8a527854ab0cd22d9
+          created: 1767792694877
+          modified: 1767797105905
+          isPrivate: false
+          description: ""
+          sortKey: -1767792694877
+        method: POST
+        body:
+          mimeType: application/graphql
+          text: "{\"query\":\"query AnalyticsSnapshot($formId: String!, $window:
+            AnalyticsWindowInput, $forceSync: Boolean)
+            {\\n  analyticsSnapshot(formId: $formId, window: $window, forceSync:
+            $forceSync)
+            {\\n    formId\\n    generatedAt\\n    staleAt\\n    totalResponses\
+            \\n    nps
+            {\\n      score\\n      promotersPct\\n      passivesPct\\n      de\
+            tractorsPct\\n      promotersCount\\n      passivesCount\\n      de\
+            tractorsCount\\n    }\\n    questions
+            {\\n      questionId\\n      label\\n      type\\n      answeredCou\
+            nt\\n      rating
+            {\\n        avg\\n        median\\n        min\\n        max\\n        \
+            npsBuckets
+            {\\n          promotersCount\\n          passivesCount\\n          \
+            detractorsCount\\n        }\\n        distribution
+            {\\n          rating\\n          count\\n        }\\n      }\\n      \
+            text
+            {\\n        responseCount\\n        analysisStatus\\n        topIde\
+            as
+            {\\n          idea\\n          count\\n        }\\n        sentiment
+            {\\n          positivePct\\n          neutralPct\\n          negati\
+            vePct\\n        }\\n      }\\n    }\\n    timeSeries
+            {\\n      bucketStart\\n      count\\n    }\\n  }\\n}\\n\",\"operat\
+            ionName\":\"AnalyticsSnapshot\",\"variables\":\"{\\n\\t\\\"formId\\\
+            \": \\\"{% response 'body', 'req_260468bbec584213861d0e7e142f2cd5',
+            'b64::JC5kYXRhLmZvcm1zLmVkZ2VzLjAubm9kZS5pZA==::46b', 'always', 60
+            %}\\\",\\n\\t\\\"window\\\": null,\\n\\t\\\"forceSync\\\":
+            false\\n}\"}"
+        headers:
+          - name: Content-Type
+            value: application/json
+        authentication:
+          type: bearer
+          token: "{% response 'body', 'req_a79b457355dd4c4a9c4126ae2772c3b3',
+            'b64::JC4uYWNjZXNzX3Rva2Vu::46b', 'always', 60 %}"
+          prefix: Bearer
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
 cookieJar:
   name: Default Jar
   meta:
     id: jar_a4d1c79e82144c889f38bb4aa5512c71
     created: 1683818182777
-    modified: 1683818182777
+    modified: 1765364960371
+  cookies:
+    - id: f1200337-5a12-450b-9f7c-64de002b1e62
+      key: JSESSIONID.f2509a70
+      value: node01gmr2h5rjkaq1ghhq9967q7zs5287.node0
+      domain: jenkins.burrito.deway.fr
+      path: /
+      secure: true
+      httpOnly: true
+      hostOnly: true
 environments:
   name: Base Environment
   meta:
@@ -555,39 +629,18 @@ environments:
       islocal else domain }}{{ path_local if islocal else path }}"
     graphql_url: "{{ _.base_url }}/graphQL"
   subEnvironments:
-    - name: dev graphQL global
-      meta:
-        id: env_0bdebf8826084a49b5f9d8bf4b3fa2b9
-        created: 1683818538708
-        modified: 1706030085140
-        isPrivate: false
-        sortKey: 1683818538708
-      data:
-        email: admin@deway.fr
-        password: admin
-      color: "#a75db1"
-    - name: user graphQL global
-      meta:
-        id: env_2377c36fe9064620b6316276e2541539
-        created: 1683818616129
-        modified: 1763992895339
-        isPrivate: false
-        sortKey: 1683818616129
-      data:
-        email: paul.mairesse@free.fr
-        password: Paul72
-    - name: user graphQL local
+    - name: Student graphQL local
       meta:
         id: env_3bef23fe2b3e48a0af07da49ff3923c8
         created: 1683903844578
-        modified: 1763993076343
+        modified: 1767793419729
         isPrivate: false
         sortKey: 1683903844578
       data:
-        email: paul.mairesse@free.fr
-        password: Paul72
+        email: student@burrito.local
+        password: Student123!
         islocal: true
-      color: "#fa0000"
+      color: "#fa00f2"
     - name: no user graphQL
       meta:
         id: env_857fb849c7e345a0a8250782cf43c1a1
@@ -598,6 +651,63 @@ environments:
       data:
         email: ""
         password: ""
+    - name: Teacher graphQL local
+      meta:
+        id: env_31f7921402f946b2bdaee528abc4fd4f
+        created: 1767793288434
+        modified: 1767793348277
+        isPrivate: false
+        sortKey: 1683903862095.5
+      data:
+        email: teacher@burrito.local
+        password: Teacher123!
+        islocal: true
+      color: "#fa0092"
+    - name: Admin graphQL local
+      meta:
+        id: env_619f650056574893a23cbf979dc7636a
+        created: 1767793290074
+        modified: 1767793367590
+        isPrivate: false
+        sortKey: 1683903870854.25
+      data:
+        email: admin@burrito.local
+        password: Admin123!
+        islocal: true
+      color: "#fa0000"
+    - name: Student graphQL global
+      meta:
+        id: env_684ce6d852b64bf384bdf317ac755a63
+        created: 1767797011441
+        modified: 1767797032096
+        isPrivate: false
+        sortKey: 1683903870855.25
+      data:
+        email: student@burrito.local
+        password: Student123!
+      color: "#00fa1d"
+    - name: Teacher graphQL global
+      meta:
+        id: env_effa3e96919e4694ab85f56d24b0e068
+        created: 1767797035943
+        modified: 1767797074157
+        isPrivate: false
+        sortKey: 1683903870856.25
+      data:
+        email: teacher@burrito.local
+        password: Teacher123!
+      color: "#b7fa00"
+    - name: Admin graphQL global
+      meta:
+        id: env_fdc8664dcee049f18d4c8e85b8db423b
+        created: 1767797038031
+        modified: 1767797079213
+        isPrivate: false
+        sortKey: 1683903870857.25
+      data:
+        email: admin@burrito.local
+        password: Admin123!
+      color: "#faf200"
 spec:
   meta:
     id: spc_2fe67c14b015404f8f2dc851acf01167
