@@ -1,15 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core'; // 1. Importe ChangeDetectorRef
 import { CommonModule, DatePipe } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 import { AdminPageHeaderComponent } from '../../component/shared/admin-page-header/admin-page-header.component';
+import { EvaluationService } from '../../services/evaluation.service';
 
-interface Evaluation {
-  id: number;
+interface UiEvaluation {
+  id: string;
   teacherName: string;
   courseName: string;
-  deadline?: Date;     // Only for pending
-  submittedDate?: Date; // Only for completed
+  deadline?: Date;
+  submittedDate?: Date;
   status: 'Pending' | 'Completed';
 }
 
@@ -26,49 +27,38 @@ interface Evaluation {
   templateUrl: './student-home.component.html',
   styleUrls: ['./student-home.component.scss']
 })
-export class StudentHomeComponent {
+export class StudentHomeComponent implements OnInit {
 
-  // 1. Actionable Items
-  pendingEvaluations: Evaluation[] = [
-    { 
-      id: 1, 
-      teacherName: 'Dr. Sarah Connor', 
-      courseName: 'Intro to AI (CS-101)', 
-      deadline: new Date('2023-12-15'), 
-      status: 'Pending' 
-    },
-    { 
-      id: 2, 
-      teacherName: 'Prof. Indiana Jones', 
-      courseName: 'Ancient History (HIS-202)', 
-      deadline: new Date('2023-12-20'), 
-      status: 'Pending' 
-    }
-  ];
+  private evaluationService = inject(EvaluationService);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef); // 2. Injection du détecteur de changement
 
-  // 2. Read-only History
-  completedEvaluations: Evaluation[] = [
-    { 
-      id: 3, 
-      teacherName: 'Dr. Emmett Brown', 
-      courseName: 'Physics 101', 
-      submittedDate: new Date('2023-11-05'), 
-      status: 'Completed' 
-    },
-    { 
-      id: 4, 
-      teacherName: 'Mrs. Ellen Ripley', 
-      courseName: 'Flight Safety', 
-      submittedDate: new Date('2023-10-20'), 
-      status: 'Completed' 
-    }
-  ];
+  pendingEvaluations: UiEvaluation[] = [];
+  completedEvaluations: UiEvaluation[] = [];
 
-  constructor() {}
+  ngOnInit() {
+    this.evaluationService.getActiveForms().subscribe({
+      next: (forms) => {
+        console.log('1. API Retourne :', forms);
 
-  // This would redirect to the actual form
-  startEvaluation(id: number) {
-    console.log(`Navigating to form for evaluation #${id}`);
-    // this.router.navigate(['/student/evaluate', id]);
+        this.pendingEvaluations = forms.map(form => ({
+          id: form.id,
+          courseName: form.title, 
+          teacherName: form.teacherName || 'Enseignant non assigné', // <--- C'est automatique maintenant
+          deadline: form.endDate ? new Date(form.endDate) : undefined,
+          status: 'Pending'
+        }));
+
+        console.log('2. Variable mise à jour :', this.pendingEvaluations);
+
+        // 3. LA CLEF DU PROBLÈME : On dit à Angular "J'ai changé des trucs, mets à jour le HTML !"
+        this.cdr.detectChanges(); 
+      },
+      error: (err) => console.error('Erreur :', err)
+    });
+  }
+
+  startEvaluation(id: string) {
+    this.router.navigate(['/student/evaluate', id]);
   }
 }
