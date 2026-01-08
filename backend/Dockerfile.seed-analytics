@@ -1,0 +1,11 @@
+# syntax=docker/dockerfile:1
+ARG NODE_VERSION=18
+FROM node:${NODE_VERSION}-bullseye-slim
+WORKDIR /app
+
+COPY ./package*.json ./
+RUN npm ci --omit=dev --ignore-scripts --force
+
+COPY ./scripts/seed-analytics.js ./scripts/seed-analytics.js
+
+ENTRYPOINT ["node", "/app/scripts/seed-analytics.js"]

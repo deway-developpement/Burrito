@@ -87,7 +87,7 @@ pipeline {
               --frontend dockerfile.v0 \
               --local context=. \
               --local dockerfile=. \
-              --opt filename=Dockerfile.seed \
+              --opt filename=Dockerfile.seed-analytics \
               --output type=image,\\"name=${REGISTRY_HOST}/burrito-seed-analytics:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-seed-analytics:latest\\",push=true
           '''
         }
