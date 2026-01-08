@@ -4,7 +4,18 @@ import {
   PagingStrategies,
   QueryOptions,
 } from '@nestjs-query/query-graphql';
-import { ObjectType, GraphQLISODateTime, Field, ID } from '@nestjs/graphql';
+import {
+  ObjectType,
+  GraphQLISODateTime,
+  Field,
+  ID,
+  registerEnumType,
+} from '@nestjs/graphql';
+import { UserType } from '@app/common';
+
+registerEnumType(UserType, {
+  name: 'UserType',
+});
 
 @ObjectType('User')
 @QueryOptions({
@@ -19,6 +30,9 @@ export class UserDto {
 
   @FilterableField(() => String, { description: 'User full name' })
   fullName: string;
+
+  @FilterableField(() => UserType, { description: 'User type' })
+  userType: UserType;
 
   @Field(() => GraphQLISODateTime, { description: 'Creation date' })
   createdAt: Date;
