@@ -10,6 +10,7 @@ import { ContactComponent } from './pages/contact/contact.component';
 import { AdminHomeComponent } from './pages/adminHome/admin-home.component';
 import { ManageTeachersComponent } from './pages/manage/teacher/manage-teachers.component';
 import { ManageStudentsComponent } from './pages/manage/student/manage-students.component';
+import { StudentHomeComponent } from './pages/studentHome/student-home.component';
 
 export const routes: Routes = [
   {
@@ -55,6 +56,10 @@ export const routes: Routes = [
   {
     path: 'admin/manage/students',
     component: ManageStudentsComponent
+  },
+  {
+    path: 'student',
+    component: StudentHomeComponent
   }
 
 

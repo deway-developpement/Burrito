@@ -20,7 +20,7 @@ export class User extends Document implements IUser {
   @Prop({ required: true })
   readonly fullName: string;
 
-  @Prop({ type: String, enum: UserType, required: true })
+  @Prop({ type: Number, enum: UserType, required: true })
   readonly userType: UserType;
 
   @Prop({ default: null, nullable: true, type: String })

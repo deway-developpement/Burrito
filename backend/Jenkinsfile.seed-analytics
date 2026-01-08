@@ -1,0 +1,158 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml """
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: builder
+            image: node:18-bullseye
+            tty: true
+            command: ["cat"]
+        """
+    }
+  }
+
+  options {
+    timeout(time: 30, unit: 'MINUTES')
+  }
+
+  parameters {
+    string(name: 'K8S_NAMESPACE', defaultValue: 'evaluation-system', description: 'Kubernetes namespace')
+    string(name: 'KUBE_CONTEXT', defaultValue: '', description: 'Optional kube-context override')
+    string(name: 'SEED_TAG', defaultValue: 'prod-seed', description: 'Seed tag for idempotency')
+    string(name: 'SEED_FORMS', defaultValue: '2', description: 'Number of forms to create')
+    string(name: 'SEED_RESPONSES', defaultValue: '120', description: 'Responses per form')
+    string(name: 'SEED_DAYS', defaultValue: '60', description: 'Spread responses across N days')
+    booleanParam(name: 'RESET_SEED', defaultValue: false, description: 'Delete existing seedTag data before insert')
+    booleanParam(name: 'SEED_USERS', defaultValue: true, description: 'Create admin/teacher/student users')
+    booleanParam(name: 'RESET_USERS', defaultValue: false, description: 'Delete existing seed users before insert')
+    string(name: 'ADMIN_EMAIL', defaultValue: 'admin@burrito.local', description: 'Admin email override')
+    string(name: 'ADMIN_PASSWORD', defaultValue: 'Admin123!', description: 'Admin password override')
+    string(name: 'TEACHER_EMAIL', defaultValue: 'teacher@burrito.local', description: 'Teacher email override')
+    string(name: 'TEACHER_PASSWORD', defaultValue: 'Teacher123!', description: 'Teacher password override')
+    string(name: 'STUDENT_EMAIL', defaultValue: 'student@burrito.local', description: 'Student email override')
+    string(name: 'STUDENT_PASSWORD', defaultValue: 'Student123!', description: 'Student password override')
+  }
+
+  environment {
+    BUILDKIT_VERSION = '0.26.2'
+    KUBECTL_VERSION  = 'v1.34.1'
+
+    BUILDKIT_HOST = 'tcp://buildkit:1234'
+    REGISTRY_HOST = 'registry.burrito.deway.fr'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Install Build Tools') {
+      steps {
+        container('builder') {
+          sh '''
+            set -e
+            if ! command -v buildctl >/dev/null 2>&1; then
+              echo "Installing buildctl..."
+              curl -sL "https://github.com/moby/buildkit/releases/download/v${BUILDKIT_VERSION}/buildkit-v${BUILDKIT_VERSION}.linux-amd64.tar.gz" \
+                | tar -xz -C /usr/local
+            fi
+
+            if ! command -v kubectl >/dev/null 2>&1; then
+              echo "Installing kubectl..."
+              curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+              install -m 0755 kubectl /usr/local/bin/kubectl
+              rm kubectl
+            fi
+          '''
+        }
+      }
+    }
+
+    stage('Build Seed Image') {
+      steps {
+        container('builder') {
+          sh '''
+            set -e
+            echo "Using BuildKit at: ${BUILDKIT_HOST}"
+            cd backend
+
+            buildctl \
+              --addr "${BUILDKIT_HOST}" \
+              build \
+              --frontend dockerfile.v0 \
+              --local context=. \
+              --local dockerfile=. \
+              --opt filename=Dockerfile.seed-analytics \
+              --output type=image,\\"name=${REGISTRY_HOST}/burrito-seed-analytics:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-seed-analytics:latest\\",push=true
+          '''
+        }
+      }
+    }
+
+    stage('Run Seed Job') {
+      steps {
+        container('builder') {
+          sh '''
+            set -e
+            cd backend
+
+            JOB_NAME=seed-analytics
+            IMAGE=${REGISTRY_HOST}/burrito-seed-analytics:${BUILD_NUMBER}
+
+            SEED_ARGS="--seed-tag ${SEED_TAG} --forms ${SEED_FORMS} --responses ${SEED_RESPONSES} --days ${SEED_DAYS}"
+            if [ "${RESET_SEED}" = "true" ]; then
+              SEED_ARGS="$SEED_ARGS --reset"
+            fi
+            if [ "${SEED_USERS}" = "false" ]; then
+              SEED_ARGS="$SEED_ARGS --seed-users false"
+            fi
+            if [ "${RESET_USERS}" = "true" ]; then
+              SEED_ARGS="$SEED_ARGS --reset-users"
+            fi
+
+            if [ -n "${ADMIN_EMAIL}" ]; then
+              SEED_ARGS="$SEED_ARGS --admin-email ${ADMIN_EMAIL}"
+            fi
+            if [ -n "${ADMIN_PASSWORD}" ]; then
+              SEED_ARGS="$SEED_ARGS --admin-password ${ADMIN_PASSWORD}"
+            fi
+            if [ -n "${TEACHER_EMAIL}" ]; then
+              SEED_ARGS="$SEED_ARGS --teacher-email ${TEACHER_EMAIL}"
+            fi
+            if [ -n "${TEACHER_PASSWORD}" ]; then
+              SEED_ARGS="$SEED_ARGS --teacher-password ${TEACHER_PASSWORD}"
+            fi
+            if [ -n "${STUDENT_EMAIL}" ]; then
+              SEED_ARGS="$SEED_ARGS --student-email ${STUDENT_EMAIL}"
+            fi
+            if [ -n "${STUDENT_PASSWORD}" ]; then
+              SEED_ARGS="$SEED_ARGS --student-password ${STUDENT_PASSWORD}"
+            fi
+
+            if [ -n "${KUBE_CONTEXT}" ]; then
+              kubectl config use-context "${KUBE_CONTEXT}"
+            fi
+
+            kubectl delete job ${JOB_NAME} -n "${K8S_NAMESPACE}" --ignore-not-found
+
+            SEED_ARGS_ESCAPED=$(printf '%s' "${SEED_ARGS}" | sed 's/"/\\"/g')
+
+            sed \
+              -e "s|__IMAGE__|${IMAGE}|g" \
+              -e "s|__SEED_ARGS__|${SEED_ARGS_ESCAPED}|g" \
+              k8s/seed-analytics-job.yaml \
+              | kubectl apply -n "${K8S_NAMESPACE}" -f -
+
+            kubectl wait --for=condition=complete job/${JOB_NAME} -n "${K8S_NAMESPACE}" --timeout=15m
+            kubectl logs job/${JOB_NAME} -n "${K8S_NAMESPACE}" --all-containers=true
+          '''
+        }
+      }
+    }
+  }
+}
