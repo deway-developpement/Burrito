@@ -472,6 +472,22 @@ resource "kubernetes_role" "jenkins_deployer" {
   }
 
   rule {
+    api_groups = ["batch"]
+    resources = [
+      "jobs",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
     api_groups = [""]
     resources = [
       "services",
