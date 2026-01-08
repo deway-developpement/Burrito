@@ -1,16 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Router } from '@angular/router'; // Added Router
+import { Router } from '@angular/router';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 import { AdminPageHeaderComponent } from '../../component/shared/admin-page-header/admin-page-header.component';
-
-interface TeacherEvaluation {
-  id: number;
-  courseName: string;
-  submittedDate: Date;
-  rating: number; // 1-5
-  isRead: boolean;
-}
+import { EvaluationService, TeacherEvaluationUI } from '../../services/evaluation.service';
+import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'app-teacher-home',
@@ -24,57 +18,57 @@ interface TeacherEvaluation {
   templateUrl: './teacher-home.component.html',
   styleUrls: ['./teacher-home.component.scss']
 })
-export class TeacherHomeComponent {
+export class TeacherHomeComponent implements OnInit {
 
-  // 1. New / Unread Items
-  unreadEvaluations: TeacherEvaluation[] = [
-    { 
-      id: 101, 
-      courseName: 'Intro to AI (CS-101)', 
-      submittedDate: new Date('2023-12-19'), 
-      rating: 5,
-      isRead: false
-    },
-    { 
-      id: 102, 
-      courseName: 'Intro to AI (CS-101)', 
-      submittedDate: new Date('2023-12-18'), 
-      rating: 4,
-      isRead: false
-    },
-    { 
-      id: 103, 
-      courseName: 'Advanced Algorithms', 
-      submittedDate: new Date('2023-12-18'), 
-      rating: 2,
-      isRead: false
+  private router = inject(Router);
+  private evaluationService = inject(EvaluationService);
+  private userService = inject(UserService);
+  private cdr = inject(ChangeDetectorRef);
+
+  unreadEvaluations: TeacherEvaluationUI[] = [];
+  readEvaluations: TeacherEvaluationUI[] = [];
+
+  ngOnInit() {
+    // 1. Récupérer l'utilisateur courant pour avoir son ID
+    const currentUser = this.userService.currentUser();
+
+    if (currentUser && currentUser.id) {
+      console.log('Fetching evaluations for teacher ID:', currentUser.id);
+      this.loadEvaluations(currentUser.id);
+    } else {
+      console.error('No teacher ID found. Are you logged in?');
     }
-  ];
+  }
 
-  // 2. Archive / Read Items
-  readEvaluations: TeacherEvaluation[] = [
-    { 
-      id: 88, 
-      courseName: 'Intro to AI (CS-101)', 
-      submittedDate: new Date('2023-11-10'), 
-      rating: 5,
-      isRead: true
-    },
-    { 
-      id: 85, 
-      courseName: 'Advanced Algorithms', 
-      submittedDate: new Date('2023-11-05'), 
-      rating: 3,
-      isRead: true
-    }
-  ];
+  loadEvaluations(teacherId: string) {
+    this.evaluationService.getEvaluationsForTeacher(teacherId).subscribe({
+      next: (evals) => {
+        console.log('All evaluations loaded:', evals);
 
-  constructor(private router: Router) {}
+        // 2. On sépare les "lus" des "non lus"
+        // Note : Comme l'API ne gère pas ça, notre service a simulé le booléen isRead
+        this.unreadEvaluations = evals.filter(e => !e.isRead);
+        this.readEvaluations = evals.filter(e => e.isRead);
 
-  viewEvaluation(id: number) {
+        this.cdr.detectChanges(); // Force le rafraîchissement si besoin
+      },
+      error: (err) => console.error('Error loading evaluations:', err)
+    });
+    // this.evaluationService.getAllEvaluationsForDebug().subscribe({
+    //   next: (evals) => {
+    //     console.log('DEBUG: Loaded ALL evaluations:', evals);
+
+    //     this.unreadEvaluations = evals.filter(e => !e.isRead);
+    //     this.readEvaluations = evals.filter(e => e.isRead);
+
+    //     this.cdr.detectChanges();
+    //   },
+    //   error: (err) => console.error('Error loading evaluations:', err)
+    // });
+  }
+
+  viewEvaluation(id: string) {
     console.log(`Viewing evaluation detail #${id}`);
-    // In a real app, clicking this would likely mark it as read 
-    // and navigate to the details page.
     // this.router.navigate(['/teacher/evaluation', id]);
   }
 }
