@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './pages/home/home.component';
 import { SignInComponent } from './pages/sign-in/sign-in.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { PrivacyPolicyComponent } from './pages/privacy/privacy-policy.component';
@@ -7,10 +6,9 @@ import { TermsOfServiceComponent } from './pages/terms/terms-of-service.componen
 import { LegalMentionsComponent } from './pages/legal/legal-mentions.component';
 import { CookiePolicyComponent } from './pages/cookie/cookie-policy.component';
 import { ContactComponent } from './pages/contact/contact.component';
-import { AdminHomeComponent } from './pages/adminHome/admin-home.component';
 import { ManageTeachersComponent } from './pages/manage/teacher/manage-teachers.component';
 import { ManageStudentsComponent } from './pages/manage/student/manage-students.component';
-import { StudentHomeComponent } from './pages/studentHome/student-home.component';
+import { HomeComponent } from './pages/home/home.component';
 
 export const routes: Routes = [
   {
@@ -46,10 +44,6 @@ export const routes: Routes = [
     component: ContactComponent
   },
   {
-    path: 'admin',
-    component: AdminHomeComponent
-  },
-  {
     path: 'admin/manage/teachers',
     component: ManageTeachersComponent
   },
@@ -57,10 +51,4 @@ export const routes: Routes = [
     path: 'admin/manage/students',
     component: ManageStudentsComponent
   },
-  {
-    path: 'student',
-    component: StudentHomeComponent
-  }
-
-
 ];
