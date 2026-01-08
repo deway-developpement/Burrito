@@ -37,4 +37,10 @@ export class FormDto implements IForm {
 
   @Field()
   updatedAt: Date;
+
+  @Field(() => Boolean, {
+    nullable: true,
+    description: 'Whether the current user responded to the form',
+  })
+  userRespondedToForm?: boolean;
 }

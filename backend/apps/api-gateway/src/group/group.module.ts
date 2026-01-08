@@ -1,14 +1,14 @@
 import { Module, forwardRef } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UserResolver } from './user.resolver';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
-import { UserDto } from './dto/user.dto';
-import { UpdateUserInput } from './dto/update-user.input';
-import { CreateUserInput } from './dto/create-user.input';
+import { GroupService } from './group.service';
+import { GroupResolver } from './group.resolver';
+import { GroupDto } from './dto/group.dto';
+import { CreateGroupInput } from './dto/create-group.input';
+import { UpdateGroupInput } from './dto/update-group.input';
 import { MembershipModule } from '../membership/membership.module';
-import { GroupModule } from '../group/group.module';
-import { UserByIdLoader } from '../loaders/user-by-id.loader';
+import { UserModule } from '../user/user.module';
+import { GroupByIdLoader } from '../loaders/group-by-id.loader';
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { UserByIdLoader } from '../loaders/user-by-id.loader';
       imports: [
         ClientsModule.registerAsync([
           {
-            name: 'USER_SERVICE',
+            name: 'GROUPS_SERVICE',
             useFactory: () => ({
               transport: Transport.REDIS,
               options: {
@@ -27,19 +27,19 @@ import { UserByIdLoader } from '../loaders/user-by-id.loader';
           },
         ]),
       ],
-      services: [UserService],
+      services: [GroupService],
       dtos: [
         {
-          DTOClass: UserDto,
-          UpdateDTOClass: UpdateUserInput,
-          CreateDTOClass: CreateUserInput,
+          DTOClass: GroupDto,
+          CreateDTOClass: CreateGroupInput,
+          UpdateDTOClass: UpdateGroupInput,
         },
       ],
     }),
     MembershipModule,
-    forwardRef(() => GroupModule),
+    forwardRef(() => UserModule),
   ],
-  providers: [UserResolver, UserService, UserByIdLoader],
-  exports: [UserService, UserByIdLoader],
+  providers: [GroupResolver, GroupService, GroupByIdLoader],
+  exports: [GroupService, GroupByIdLoader],
 })
-export class UserModule {}
+export class GroupModule {}

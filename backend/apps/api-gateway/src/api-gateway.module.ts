@@ -23,6 +23,7 @@ import { PrometheusService } from '@app/common';
 import { EvaluationModule } from './evaluation/evaluation.module';
 import { LoggerModule } from 'nestjs-pino';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { GroupModule } from './group/group.module';
 
 @Module({
   imports: [
@@ -67,6 +68,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     FormModule,
     EvaluationModule,
     AnalyticsModule,
+    GroupModule,
     AuthModule,
   ],
   controllers: [ApiGatewayController, MetricsController],
