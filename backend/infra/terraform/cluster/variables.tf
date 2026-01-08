@@ -69,6 +69,7 @@ variable "microservice_replicas" {
 variable "burrito_repo_url" {
   type        = string
   description = "Git URL for the Burrito repository (used by the Jenkins pipeline)"
+  default     = "https://github.com/deway-developpement/Burrito.git"
 }
 
 variable "burrito_repo_branch" {

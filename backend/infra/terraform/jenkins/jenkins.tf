@@ -2,8 +2,6 @@ resource "jenkins_credential_secret_text" "kubeconfig" {
   name        = "kubeconfig-burrito"
   description = "Kubeconfig for Burrito cluster"
   secret      = file(pathexpand(var.kubeconfig_path))
-
-  depends_on = [helm_release.jenkins]
 }
 
 resource "jenkins_job" "burrito_backend" {
@@ -17,8 +15,18 @@ resource "jenkins_job" "burrito_backend" {
     k8s_namespace    = var.k8s_namespace
   })
 
-  depends_on = [
-    helm_release.jenkins,
-    jenkins_credential_secret_text.kubeconfig
-  ]
+  depends_on = [jenkins_credential_secret_text.kubeconfig]
+}
+
+resource "jenkins_job" "burrito_seed_analytics" {
+  name = "burrito-seed-analytics"
+
+  template = templatefile("${path.module}/jenkins-pipeline.xml", {
+    repo_url         = var.burrito_repo_url
+    branch           = var.burrito_repo_branch
+    jenkinsfile_path = "backend/Jenkinsfile.seed-analytics"
+    k8s_namespace    = var.k8s_namespace
+  })
+
+  depends_on = [jenkins_credential_secret_text.kubeconfig]
 }

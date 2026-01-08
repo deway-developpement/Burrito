@@ -10,10 +10,6 @@ terraform {
       source  = "hashicorp/helm"
       version = "~> 2.11"
     }
-    jenkins = {
-      source  = "taiidani/jenkins"
-      version = "~> 0.0"
-    }
   }
 }
 
@@ -25,10 +21,4 @@ provider "helm" {
   kubernetes {
     config_path = pathexpand(var.kubeconfig_path)
   }
-}
-
-provider "jenkins" {
-  server_url = "https://${var.jenkins_domain}"
-  username   = var.jenkins_admin_user
-  password   = var.jenkins_admin_password
 }

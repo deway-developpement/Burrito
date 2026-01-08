@@ -1,0 +1,25 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: seed-analytics
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: seed
+          image: __IMAGE__
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - configMapRef:
+                name: burrito-config
+            - secretRef:
+                name: burrito-secrets
+          env:
+            - name: SEED_ARGS
+              value: "__SEED_ARGS__"
+          command: ["/bin/sh", "-c"]
+          args:
+            - "node /app/scripts/seed-analytics.js ${SEED_ARGS}"
