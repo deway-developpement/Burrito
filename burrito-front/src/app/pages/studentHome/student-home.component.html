@@ -1,0 +1,72 @@
+<app-background-div>
+  
+  <app-admin-page-header 
+    title="My Evaluations" 
+    subtitle="Provide feedback on your courses. Your responses are anonymous.">
+  </app-admin-page-header>
+
+  <section class="section-container">
+    <h2 class="section-title">Waiting for your feedback</h2>
+    
+    <div *ngIf="pendingEvaluations.length === 0" class="empty-state">
+      <span class="icon">🎉</span>
+      <p>You're all caught up! No pending evaluations.</p>
+    </div>
+
+    <div class="eval-grid" *ngIf="pendingEvaluations.length > 0">
+      <div class="eval-card" *ngFor="let eval of pendingEvaluations">
+        <div class="card-header">
+          <div class="avatar">{{ eval.teacherName.charAt(0) }}</div>
+          <div class="meta">
+            <h3>{{ eval.courseName }}</h3>
+            <p>{{ eval.teacherName }}</p>
+          </div>
+        </div>
+        
+        <div class="card-body">
+          <div class="deadline-badge">
+            <span class="label">Deadline:</span>
+            <span class="date">{{ eval.deadline | date:'mediumDate' }}</span>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <button class="btn-action" (click)="startEvaluation(eval.id)">
+            Evaluate Now &rarr;
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="section-container history-section">
+    <h2 class="section-title">Submission History</h2>
+    
+    <div class="history-container">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>Course</th>
+            <th>Professor</th>
+            <th>Submitted On</th>
+            <th class="text-right">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let eval of completedEvaluations">
+            <td class="course-col">{{ eval.courseName }}</td>
+            <td class="text-muted">{{ eval.teacherName }}</td>
+            <td class="text-muted">{{ eval.submittedDate | date:'mediumDate' }}</td>
+            <td class="text-right">
+              <span class="status-done">
+                <span class="check">✓</span> Submitted
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</app-background-div>
