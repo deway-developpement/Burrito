@@ -138,6 +138,7 @@ pipeline {
               kubectl config use-context "${KUBE_CONTEXT}"
             fi
 
+            kubectl apply -f k8s/seed-analytics-rbac.yaml
             kubectl delete job ${JOB_NAME} -n "${K8S_NAMESPACE}" --ignore-not-found
 
             SEED_ARGS_ESCAPED=$(printf '%s' "${SEED_ARGS}" | sed 's/"/\\"/g')
