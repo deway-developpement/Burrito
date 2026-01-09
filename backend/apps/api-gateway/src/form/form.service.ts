@@ -48,6 +48,15 @@ export class FormService {
     );
   }
 
+  async findByIds(ids: string[]): Promise<FormDto[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return this.sendWithTimeout(
+      this.formClient.send<FormDto[]>({ cmd: 'form.findByIds' }, ids),
+    );
+  }
+
   async aggregate(
     filter: Filter<FormDto>,
     query: AggregateQuery<FormDto>,
