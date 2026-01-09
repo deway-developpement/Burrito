@@ -29,6 +29,7 @@ export class UserController {
       email: dto.email as string,
       password: dto.password as string,
       fullName: dto.fullName as string,
+      userType: dto.userType as number,
     });
   }
 
