@@ -19,6 +19,11 @@ export class FormController {
     return this.formService.findById(id);
   }
 
+  @MessagePattern({ cmd: 'form.findByIds' })
+  findByIds(ids: string[]) {
+    return this.formService.findByIds(ids);
+  }
+
   @MessagePattern({ cmd: 'form.aggregate' })
   aggregate(data: { filter: any; aggregate: any }) {
     return this.formService.aggregate(data.filter, data.aggregate);

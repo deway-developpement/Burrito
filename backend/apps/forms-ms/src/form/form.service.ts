@@ -13,5 +13,10 @@ export class FormService extends MongooseQueryService<Form> {
     super(formModel);
   }
 
-  // Custom methods if needed (e.g. getActiveFormsForTeacher, etc.)
+  async findByIds(ids: string[]): Promise<Form[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return this.formModel.find({ _id: { $in: ids } }).exec();
+  }
 }

@@ -14,6 +14,7 @@ import { GroupsMsController } from './groups-ms.controller';
 import { GroupsMsService } from './groups-ms.service';
 import { GroupModule } from './group/group.module';
 import { MembershipModule } from './membership/membership.module';
+import { GroupFormModule } from './group-form/group-form.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { MembershipModule } from './membership/membership.module';
     PrometheusModule.register({ defaultMetrics: { enabled: true } }),
     GroupModule,
     MembershipModule,
+    GroupFormModule,
   ],
   controllers: [GroupsMsController, MetricsController],
   providers: [GroupsMsService, PrometheusService, RedisLoggerInterceptor],

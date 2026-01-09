@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { NestjsQueryGraphQLModule } from '@nestjs-query/query-graphql';
 import { FormService } from './form.service';
@@ -7,6 +7,9 @@ import { UpdateFormInput } from './dto/update-form.input';
 import { FormResolver } from './form.resolver';
 import { CreateFormInput } from './dto/create-form.input';
 import { EvaluationModule } from '../evaluation/evaluation.module';
+import { GroupFormModule } from '../group-form/group-form.module';
+import { GroupModule } from '../group/group.module';
+import { FormByIdLoader } from '../loaders/form-by-id.loader';
 
 @Module({
   imports: [
@@ -35,8 +38,10 @@ import { EvaluationModule } from '../evaluation/evaluation.module';
       ],
     }),
     EvaluationModule,
+    GroupFormModule,
+    forwardRef(() => GroupModule),
   ],
-  providers: [FormResolver, FormService],
-  exports: [FormService],
+  providers: [FormResolver, FormService, FormByIdLoader],
+  exports: [FormService, FormByIdLoader],
 })
 export class FormModule {}

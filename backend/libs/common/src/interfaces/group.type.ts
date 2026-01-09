@@ -17,3 +17,11 @@ export interface IMembership {
 
   readonly memberId: string;
 }
+
+export interface IGroupForm {
+  readonly id: string;
+
+  readonly groupId: string;
+
+  readonly formId: string;
+}

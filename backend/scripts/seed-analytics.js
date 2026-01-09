@@ -391,18 +391,24 @@ async function main() {
   const usersCol = db.collection('users');
   const groupsCol = db.collection('groups');
   const membershipsCol = db.collection('memberships');
+  const groupFormsCol = db.collection('groupforms');
 
   if (reset) {
     const formDelete = await formsCol.deleteMany({ seedTag });
     const evalDelete = await evalsCol.deleteMany({ seedTag });
     const groupsToReset = await groupsCol.find({ seedTag }).toArray();
+    let groupFormsDeleted = 0;
     if (groupsToReset.length > 0) {
       const groupIds = groupsToReset.map((group) => group._id.toString());
       await membershipsCol.deleteMany({ groupId: { $in: groupIds } });
+      const groupFormsDelete = await groupFormsCol.deleteMany({
+        groupId: { $in: groupIds },
+      });
+      groupFormsDeleted = groupFormsDelete.deletedCount ?? 0;
       await groupsCol.deleteMany({ seedTag });
     }
     console.log(
-      `Reset seedTag=${seedTag}: removed ${formDelete.deletedCount} forms, ${evalDelete.deletedCount} evaluations and ${groupsToReset.length} groups`,
+      `Reset seedTag=${seedTag}: removed ${formDelete.deletedCount} forms, ${evalDelete.deletedCount} evaluations, ${groupsToReset.length} groups, ${groupFormsDeleted} group forms`,
     );
   }
 
@@ -540,10 +546,15 @@ async function main() {
         groupId: groupId.toString(),
         name: groupDoc.name,
         teacher: teacher.fullName,
+        teacherId: teacher._id.toString(),
         students: studentBuckets[i].length,
       });
     }
   }
+  const groupByTeacherId = new Map(
+    seededGroups.map((group) => [group.teacherId, group.groupId]),
+  );
+  const groupFormDocs = [];
   const seededForms = [];
   const jwtSecret = process.env.JWT_SECRET || 'default-secret';
   const studentIds = seededStudents.map((student) => student._id.toString());
@@ -574,6 +585,25 @@ async function main() {
 
     await formsCol.insertOne(formDoc);
     console.log(`Inserted form ${formDoc.title} (${formId.toString()})`);
+
+    if (seededGroups.length > 0) {
+      const groupIds = new Set();
+      const teacherGroupId = groupByTeacherId.get(template.teacherId);
+      if (teacherGroupId) {
+        groupIds.add(teacherGroupId);
+      }
+      const roundRobinGroupId = seededGroups[i % seededGroups.length].groupId;
+      if (roundRobinGroupId) {
+        groupIds.add(roundRobinGroupId);
+      }
+
+      for (const groupId of groupIds) {
+        groupFormDocs.push({
+          groupId,
+          formId: formId.toString(),
+        });
+      }
+    }
 
     const evaluations = [];
     const shuffledStudents = shuffle(studentIds);
@@ -659,6 +689,10 @@ async function main() {
     });
   }
 
+  if (groupFormDocs.length > 0) {
+    await groupFormsCol.insertMany(groupFormDocs);
+  }
+
   console.log('\nSeed complete. Summary:');
   for (const form of seededForms) {
     console.log(`- ${form.title} (${form.formId}): ${form.responses} responses`);
@@ -685,6 +719,9 @@ async function main() {
   }
   if (seededGroups.length > 0) {
     console.log(`- Seeded Groups: ${seededGroups.length}`);
+  }
+  if (groupFormDocs.length > 0) {
+    console.log(`- Seeded Group Forms: ${groupFormDocs.length}`);
   }
 
   await client.close();

@@ -9,6 +9,8 @@ import { UpdateGroupInput } from './dto/update-group.input';
 import { MembershipModule } from '../membership/membership.module';
 import { UserModule } from '../user/user.module';
 import { GroupByIdLoader } from '../loaders/group-by-id.loader';
+import { GroupFormModule } from '../group-form/group-form.module';
+import { FormModule } from '../form/form.module';
 
 @Module({
   imports: [
@@ -37,7 +39,9 @@ import { GroupByIdLoader } from '../loaders/group-by-id.loader';
       ],
     }),
     MembershipModule,
+    GroupFormModule,
     forwardRef(() => UserModule),
+    forwardRef(() => FormModule),
   ],
   providers: [GroupResolver, GroupService, GroupByIdLoader],
   exports: [GroupService, GroupByIdLoader],
