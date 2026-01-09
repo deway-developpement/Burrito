@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 export interface TableColumn {
   key: string;       // The property name in your data (e.g., 'email')
   label: string;     // The header text (e.g., 'Contact')
-  type: 'text' | 'user' | 'badge' | 'status' | 'actions'; 
+  type: 'text' | 'user' | 'badge' | 'actions'; 
 }
 
 @Component({

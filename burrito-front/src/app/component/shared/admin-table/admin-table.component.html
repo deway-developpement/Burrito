@@ -16,16 +16,11 @@
             <span class="name">{{ row[col.key] }}</span>
           </div>
 
-          <span *ngSwitchCase="'status'" class="status-badge" 
-                [ngClass]="row[col.key] === 'Active' ? 'active' : 'inactive'">
-            {{ row[col.key] }}
-          </span>
-
-          <div *ngSwitchCase="'badge'" class="text-center">
+          <div *ngSwitchCase="'badge'" class="text-left">
             <span class="badge-pill">{{ row[col.key] }}</span>
           </div>
 
-          <div *ngSwitchCase="'actions'" class="text-right">
+          <div *ngSwitchCase="'actions'" class="text-left">
             <button class="action-btn edit" (click)="edit.emit(row.id)" title="Edit">✏️</button>
             <button class="action-btn delete" (click)="delete.emit(row.id)" title="Delete">🗑️</button>
           </div>

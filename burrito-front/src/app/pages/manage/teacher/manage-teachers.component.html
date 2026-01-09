@@ -9,9 +9,15 @@
 
   <app-admin-table 
     [columns]="tableColumns" 
-    [data]="teachers"
+    [data]="(teachers$ | async) || []" 
     (edit)="onEdit($event)"
     (delete)="onDelete($event)">
   </app-admin-table>
 
 </app-background-div>
+
+  <app-edit-user-modal
+    [user]="selectedUser"
+    (close)="closeModal()"
+    (saved)="refreshData()">
+  </app-edit-user-modal>

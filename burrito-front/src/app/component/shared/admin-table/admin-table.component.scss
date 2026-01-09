@@ -6,7 +6,7 @@
   border-radius: theme.$radius-lg;
   box-shadow: theme.$shadow-soft;
   padding: 1rem;
-  overflow-x: auto; // Essential for responsive tables
+  overflow-x: auto;
 }
 
 // Data Table Structure
@@ -16,7 +16,7 @@
   border-spacing: 0;
   
   th {
-    text-align: left;
+    text-align: left; // <--- CHANGED TO CENTER
     padding: 1.5rem 1rem;
     color: theme.$text-muted;
     font-weight: 600;
@@ -24,10 +24,11 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border-bottom: 2px solid theme.$bg-light;
-    white-space: nowrap; // Prevents headers from breaking awkwardly
+    white-space: nowrap;
   }
 
   td {
+    text-align: left; // <--- ADDED CENTER ALIGNMENT
     padding: 1.2rem 1rem;
     color: theme.$text-dark;
     border-bottom: 1px solid theme.$bg-light;
@@ -53,6 +54,7 @@
 .user-info {
   display: flex;
   align-items: center;
+  justify-content: left; 
   gap: 1rem;
 
   .avatar {
@@ -66,7 +68,7 @@
     justify-content: center;
     font-weight: 700;
     font-size: 0.9rem;
-    flex-shrink: 0; // Prevents squishing on small screens
+    flex-shrink: 0;
   }
 
   .name {
@@ -96,20 +98,20 @@
   border-radius: theme.$radius-lg;
   font-size: 0.8rem;
   font-weight: 600;
-  display: inline-block; // Ensure padding works correctly
+  display: inline-block;
 
   &.active {
-    background-color: rgba(46, 204, 113, 0.15); // Light green
+    background-color: rgba(46, 204, 113, 0.15);
     color: #27ae60;
   }
 
   &.inactive {
-    background-color: rgba(231, 76, 60, 0.15); // Light red
+    background-color: rgba(231, 76, 60, 0.15);
     color: #c0392b;
   }
 }
 
-// Action Buttons (Edit / Delete)
+// Action Buttons
 .action-btn {
   background: none;
   border: none;
@@ -128,4 +130,4 @@
 
 // Helpers
 .text-center { text-align: center; }
-.text-right { text-align: right; }
+.text-right { text-align: center; } // <--- FORCED CENTER EVEN IF HTML REQUESTS RIGHT

@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { clear } from 'node:console';
-import { tap, catchError, of, map } from 'rxjs';
+import { tap, catchError, of, map, Observable } from 'rxjs';
+import { FormGroup } from '@angular/forms';
 
 // Définition de la requête GraphQL
 const GET_ME = gql`
@@ -14,6 +14,57 @@ const GET_ME = gql`
   }
 `;
 
+const GET_TEACHERS = gql`
+  query GetTeachers {
+    users(
+      filter: { userType: { eq: TEACHER } }
+      # CORRECTION ICI : On utilise 'fullName' car 'createdAt' n'est pas supporté
+      sorting: [{ field: fullName, direction: ASC }] 
+      paging: { first: 50 }
+    ) {
+      edges {
+        node {
+          id
+          fullName
+          email
+          createdAt
+          userType
+        }
+      }
+    }
+  }
+`;
+
+const GET_STUDENTS = gql`
+  query GetStudents {
+    users(
+      filter: { userType: { eq: STUDENT } }
+      sorting: [{ field: fullName, direction: ASC }] 
+      paging: { first: 50 }
+    ) {
+      edges {
+        node {
+          id
+          fullName
+          email
+          createdAt
+          userType
+        }
+      }
+    }
+  }
+`;
+
+const UPDATE_USER = gql`
+  mutation UpdateOneUser($input: UpdateOneUserInput!) {
+    updateOneUser(input: $input) {
+      id
+      fullName
+      email
+    }
+  }
+`;
+
 const CREATE_STUDENT = gql`
   mutation CreateStudent($createUserInput: CreateUserInput!) {
     createStudent(createUserInput: $createUserInput) {
@@ -22,10 +73,12 @@ const CREATE_STUDENT = gql`
   }
 `;
 
-interface UserProfile {
-  id?: string;
+export interface UserProfile {
+  id: string;
   fullName: string;
+  email?: string; // Added email as it is useful for the list
   userType: UserType;
+  createdAt?: string;
 }
 
 type UserType = 'STUDENT' | 'TEACHER' | 'ADMIN';
@@ -83,6 +136,39 @@ export class UserService {
       })
     );
   }
+
+  getTeachers(): Observable<UserProfile[]> {
+    return this.apollo.watchQuery<any>({
+      query: GET_TEACHERS,
+      fetchPolicy: 'cache-and-network'
+    }).valueChanges.pipe(
+      map(result => {
+        // Flatten the "edges -> node" structure from GraphQL
+        const edges = result.data?.users?.edges || [];
+        return edges.map((edge: any) => edge.node) as UserProfile[];
+      }),
+      catchError(error => {
+        console.error('Error fetching teachers:', error);
+        return of([]); 
+      })
+    );
+  }
+
+  getStudents(): Observable<UserProfile[]> {
+    return this.apollo.watchQuery<any>({
+      query: GET_STUDENTS,
+      fetchPolicy: 'cache-and-network'
+    }).valueChanges.pipe(
+      map(result => {
+        const edges = result.data?.users?.edges || [];
+        return edges.map((edge: any) => edge.node) as UserProfile[];
+      }),
+      catchError(error => {
+        console.error('Error fetching students:', error);
+        return of([]); 
+      })
+    );
+  }
   
   register(payload: RegisterPayload) {
     return this.apollo.mutate<RegisterResponse>({
@@ -105,5 +191,27 @@ export class UserService {
   // Nettoyage simple de la variable en mémoire
   clearUserData() {
     this.currentUser.set(null);
+  }
+
+  updateUser(id: string, data: { fullName: string; email: string }) {
+    return this.apollo.mutate({
+      mutation: UPDATE_USER,
+      variables: {
+        input: {
+          id: id,
+          update: {
+            id: id, // The input type in your schema requires ID inside the update object too
+            fullName: data.fullName,
+            email: data.email
+          }
+        }
+      }
+    }).pipe(
+      tap(() => console.log('User updated successfully')),
+      catchError(error => {
+        console.error('Update failed', error);
+        throw error;
+      })
+    );
   }
 }

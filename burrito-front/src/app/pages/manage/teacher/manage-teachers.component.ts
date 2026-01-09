@@ -1,8 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BackgroundDivComponent } from '../../../component/shared/background-div/background-div.component';
 import { AdminPageHeaderComponent } from '../../../component/shared/admin-page-header/admin-page-header.component';
 import { AdminTableComponent, TableColumn } from '../../../component/shared/admin-table/admin-table.component';
+import { UserService } from '../../../services/user.service'; 
+import { Observable, map, take, tap } from 'rxjs';
+import { EditUserModalComponent } from '../../../component/shared/edit-user-modal/edit-user-modal.component';
+import { UserProfile } from '../../../services/user.service';
 
 @Component({
   selector: 'app-manage-teachers',
@@ -11,43 +15,83 @@ import { AdminTableComponent, TableColumn } from '../../../component/shared/admi
     CommonModule, 
     BackgroundDivComponent, 
     AdminPageHeaderComponent, 
-    AdminTableComponent
+    AdminTableComponent,
+    EditUserModalComponent
   ],
   templateUrl: './manage-teachers.component.html',
-  // No SCSS needed here unless you have page-specific overrides!
 })
 export class ManageTeachersComponent {
 
-  // 1. Define your columns here
+  private userService = inject(UserService);
+
   tableColumns: TableColumn[] = [
     { key: 'name', label: 'Name', type: 'user' },
-    { key: 'department', label: 'Department', type: 'text' },
     { key: 'email', label: 'Contact', type: 'text' },
-    { key: 'courses', label: 'Courses', type: 'badge' },
-    { key: 'status', label: 'Status', type: 'status' },
     { key: 'actions', label: 'Actions', type: 'actions' }
   ];
 
-  // 2. Your Data
-  teachers = [
-    { id: 1, name: 'Dr. Sarah Connor', department: 'Computer Science', email: 's.connor@uni.edu', courses: 3, status: 'Active' },
-    { id: 2, name: 'Prof. Alan Grant', department: 'Paleontology', email: 'a.grant@uni.edu', courses: 2, status: 'On Leave' },
-    { id: 3, name: 'Mrs. Ellen Ripley', department: 'Aeronautics', email: 'e.ripley@uni.edu', courses: 4, status: 'Active' },
-    { id: 4, name: 'Mr. Indiana Jones', department: 'Archaeology', email: 'i.jones@uni.edu', courses: 1, status: 'Active' },
-    { id: 5, name: 'Dr. Emmett Brown', department: 'Physics', email: 'doc.brown@uni.edu', courses: 5, status: 'Active' },
-  ];
+  // La source de données (Observable)
+  teachers$: Observable<any[]>;
+
+  constructor() {
+    this.teachers$ = this.userService.getTeachers().pipe(
+      tap(data => console.log('Data recieved:', data)), // Debug
+      map(users => {
+        if (!users) return [];
+        return users.map(u => ({
+          id: u.id,
+          name: u.fullName || 'Unknown', 
+          email: u.email || 'N/A',
+        }));
+      })
+    );
+  }
 
   onAdd() {
     console.log('Open Add Teacher Modal');
   }
 
-  onDelete(id: number) {
-    if(confirm('Are you sure?')) {
-      this.teachers = this.teachers.filter(t => t.id !== id);
+  // CORRECTION : Utiliser 'any' ici règle l'erreur de typage
+  onDelete(id: any) {
+    if(confirm('Are you sure you want to delete this teacher?')) {
+      console.log('Call delete API for ID:', id);
     }
   }
 
-  onEdit(id: number) {
-    console.log('Edit teacher', id);
+  selectedUser: UserProfile | null = null;
+
+  // This is called by the Table when clicking the Pencil icon
+  onEdit(id: any) {
+    // 1. Find the user object from the current list (we need to subscribe to get the list locally or just find it if we stored it)
+    // IMPORTANT: Since teachers$ is an Observable, we can't search it synchronously easily unless we subscribe.
+    // Hack/Easy fix: We can pass the whole object from the table if we modify the table, 
+    // OR we just subscribe once to find it.
+    
+    this.teachers$.pipe(take(1)).subscribe(teachers => {
+      const user = teachers.find(t => t.id === id);
+      if (user) {
+        // We need to match the UserProfile interface structure for the modal
+        this.selectedUser = {
+           id: user.id,
+           fullName: user.name, // Note: Table mapped 'fullName' to 'name', we map back here or adjust
+           email: user.email,
+           userType: 'TEACHER' // Hardcoded because this is the teacher page
+        };
+      }
+    });
+  }
+
+  // Called when modal emits 'close'
+  closeModal() {
+    this.selectedUser = null;
+  }
+
+  // Called when modal emits 'saved'
+  refreshData() {
+    this.selectedUser = null;
+    // Trigger a refetch
+    // This requires your teachers$ to be a behaviorSubject or use a refresh trigger.
+    // Simplest way: Re-assign the observable
+    this.teachers$ = this.userService.getTeachers().pipe(/*...map...*/);
   }
 }
