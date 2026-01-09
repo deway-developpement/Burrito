@@ -4,7 +4,7 @@ import { BackgroundDivComponent } from '../../../component/shared/background-div
 import { AdminPageHeaderComponent } from '../../../component/shared/admin-page-header/admin-page-header.component';
 import { AdminTableComponent, TableColumn } from '../../../component/shared/admin-table/admin-table.component';
 import { EditUserModalComponent } from '../../../component/shared/edit-user-modal/edit-user-modal.component';
-import { AddUserModalComponent } from '../../../component/shared/add-user-modal/add-user-modal.component'; // <--- 1. Import Add Modal
+import { AddUserModalComponent } from '../../../component/shared/add-user-modal/add-user-modal.component';
 import { UserService, UserProfile } from '../../../services/user.service';
 import { Observable, map, tap, take } from 'rxjs';
 
@@ -17,7 +17,7 @@ import { Observable, map, tap, take } from 'rxjs';
     AdminPageHeaderComponent, 
     AdminTableComponent,
     EditUserModalComponent,
-    AddUserModalComponent // <--- 2. Add to imports
+    AddUserModalComponent
   ],
   templateUrl: './manage-students.component.html',
 })
@@ -68,14 +68,27 @@ export class ManageStudentsComponent {
   // --- DELETE LOGIC ---
   onDelete(id: any) {
     if(confirm('Are you sure you want to unenroll this student?')) {
-      console.log('Delete Student ID:', id);
+      
+      // Convert ID to String to ensure it matches GraphQL expectation
+      this.userService.deleteUser(String(id)).subscribe({
+        next: () => {
+          console.log('Student deleted successfully');
+          this.refreshData(); // Updates the UI
+        },
+        error: (err) => {
+          console.error('Error deleting student:', err);
+          alert('Failed to delete student');
+        }
+      });
     }
   }
 
   // --- EDIT MODAL LOGIC ---
   onEdit(id: any) {
     this.students$.pipe(take(1)).subscribe(students => {
-      const found = students.find(s => s.id === id);
+      // Safe string comparison for ID
+      const found = students.find(s => String(s.id) === String(id));
+      
       if (found) {
         this.selectedUser = {
           id: found.id,

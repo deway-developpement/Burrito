@@ -1,9 +1,9 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { tap, catchError, of, map, Observable } from 'rxjs';
-import { FormGroup } from '@angular/forms';
 
-// Définition de la requête GraphQL
+// --- QUERIES ---
+
 const GET_ME = gql`
   query ExampleQuery {
     me {
@@ -18,7 +18,6 @@ const GET_TEACHERS = gql`
   query GetTeachers {
     users(
       filter: { userType: { eq: TEACHER } }
-      # CORRECTION ICI : On utilise 'fullName' car 'createdAt' n'est pas supporté
       sorting: [{ field: fullName, direction: ASC }] 
       paging: { first: 50 }
     ) {
@@ -55,20 +54,14 @@ const GET_STUDENTS = gql`
   }
 `;
 
+// --- MUTATIONS ---
+
 const UPDATE_USER = gql`
   mutation UpdateOneUser($input: UpdateOneUserInput!) {
     updateOneUser(input: $input) {
       id
       fullName
       email
-    }
-  }
-`;
-
-const CREATE_STUDENT = gql`
-  mutation CreateStudent($createUserInput: CreateUserInput!) {
-    createStudent(createUserInput: $createUserInput) {
-      id
     }
   }
 `;
@@ -81,6 +74,16 @@ const CREATE_ONE_USER = gql`
   }
 `;
 
+const DELETE_USER = gql`
+  mutation DeleteOneUser($input: DeleteOneUserInput!) {
+    deleteOneUser(input: $input) {
+      id
+    }
+  }
+`;
+
+// --- INTERFACES ---
+
 export interface CreateUserPayload {
   email: string;
   fullName: string;
@@ -90,7 +93,7 @@ export interface CreateUserPayload {
 export interface UserProfile {
   id: string;
   fullName: string;
-  email?: string; // Added email as it is useful for the list
+  email?: string;
   userType: UserType;
   createdAt?: string;
 }
@@ -101,14 +104,8 @@ interface MeResponse {
   me: UserProfile;
 }
 
-export interface RegisterPayload {
-  email: string;
-  fullName: string;
-  password: string;
-}
-
 interface RegisterResponse {
-  createStudent: {
+  createOneUser: {
     id: string
   };
 }
@@ -118,8 +115,6 @@ interface RegisterResponse {
 })
 export class UserService {
   private apollo = inject(Apollo);
-
-  // Variable en mémoire (Signal) pour stocker l'utilisateur courant
   currentUser = signal<UserProfile | null>(null);
 
   getCurrentUser() {
@@ -131,21 +126,16 @@ export class UserService {
       query: GET_ME,
       fetchPolicy: 'network-only'
     }).pipe(
-      // 1. Extraction sécurisée des données
       map(result => result.data?.me),
-      
-      tap((user) => {
+      tap(user => {
         if (user) {
-          // 2. On log dans la console comme demandé
-          console.log('User fetched successfully:', user);
-          
-          // 3. On stocke uniquement en mémoire (variable signal)
+          console.log('User fetched:', user);
           this.currentUser.set(user);
         }
       }),
-      catchError((error) => {
-        console.error('Erreur lors du fetchMe', error);
-        this.clearUserData();
+      catchError(error => {
+        console.error('FetchMe Error:', error);
+        this.currentUser.set(null);
         return of(null);
       })
     );
@@ -156,11 +146,7 @@ export class UserService {
       query: GET_TEACHERS,
       fetchPolicy: 'cache-and-network'
     }).valueChanges.pipe(
-      map(result => {
-        // Flatten the "edges -> node" structure from GraphQL
-        const edges = result.data?.users?.edges || [];
-        return edges.map((edge: any) => edge.node) as UserProfile[];
-      }),
+      map(result => result.data?.users?.edges?.map((e: any) => e.node) || []),
       catchError(error => {
         console.error('Error fetching teachers:', error);
         return of([]); 
@@ -173,10 +159,7 @@ export class UserService {
       query: GET_STUDENTS,
       fetchPolicy: 'cache-and-network'
     }).valueChanges.pipe(
-      map(result => {
-        const edges = result.data?.users?.edges || [];
-        return edges.map((edge: any) => edge.node) as UserProfile[];
-      }),
+      map(result => result.data?.users?.edges?.map((e: any) => e.node) || []),
       catchError(error => {
         console.error('Error fetching students:', error);
         return of([]); 
@@ -184,56 +167,43 @@ export class UserService {
     );
   }
   
-  register(payload: RegisterPayload) {
+  register(payload: CreateUserPayload) {
     return this.apollo.mutate<RegisterResponse>({
-      mutation: CREATE_STUDENT,
+      mutation: CREATE_ONE_USER,
       variables: {
-        // Matches the structure required: { "createUserInput": { ... } }
-        createUserInput: payload 
+        input: {
+          user: {
+            ...payload,
+            userType: 'STUDENT'
+          }
+        }
       }
-    }).pipe(
-      tap(result => {
-        console.log('Registration successful:', result.data?.createStudent);
-      }),
-      catchError(error => {
-        console.error('Registration failed:', error);
-        throw error; // Rethrow so the component can handle the error UI (e.g., "Email already exists")
-      })
-    );
-  }
-
-  // Nettoyage simple de la variable en mémoire
-  clearUserData() {
-    this.currentUser.set(null);
+    });
   }
 
   createUser(payload: CreateUserPayload, type: UserType) {
-    if (type === 'STUDENT') {
-      // Use the specific Student endpoint
-      return this.apollo.mutate({
-        mutation: CREATE_STUDENT,
-        variables: { createUserInput: payload }
-      });
-    } else {
-      // For Teachers/Admins, use the generic CreateOne endpoint
-      // Note: The backend schema might default this to ADMIN or generic User. 
-      return this.apollo.mutate({
-        mutation: CREATE_ONE_USER,
-        variables: { 
-          input: { user: payload } // Wraps payload in 'user' object per schema
+    return this.apollo.mutate<RegisterResponse>({
+      mutation: CREATE_ONE_USER,
+      variables: {
+        input: {
+          user: {
+            ...payload,
+            userType: type
+          }
         }
-      });
-    }
+      }
+    });
   }
 
+  // --- FIXED UPDATE FUNCTION ---
   updateUser(id: string, data: { fullName: string; email: string }) {
     return this.apollo.mutate({
       mutation: UPDATE_USER,
       variables: {
         input: {
-          id: id,
-          update: {
-            id: id, // The input type in your schema requires ID inside the update object too
+          id: id,        // 1. The ID identifies WHICH user to update
+          update: {      // 2. The update object contains only the NEW data
+            // id: id,   <-- REMOVED: This was causing the error
             fullName: data.fullName,
             email: data.email
           }
@@ -246,5 +216,33 @@ export class UserService {
         throw error;
       })
     );
+  }
+
+  deleteUser(id: string) {
+    return this.apollo.mutate({
+      mutation: DELETE_USER,
+      variables: {
+        input: {
+          id: id
+        }
+      },
+      update: (cache) => {
+        const normalizedId = cache.identify({ id, __typename: 'User' });
+        if (normalizedId) {
+          cache.evict({ id: normalizedId });
+          cache.gc();
+        }
+      }
+    }).pipe(
+      tap(() => console.log(`User ${id} deleted successfully`)),
+      catchError(error => {
+        console.error('Delete failed', error);
+        throw error;
+      })
+    );
+  }
+
+  clearUserData() {
+    this.currentUser.set(null);
   }
 }

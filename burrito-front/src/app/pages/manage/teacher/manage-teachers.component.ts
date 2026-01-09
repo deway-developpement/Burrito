@@ -6,7 +6,7 @@ import { AdminTableComponent, TableColumn } from '../../../component/shared/admi
 import { UserService, UserProfile } from '../../../services/user.service'; 
 import { Observable, map, take, tap } from 'rxjs';
 import { EditUserModalComponent } from '../../../component/shared/edit-user-modal/edit-user-modal.component';
-import { AddUserModalComponent } from '../../../component/shared/add-user-modal/add-user-modal.component'; // <--- 1. Import Add Modal
+import { AddUserModalComponent } from '../../../component/shared/add-user-modal/add-user-modal.component';
 
 @Component({
   selector: 'app-manage-teachers',
@@ -17,7 +17,7 @@ import { AddUserModalComponent } from '../../../component/shared/add-user-modal/
     AdminPageHeaderComponent, 
     AdminTableComponent,
     EditUserModalComponent,
-    AddUserModalComponent // <--- 2. Ajout aux imports
+    AddUserModalComponent
   ],
   templateUrl: './manage-teachers.component.html',
 })
@@ -70,14 +70,30 @@ export class ManageTeachersComponent {
   // --- LOGIQUE SUPPRESSION (DELETE) ---
   onDelete(id: any) {
     if(confirm('Are you sure you want to delete this teacher?')) {
-      console.log('Call delete API for ID:', id);
+      
+      // We convert id to String because AdminTable emits number, 
+      // but GraphQL Service expects a String ID.
+      this.userService.deleteUser(String(id)).subscribe({
+        next: () => {
+          console.log('User deleted successfully');
+          // Since we updated the Apollo Cache in the Service, the list might update automatically.
+          // However, calling refreshData() ensures the Observable logic re-runs if needed.
+          this.refreshData(); 
+        },
+        error: (err) => {
+          console.error('Error deleting user:', err);
+          alert('Failed to delete user');
+        }
+      });
     }
   }
 
   // --- LOGIQUE ÉDITION (EDIT) ---
   onEdit(id: any) {
     this.teachers$.pipe(take(1)).subscribe(teachers => {
-      const user = teachers.find(t => t.id === id);
+      // Note: We compare using String(id) to be safe against type mismatches
+      const user = teachers.find(t => String(t.id) === String(id));
+      
       if (user) {
         this.selectedUser = {
            id: user.id,
