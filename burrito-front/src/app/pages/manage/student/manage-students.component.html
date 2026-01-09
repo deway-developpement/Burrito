@@ -16,8 +16,16 @@
 
   <app-edit-user-modal
     [user]="selectedUser"
-    (close)="closeModal()"
+    (close)="closeEditModal()"
     (saved)="refreshData()">
   </app-edit-user-modal>
+
+  @if (showAddModal) {
+    <app-add-user-modal 
+      userType="STUDENT"
+      (close)="closeAddModal()" 
+      (saved)="refreshData()">
+    </app-add-user-modal>
+  }
 
 </app-background-div>

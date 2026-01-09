@@ -14,10 +14,18 @@
     (delete)="onDelete($event)">
   </app-admin-table>
 
-</app-background-div>
-
   <app-edit-user-modal
     [user]="selectedUser"
-    (close)="closeModal()"
+    (close)="closeEditModal()"
     (saved)="refreshData()">
   </app-edit-user-modal>
+
+  @if (showAddModal) {
+    <app-add-user-modal 
+      userType="TEACHER"
+      (close)="closeAddModal()" 
+      (saved)="refreshData()">
+    </app-add-user-modal>
+  }
+
+</app-background-div>

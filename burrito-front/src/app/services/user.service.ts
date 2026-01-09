@@ -73,6 +73,20 @@ const CREATE_STUDENT = gql`
   }
 `;
 
+const CREATE_ONE_USER = gql`
+  mutation CreateOneUser($input: CreateOneUserInput!) {
+    createOneUser(input: $input) {
+      id
+    }
+  }
+`;
+
+export interface CreateUserPayload {
+  email: string;
+  fullName: string;
+  password: string;
+}
+
 export interface UserProfile {
   id: string;
   fullName: string;
@@ -81,7 +95,7 @@ export interface UserProfile {
   createdAt?: string;
 }
 
-type UserType = 'STUDENT' | 'TEACHER' | 'ADMIN';
+export type UserType = 'STUDENT' | 'TEACHER' | 'ADMIN';
 
 interface MeResponse {
   me: UserProfile;
@@ -191,6 +205,25 @@ export class UserService {
   // Nettoyage simple de la variable en mémoire
   clearUserData() {
     this.currentUser.set(null);
+  }
+
+  createUser(payload: CreateUserPayload, type: UserType) {
+    if (type === 'STUDENT') {
+      // Use the specific Student endpoint
+      return this.apollo.mutate({
+        mutation: CREATE_STUDENT,
+        variables: { createUserInput: payload }
+      });
+    } else {
+      // For Teachers/Admins, use the generic CreateOne endpoint
+      // Note: The backend schema might default this to ADMIN or generic User. 
+      return this.apollo.mutate({
+        mutation: CREATE_ONE_USER,
+        variables: { 
+          input: { user: payload } // Wraps payload in 'user' object per schema
+        }
+      });
+    }
   }
 
   updateUser(id: string, data: { fullName: string; email: string }) {
