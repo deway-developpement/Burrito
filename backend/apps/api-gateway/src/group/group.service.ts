@@ -186,7 +186,9 @@ export class GroupService {
     dtoOrDtos: GroupDto | GroupDto[],
   ): Promise<Relation | undefined | Map<GroupDto, Relation | undefined>> {
     return this.sendWithTimeout(
-      this.groupsClient.send<Relation | undefined | Map<GroupDto, Relation | undefined>>(
+      this.groupsClient.send<
+        Relation | undefined | Map<GroupDto, Relation | undefined>
+      >(
         { cmd: 'group.findRelation' },
         { RelationClass, relationName, dtoOrDtos },
       ),

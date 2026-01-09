@@ -25,6 +25,7 @@ export interface ICreateUser {
   email: string;
   password: string;
   fullName: string;
+  userType: UserType;
 }
 
 export interface IUpdateUser {

@@ -1,8 +1,6 @@
 import {
   Resolver,
-  Mutation,
   Query,
-  Args,
   Directive,
   ResolveField,
   Parent,
@@ -40,7 +38,11 @@ export class UserResolver extends CRUDResolver(UserDto, {
       GqlOrGuard(new GqlCurrentUserGuard(), GqlCredentialGuard(UserType.ADMIN)),
     ],
   },
-  delete: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
+  delete: {
+    guards: [
+      GqlOrGuard(new GqlCurrentUserGuard(), GqlCredentialGuard(UserType.ADMIN)),
+    ],
+  },
 }) {
   constructor(
     @Inject(UserService) private readonly userService: UserService,
@@ -48,14 +50,6 @@ export class UserResolver extends CRUDResolver(UserDto, {
     private readonly groupByIdLoader: GroupByIdLoader,
   ) {
     super(userService);
-  }
-
-  @Mutation(() => UserDto)
-  @Directive('@auth(role: "ADMIN")')
-  async createStudent(
-    @Args('createUserInput') createUserInput: CreateUserInput,
-  ) {
-    return this.userService.createOne(createUserInput);
   }
 
   @UseGuards(GqlAuthGuard)
