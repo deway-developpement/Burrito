@@ -39,4 +39,14 @@ export class UserService extends MongooseQueryService<User> {
       .exec()
       .then((user) => user?.toObject() || null);
   }
+
+  async findByIds(ids: string[]): Promise<User[]> {
+    if (ids.length === 0) {
+      return [];
+    }
+    return this.userModel
+      .find({ _id: { $in: ids } })
+      .select('-password')
+      .exec();
+  }
 }

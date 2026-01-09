@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { MongoClient, ObjectId } = require('mongodb');
 const bcrypt = require('bcrypt');
 
@@ -10,6 +11,8 @@ const DEFAULTS = {
   responses: 120,
   days: 60,
   seedTag: 'analytics-seed-v1',
+  extraTeachers: 2,
+  extraStudents: 12,
 };
 
 const USER_DEFAULTS = {
@@ -98,6 +101,22 @@ function randomInt(min, max) {
 
 function pick(list) {
   return list[randomInt(0, list.length - 1)];
+}
+
+function shuffle(list) {
+  const items = [...list];
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    const j = randomInt(0, i);
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+
+function generateFormHash(userId, formId, secret) {
+  return crypto
+    .createHmac('sha256', secret)
+    .update(`${userId}${formId}`)
+    .digest('base64');
 }
 
 function sampleRating(tone, bias) {
@@ -269,7 +288,7 @@ function buildQuestions(topic) {
   });
 }
 
-function buildFormTemplate(index) {
+function buildFormTemplate(index, teacherId) {
   const templates = [
     {
       title: 'Course Feedback: Data Structures',
@@ -301,14 +320,17 @@ function buildFormTemplate(index) {
   ];
 
   if (index < templates.length) {
-    return templates[index];
+    return {
+      ...templates[index],
+      teacherId: teacherId || templates[index].teacherId,
+    };
   }
 
   return {
     title: `Course Feedback: Course ${index + 1}`,
     description: `Feedback for Course ${index + 1}`,
     topic: `Course ${index + 1}`,
-    teacherId: `teacher-${index + 1}`,
+    teacherId: teacherId || `teacher-${index + 1}`,
     targetCourseId: `course-${index + 1}`,
     tone: 0.55,
     aspects: ['examples', 'assignments', 'support'],
@@ -319,7 +341,7 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.help || args.h) {
     console.log(
-      `\nUsage: node scripts/seed-analytics.js [options]\n\nOptions:\n  --forms <n>        Number of forms to create (default ${DEFAULTS.forms})\n  --responses <n>    Responses per form (default ${DEFAULTS.responses})\n  --days <n>         Spread responses across last N days (default ${DEFAULTS.days})\n  --seed-tag <tag>   Tag to label seed data (default ${DEFAULTS.seedTag})\n  --reset            Delete existing docs with the same seed tag before seeding\n  --seed-users       Create admin/teacher/student users (default true)\n  --reset-users      Delete existing seed users before creating them\n  --admin-email      Override admin email\n  --admin-password   Override admin password\n  --teacher-email    Override teacher email\n  --teacher-password Override teacher password\n  --student-email    Override student email\n  --student-password Override student password\n`,
+      `\nUsage: node scripts/seed-analytics.js [options]\n\nOptions:\n  --forms <n>        Number of forms to create (default ${DEFAULTS.forms})\n  --responses <n>    Responses per form (default ${DEFAULTS.responses})\n  --days <n>         Spread responses across last N days (default ${DEFAULTS.days})\n  --seed-tag <tag>   Tag to label seed data (default ${DEFAULTS.seedTag})\n  --extra-teachers   Extra teacher users to create (default ${DEFAULTS.extraTeachers})\n  --extra-students   Extra student users to create (default ${DEFAULTS.extraStudents})\n  --reset            Delete existing docs with the same seed tag before seeding\n  --seed-users       Create admin/teacher/student users (default true)\n  --reset-users      Delete existing seed users before creating them\n  --admin-email      Override admin email\n  --admin-password   Override admin password\n  --teacher-email    Override teacher email\n  --teacher-password Override teacher password\n  --student-email    Override student email\n  --student-password Override student password\n`,
     );
     process.exit(0);
   }
@@ -333,6 +355,14 @@ async function main() {
   const reset = Boolean(args.reset);
   const seedUsers = args['seed-users'] !== 'false';
   const resetUsers = Boolean(args['reset-users']);
+  const extraTeachers = Math.max(
+    0,
+    toInt(args['extra-teachers'], DEFAULTS.extraTeachers),
+  );
+  const extraStudents = Math.max(
+    0,
+    toInt(args['extra-students'], DEFAULTS.extraStudents),
+  );
 
   const dbName = process.env.DATABASE_NAME || 'burrito';
   const username = process.env.DATABASE_USERNAME || '';
@@ -359,17 +389,27 @@ async function main() {
   const formsCol = db.collection('forms');
   const evalsCol = db.collection('evaluations');
   const usersCol = db.collection('users');
+  const groupsCol = db.collection('groups');
+  const membershipsCol = db.collection('memberships');
 
   if (reset) {
     const formDelete = await formsCol.deleteMany({ seedTag });
     const evalDelete = await evalsCol.deleteMany({ seedTag });
+    const groupsToReset = await groupsCol.find({ seedTag }).toArray();
+    if (groupsToReset.length > 0) {
+      const groupIds = groupsToReset.map((group) => group._id.toString());
+      await membershipsCol.deleteMany({ groupId: { $in: groupIds } });
+      await groupsCol.deleteMany({ seedTag });
+    }
     console.log(
-      `Reset seedTag=${seedTag}: removed ${formDelete.deletedCount} forms and ${evalDelete.deletedCount} evaluations`,
+      `Reset seedTag=${seedTag}: removed ${formDelete.deletedCount} forms, ${evalDelete.deletedCount} evaluations and ${groupsToReset.length} groups`,
     );
   }
 
   const now = new Date();
   const seededUsers = [];
+  const seededTeachers = [];
+  const seededStudents = [];
   if (seedUsers) {
     const admin = {
       ...USER_DEFAULTS.admin,
@@ -387,7 +427,32 @@ async function main() {
       password: args['student-password'] || USER_DEFAULTS.student.password,
     };
 
-    const users = [admin, teacher, student];
+    const extraTeacherUsers = Array.from(
+      { length: extraTeachers },
+      (_, index) => ({
+        email: `teacher${index + 2}@burrito.local`,
+        password: USER_DEFAULTS.teacher.password,
+        fullName: `Seed Teacher ${index + 2}`,
+        userType: USER_DEFAULTS.teacher.userType,
+      }),
+    );
+    const extraStudentUsers = Array.from(
+      { length: extraStudents },
+      (_, index) => ({
+        email: `student${index + 2}@burrito.local`,
+        password: USER_DEFAULTS.student.password,
+        fullName: `Seed Student ${index + 2}`,
+        userType: USER_DEFAULTS.student.userType,
+      }),
+    );
+
+    const users = [
+      admin,
+      teacher,
+      student,
+      ...extraTeacherUsers,
+      ...extraStudentUsers,
+    ];
     if (resetUsers) {
       const deleteResult = await usersCol.deleteMany({
         email: { $in: users.map((user) => user.email) },
@@ -417,17 +482,78 @@ async function main() {
         },
         { upsert: true },
       );
+      const doc = await usersCol.findOne(
+        { email: user.email },
+        { projection: { _id: 1, userType: 1, fullName: 1 } },
+      );
+      if (doc) {
+        if (doc.userType === USER_DEFAULTS.teacher.userType) {
+          seededTeachers.push(doc);
+        }
+        if (doc.userType === USER_DEFAULTS.student.userType) {
+          seededStudents.push(doc);
+        }
+      }
       seededUsers.push({
         email: user.email,
         password: user.password,
         role: user.userType,
+        id: doc ? doc._id.toString() : 'unknown',
+      });
+    }
+  }
+
+  const seededGroups = [];
+  if (seededTeachers.length > 0) {
+    const studentBuckets = seededTeachers.map(() => []);
+    for (let i = 0; i < seededStudents.length; i += 1) {
+      const groupIndex = i % seededTeachers.length;
+      studentBuckets[groupIndex].push(seededStudents[i]);
+    }
+
+    for (let i = 0; i < seededTeachers.length; i += 1) {
+      const teacher = seededTeachers[i];
+      const groupId = new ObjectId();
+      const groupDoc = {
+        _id: groupId,
+        name: `Group ${i + 1}`,
+        description: `Seed group for ${teacher.fullName}`,
+        createdAt: now,
+        updatedAt: now,
+        seedTag,
+      };
+      await groupsCol.insertOne(groupDoc);
+      const memberDocs = [
+        {
+          groupId: groupId.toString(),
+          memberId: teacher._id.toString(),
+        },
+        ...studentBuckets[i].map((student) => ({
+          groupId: groupId.toString(),
+          memberId: student._id.toString(),
+        })),
+      ];
+      if (memberDocs.length > 0) {
+        await membershipsCol.insertMany(memberDocs);
+      }
+      seededGroups.push({
+        groupId: groupId.toString(),
+        name: groupDoc.name,
+        teacher: teacher.fullName,
+        students: studentBuckets[i].length,
       });
     }
   }
   const seededForms = [];
+  const jwtSecret = process.env.JWT_SECRET || 'default-secret';
+  const studentIds = seededStudents.map((student) => student._id.toString());
 
   for (let i = 0; i < formCount; i += 1) {
-    const template = buildFormTemplate(i);
+    const teacherId =
+      seededTeachers.length > 0
+        ? seededTeachers[i % seededTeachers.length]._id.toString()
+        : undefined;
+    const template = buildFormTemplate(i, teacherId);
     const questionsMeta = buildQuestions(template.topic);
 
     const formId = new ObjectId();
@@ -450,6 +576,7 @@ async function main() {
     console.log(`Inserted form ${formDoc.title} (${formId.toString()})`);
 
     const evaluations = [];
+    const shuffledStudents = shuffle(studentIds);
     for (let j = 0; j < responsesPerForm; j += 1) {
       const ratingAnswers = [];
       const textQuestions = [];
@@ -474,7 +601,7 @@ async function main() {
       const avgScore =
         ratingScores.length > 0
           ? ratingScores.reduce((sum, value) => sum + value, 0) /
-            ratingScores.length
+          ratingScores.length
           : 7 + template.tone * 2;
       const bucket = sentimentBucket(avgScore);
 
@@ -504,10 +631,16 @@ async function main() {
         }
       }
 
+      const studentId = shuffledStudents[j];
+      const respondentToken =
+        studentId && formId
+          ? generateFormHash(studentId, formId.toString(), jwtSecret)
+          : `${seedTag}-${formId.toString()}-${j}`;
+
       evaluations.push({
         formId: formId.toString(),
         teacherId: template.teacherId,
-        respondentToken: `${seedTag}-${formId.toString()}-${j}`,
+        respondentToken,
         answers,
         createdAt: randomDateWithin(days),
         seedTag,
@@ -532,12 +665,26 @@ async function main() {
   }
 
   if (seededUsers.length > 0) {
-    console.log('\nSeed users:');
-    for (const user of seededUsers) {
-      console.log(
-        `- role=${user.role} email=${user.email} password=${user.password}`,
-      );
-    }
+    // Log number of each role
+    const roleCounts = seededUsers.reduce(
+      (counts, user) => {
+        if (user.role === USER_DEFAULTS.admin.userType) {
+          counts.admin += 1;
+        } else if (user.role === USER_DEFAULTS.teacher.userType) {
+          counts.teacher += 1;
+        } else if (user.role === USER_DEFAULTS.student.userType) {
+          counts.student += 1;
+        }
+        return counts;
+      },
+      { admin: 0, teacher: 0, student: 0 },
+    );
+    console.log(
+      `- Admins: ${roleCounts.admin}, Teachers: ${roleCounts.teacher}, Students: ${roleCounts.student}`,
+    );
+  }
+  if (seededGroups.length > 0) {
+    console.log(`- Seeded Groups: ${seededGroups.length}`);
   }
 
   await client.close();

@@ -70,7 +70,7 @@ pipeline {
             cd backend
 
             # Define your services list here
-            SERVICES="api-gateway users-ms forms-ms evaluations-ms analytics-ms"
+            SERVICES="api-gateway users-ms forms-ms evaluations-ms analytics-ms groups-ms"
 
             for svc in $SERVICES; do
               echo "-------------------------------------------------"
@@ -122,6 +122,10 @@ pipeline {
               analytics-ms=${REGISTRY_HOST}/burrito-analytics-ms:${BUILD_NUMBER} \
               -n "$K8S_NAMESPACE"
 
+            kubectl set image deployment/groups-ms \
+              groups-ms=${REGISTRY_HOST}/burrito-groups-ms:${BUILD_NUMBER} \
+              -n "$K8S_NAMESPACE"
+
             echo "Deployment updated successfully."
 
             kubectl rollout status deployment/api-gateway -n "$K8S_NAMESPACE"
@@ -129,6 +133,7 @@ pipeline {
             kubectl rollout status deployment/forms-ms -n "$K8S_NAMESPACE"
             kubectl rollout status deployment/evaluations-ms -n "$K8S_NAMESPACE"
             kubectl rollout status deployment/analytics-ms -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/groups-ms -n "$K8S_NAMESPACE"
           '''
         }
       }

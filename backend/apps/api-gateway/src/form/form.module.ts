@@ -6,6 +6,7 @@ import { FormDto } from './dto/form.dto';
 import { UpdateFormInput } from './dto/update-form.input';
 import { FormResolver } from './form.resolver';
 import { CreateFormInput } from './dto/create-form.input';
+import { EvaluationModule } from '../evaluation/evaluation.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CreateFormInput } from './dto/create-form.input';
         },
       ],
     }),
+    EvaluationModule,
   ],
   providers: [FormResolver, FormService],
   exports: [FormService],
