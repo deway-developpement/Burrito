@@ -2,7 +2,6 @@ import { Injectable, inject } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { map, forkJoin, Observable  } from 'rxjs';
 
-// --- 1. La Requête "Combo" ---
 const GET_FORMS_AND_TEACHERS = gql`
   query GetFormsAndTeachers {
     # Partie 1 : Les formulaires
@@ -79,7 +78,6 @@ const GET_TEACHER_EVALUATIONS = gql`
   }
 `;
 
-// 2. Récupérer tous les formulaires (juste ID et Titre) pour faire le lien
 const GET_ALL_FORM_TITLES = gql`
   query GetAllFormTitles {
     forms {
@@ -87,6 +85,32 @@ const GET_ALL_FORM_TITLES = gql`
         node {
           id
           title
+        }
+      }
+    }
+  }
+`;
+
+const GET_GLOBAL_STATS = gql`
+  query GetGlobalStats {
+    # 1. On récupère les étudiants pour le dénominateur du "Taux de complétion"
+    students: users(filter: { userType: { eq: STUDENT } }, paging: { first: 1000 }) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+    
+    # 2. On récupère les dernières évaluations pour calculer les "Nouveaux Feedbacks"
+    evaluations: evaluations(
+      sorting: [{ field: id, direction: DESC }]
+      paging: { first: 1000 }
+    ) {
+      edges {
+        node {
+          id
+          createdAt
         }
       }
     }
@@ -118,6 +142,11 @@ interface UserNode {
 interface CombinedResponse {
   forms: { edges: { node: EvaluationForm }[] };
   users: { edges: { node: UserNode }[] };
+}
+
+export interface DashboardMetrics {
+  completionRate: number; // Ex: 85
+  newFeedbackCount: number; // Ex: 128
 }
 
 @Injectable({
@@ -253,5 +282,43 @@ export class EvaluationService {
   private isDateOlderThanToday(date: Date): boolean {
     const today = new Date();
     return date.setHours(0,0,0,0) > date.getTime(); 
+  }
+
+  getDashboardMetrics(): Observable<DashboardMetrics> {
+    return this.apollo.query<any>({
+      query: GET_GLOBAL_STATS,
+      fetchPolicy: 'network-only' // On veut des stats fraiches
+    }).pipe(
+      map(result => {
+        const students = result.data?.students?.edges || [];
+        const evaluations = result.data?.evaluations?.edges.map((e: any) => e.node) || [];
+
+        // --- CALC 1 : New Feedback (Cette semaine) ---
+        const oneWeekAgo = new Date();
+        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+        const newFeedbackCount = evaluations.filter((ev: any) => {
+          const evalDate = new Date(ev.createdAt);
+          return evalDate >= oneWeekAgo;
+        }).length;
+
+        // --- CALC 2 : Completion Rate (Approximation) ---
+        // Logique : (Nombre total d'évaluations / Nombre total d'élèves) * 100
+        // Note : C'est une approximation car un élève peut remplir plusieurs formulaires.
+        // Pour être précis, il faudrait : (Total Réponses / (Nb Élèves * Nb Formulaires Actifs))
+        
+        const totalStudents = students.length || 1; // Eviter division par 0
+        const totalEvaluations = evaluations.length;
+        
+        // On cap à 100% pour l'UI si jamais il y a plus d'évals que d'élèves
+        let completionRate = Math.round((totalEvaluations / totalStudents) * 100);
+        if (completionRate > 100) completionRate = 100;
+
+        return {
+          completionRate,
+          newFeedbackCount
+        };
+      })
+    );
   }
 }
