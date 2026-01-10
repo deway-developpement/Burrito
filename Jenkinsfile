@@ -70,7 +70,7 @@ pipeline {
             cd backend
 
             # Define your services list here
-            SERVICES="api-gateway users-ms forms-ms evaluations-ms analytics-ms groups-ms"
+            SERVICES="api-gateway users-ms forms-ms evaluations-ms analytics-ms groups-ms notifications-ms"
 
             for svc in $SERVICES; do
               echo "-------------------------------------------------"
@@ -89,6 +89,36 @@ pipeline {
                 --output type=image,\\"name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-${svc}:latest\\",push=true
             done
           '''
+        }
+      }
+    }
+
+    stage('Apply Secrets') {
+      steps {
+        container('builder') {
+          withCredentials([
+            string(credentialsId: 'burrito-database-username', variable: 'DATABASE_USERNAME'),
+            string(credentialsId: 'burrito-database-password', variable: 'DATABASE_PASSWORD'),
+            string(credentialsId: 'burrito-jwt-secret', variable: 'JWT_SECRET'),
+            string(credentialsId: 'burrito-jwt-expires-in', variable: 'JWT_EXPIRES_IN'),
+            string(credentialsId: 'burrito-jwt-refresh-expires-in', variable: 'JWT_REFRESH_EXPIRES_IN'),
+            string(credentialsId: 'burrito-smtp-user', variable: 'SMTP_USER'),
+            string(credentialsId: 'burrito-smtp-pass', variable: 'SMTP_PASS'),
+          ]) {
+            sh '''
+              set -e
+
+              kubectl create secret generic burrito-secrets \
+                --from-literal=DATABASE_USERNAME="${DATABASE_USERNAME}" \
+                --from-literal=DATABASE_PASSWORD="${DATABASE_PASSWORD}" \
+                --from-literal=JWT_SECRET="${JWT_SECRET}" \
+                --from-literal=JWT_EXPIRES_IN="${JWT_EXPIRES_IN}" \
+                --from-literal=JWT_REFRESH_EXPIRES_IN="${JWT_REFRESH_EXPIRES_IN}" \
+                --from-literal=SMTP_USER="${SMTP_USER}" \
+                --from-literal=SMTP_PASS="${SMTP_PASS}" \
+                --dry-run=client -o yaml | kubectl apply -n "$K8S_NAMESPACE" -f -
+            '''
+          }
         }
       }
     }
@@ -125,6 +155,10 @@ pipeline {
             kubectl set image deployment/groups-ms \
               groups-ms=${REGISTRY_HOST}/burrito-groups-ms:${BUILD_NUMBER} \
               -n "$K8S_NAMESPACE"
+            
+            kubectl set image deployment/notifications-ms \
+              notifications-ms=${REGISTRY_HOST}/burrito-notifications-ms:${BUILD_NUMBER} \
+              -n "$K8S_NAMESPACE"
 
             echo "Deployment updated successfully."
 
@@ -134,6 +168,7 @@ pipeline {
             kubectl rollout status deployment/evaluations-ms -n "$K8S_NAMESPACE"
             kubectl rollout status deployment/analytics-ms -n "$K8S_NAMESPACE"
             kubectl rollout status deployment/groups-ms -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/notifications-ms -n "$K8S_NAMESPACE"
           '''
         }
       }
