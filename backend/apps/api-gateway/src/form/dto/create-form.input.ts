@@ -4,7 +4,6 @@ import {
   IsString,
   IsOptional,
   IsDateString,
-  IsBoolean,
   ValidateNested,
   IsArray,
 } from 'class-validator';
@@ -36,10 +35,6 @@ export class CreateFormInput {
   @IsOptional()
   @IsString()
   targetCourseId?: string;
-
-  @Field({ defaultValue: true })
-  @IsBoolean()
-  isActive: boolean;
 
   @Field({ nullable: true })
   @IsOptional()

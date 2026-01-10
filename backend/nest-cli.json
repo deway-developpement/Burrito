@@ -72,6 +72,18 @@
       "compilerOptions": {
         "tsConfigPath": "apps/groups-ms/tsconfig.app.json"
       }
+    },
+    "notifications-ms": {
+      "type": "application",
+      "root": "apps/notifications-ms",
+      "entryFile": "main",
+      "sourceRoot": "apps/notifications-ms/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/notifications-ms/tsconfig.app.json",
+        "assets": [
+          "notification/templates/**/*"
+        ]
+      }
     }
   }
 }

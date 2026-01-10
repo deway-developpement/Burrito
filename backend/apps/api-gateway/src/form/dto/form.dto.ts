@@ -1,7 +1,9 @@
-import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { ObjectType, Field, ID, registerEnumType } from '@nestjs/graphql';
 import { QuestionDto } from './question.dto';
 import { FilterableField, IDField } from '@nestjs-query/query-graphql';
-import { IForm } from '@app/common';
+import { FormStatus, IForm } from '@app/common';
+
+registerEnumType(FormStatus, { name: 'FormStatus' });
 
 @ObjectType('Form')
 export class FormDto implements IForm {
@@ -23,8 +25,8 @@ export class FormDto implements IForm {
   @FilterableField({ nullable: true })
   targetCourseId?: string;
 
-  @FilterableField()
-  isActive: boolean;
+  @FilterableField(() => FormStatus)
+  status: FormStatus;
 
   @FilterableField({ nullable: true })
   startDate?: Date;

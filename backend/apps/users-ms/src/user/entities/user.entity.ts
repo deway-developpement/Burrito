@@ -26,6 +26,20 @@ export class User extends Document implements IUser {
   @Prop({ default: null, nullable: true, type: String })
   readonly refresh_token: string | null;
 
+  @Prop({
+    type: {
+      emailEnabled: { type: Boolean, default: true },
+      language: { type: String, default: 'en' },
+      digestFrequency: { type: String, default: 'weekly' },
+    },
+    _id: false,
+  })
+  readonly notificationPreferences?: {
+    emailEnabled?: boolean;
+    language?: string;
+    digestFrequency?: string;
+  };
+
   @Prop({ default: Date.now })
   readonly createdAt!: Date;
 

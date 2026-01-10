@@ -3,6 +3,12 @@ export enum QuestionType {
   TEXT = 'TEXT',
 }
 
+export enum FormStatus {
+  DRAFT = 'DRAFT',
+  PUBLISHED = 'PUBLISHED',
+  CLOSED = 'CLOSED',
+}
+
 export interface IQuestion {
   readonly id: string;
 
@@ -26,7 +32,7 @@ export interface IForm {
 
   readonly targetCourseId?: string;
 
-  readonly isActive: boolean;
+  readonly status: FormStatus;
 
   readonly startDate?: Date;
 

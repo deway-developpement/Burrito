@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   GatewayTimeoutException,
   Inject,
   Injectable,
@@ -26,6 +27,7 @@ import {
 import { FormDto } from './dto/form.dto';
 import { CreateFormInput } from './dto/create-form.input';
 import { UpdateFormInput } from './dto/update-form.input';
+import { FormStatus } from '@app/common';
 
 @Injectable()
 @QueryService<FormDto>(FormDto)
@@ -313,6 +315,15 @@ export class FormService {
     );
   }
 
+  async changeStatus(id: string, status: FormStatus): Promise<FormDto> {
+    return this.sendWithTimeout(
+      this.formClient.send<FormDto>(
+        { cmd: 'form.updateOne' },
+        { id, update: { status } },
+      ),
+    );
+  }
+
   async updateMany(
     update: UpdateFormInput,
     filter: Filter<FormDto>,
@@ -344,6 +355,16 @@ export class FormService {
         catchError((err) => {
           if (err instanceof TimeoutError) {
             throw new GatewayTimeoutException('Form service timed out');
+          }
+          const status =
+            (err as { status?: number })?.status ??
+            (err as { error?: { status?: number } })?.error?.status;
+          if (status === 400) {
+            const message =
+              (err as { message?: string })?.message ??
+              (err as { error?: { message?: string } })?.error?.message ??
+              'Invalid form data';
+            throw new BadRequestException(message);
           }
           throw err;
         }),
