@@ -34,11 +34,21 @@ interface Evaluation {
   id: string;
   formId: string;
   teacherId: string;
+  createdAt?: string;
   answers: Array<{
     questionId: string;
     rating?: number;
     text?: string;
   }>;
+}
+
+interface TextResponse {
+  id: string;
+  questionId: string;
+  questionLabel: string;
+  text: string;
+  createdAt: string;
+  teacherId?: string;
 }
 
 interface User {
@@ -124,13 +134,18 @@ const GET_FORM_TITLE = gql`
 const GET_EVALUATIONS = gql`
   query Evaluations($filter: EvaluationFilter) {
     evaluations(filter: $filter) {
-      id
-      formId
-      teacherId
-      answers {
-        questionId
-        rating
-        text
+      edges {
+        node {
+          id
+          formId
+          teacherId
+          createdAt
+          answers {
+            questionId
+            rating
+            text
+          }
+        }
       }
     }
   }
@@ -166,6 +181,12 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   isAdmin = signal<boolean>(false);
 
   expandedQuestions = signal<Set<string>>(new Set());
+
+  textResponses = signal<TextResponse[]>([]);
+  textModalOpen = signal<boolean>(false);
+  textLoading = signal<boolean>(false);
+  textError = signal<string | null>(null);
+  currentQuestionId = signal<string | null>(null);
 
   private destroy$ = new Subject<void>();
   private debounceTimer: any = null;
@@ -371,14 +392,14 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     }
 
     return firstValueFrom(
-      this.apollo.query<{ evaluations: Evaluation[] }>({
+      this.apollo.query<{ evaluations: { edges: Array<{ node: Evaluation }> } }>({
         query: GET_EVALUATIONS,
         variables: { filter },
         fetchPolicy: 'network-only'
       })
     ).then((response) => {
-      if (response.data?.evaluations) {
-        return response.data.evaluations;
+      if (response.data?.evaluations?.edges) {
+        return response.data.evaluations.edges.map(edge => edge.node);
       }
       return [];
     });
@@ -517,6 +538,67 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
       month: 'short',
       day: 'numeric',
     });
+  }
+
+  getQuestionLabel(questionId: string): string {
+    const q = this.analytics()?.questions.find((item) => item.questionId === questionId);
+    return q?.label ?? `Question ${questionId}`;
+  }
+
+  async openTextResponses(questionId: string): Promise<void> {
+    this.currentQuestionId.set(questionId);
+    this.textModalOpen.set(true);
+    this.textLoading.set(true);
+    this.textError.set(null);
+    this.textResponses.set([]);
+
+    // Prevent body scroll
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    try {
+      const window = this.getAnalyticsWindow();
+      const evaluations = await this.fetchEvaluationsForForm(window);
+
+      const responses: TextResponse[] = [];
+      evaluations.forEach((evaluation) => {
+        evaluation.answers.forEach((answer, idx) => {
+          if (answer.questionId !== questionId) {
+            return;
+          }
+          const text = (answer.text ?? '').trim();
+          if (text.length === 0) {
+            return;
+          }
+          responses.push({
+            id: `${evaluation.id}-${answer.questionId}-${idx}`,
+            questionId: answer.questionId,
+            questionLabel: this.getQuestionLabel(answer.questionId),
+            text,
+            createdAt: evaluation.createdAt ?? new Date().toISOString(),
+            teacherId: evaluation.teacherId,
+          });
+        });
+      });
+
+      responses.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      this.textResponses.set(responses);
+    } catch (err) {
+      console.error('Failed to load text responses', err);
+      this.textError.set('Failed to load text responses');
+    } finally {
+      this.textLoading.set(false);
+    }
+  }
+
+  closeTextResponses(): void {
+    this.textModalOpen.set(false);
+    
+    // Restore body scroll
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = '';
+    }
   }
 
   getTimeWindowLabel(window: TimeWindow): string {
