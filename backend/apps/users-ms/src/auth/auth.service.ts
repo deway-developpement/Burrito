@@ -55,7 +55,13 @@ export class AuthService {
     }
     const user = await this.usersService.findById(decoded.sub);
     if (refresh_token === user?.refresh_token) {
-      return this.login(decoded);
+      // Reconstruct full payload with user data from database
+      const fullPayload: JwtPayload = {
+        username: user.email,
+        sub: user.id,
+        authType: user.userType,
+      };
+      return this.login(fullPayload);
     } else {
       if (user)
         await this.usersService.updateOne(user.id, {

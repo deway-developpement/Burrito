@@ -131,7 +131,6 @@ export class UserService {
       map(result => result.data?.me),
       tap(user => {
         if (user) {
-          console.log('User fetched:', user);
           this.currentUser.set(user);
           this.authService.setCurrentUser(user as any);
         }

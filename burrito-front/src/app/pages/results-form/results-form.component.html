@@ -1,6 +1,14 @@
 <app-header></app-header>
 
 <div class="results-form-container">
+  <!-- Navigation Bar -->
+  <div class="nav-bar">
+    <button class="btn-back" (click)="goBack()" title="Go back">
+      ← Back
+    </button>
+    <h1 class="page-title">Form Results</h1>
+  </div>
+
   <!-- Loading State -->
   @if (loading()) {
     <div class="loading-state">
@@ -29,14 +37,15 @@
 
         <!-- Time Window Selector -->
         <div class="time-window-selector">
-          <button
-            *ngFor="let window of ['all', '30d', '7d', 'custom']"
-            [class.active]="timeWindow() === window"
-            (click)="onTimeWindowChange($any(window))"
-            class="time-btn"
-          >
-            {{ getTimeWindowLabel($any(window)) }}
-          </button>
+          @for (window of ['all', '30d', '7d', 'custom']; track window) {
+            <button
+              [class.active]="timeWindow() === window"
+              (click)="onTimeWindowChange($any(window))"
+              class="time-btn"
+            >
+              {{ getTimeWindowLabel($any(window)) }}
+            </button>
+          }
         </div>
       </div>
 

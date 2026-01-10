@@ -1,0 +1,67 @@
+<app-background-div>
+  <header class="page-header">
+    <div class="header-content">
+      <button class="btn-back" (click)="goBack()" title="Go back to dashboard">
+        ← Back
+      </button>
+      <h1>Global Reports</h1>
+      <p class="subtitle">View analytics for all evaluation forms</p>
+    </div>
+  </header>
+
+  <div class="content-container">
+    <!-- Forms Grid -->
+    <section class="forms-section">
+      <div class="forms-grid" *ngIf="!loading()">
+        <div class="form-card" 
+             *ngFor="let form of forms()" 
+             (click)="navigateToFormResults(form.id)"
+             [class.inactive]="!form.isActive">
+          
+          <div class="card-header">
+            <div class="status-badge" [ngClass]="getStatusClass(form.isActive)">
+              {{ getStatusBadge(form.isActive) }}
+            </div>
+          </div>
+
+          <div class="card-body">
+            <h3 class="form-title">{{ form.title }}</h3>
+            <p class="form-description" *ngIf="form.description">
+              {{ (form.description | slice:0:100) }}{{ ((form.description.length) > 100) ? '...' : '' }}
+            </p>
+          </div>
+
+          <div class="card-footer">
+            <div class="meta-info">
+              <span class="meta-item">
+                <span class="label">Created</span>
+                <span class="value">{{ formatDate(form.createdAt) }}</span>
+              </span>
+            </div>
+            <div class="action-arrow">→</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div class="loading-container" *ngIf="loading() && forms().length === 0">
+        <p>Loading forms...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div class="empty-state" *ngIf="!loading() && forms().length === 0">
+        <span class="icon">📋</span>
+        <p>No forms available</p>
+      </div>
+
+      <!-- Load More Button -->
+      <div class="load-more-container" *ngIf="hasMore() && forms().length > 0">
+        <button class="btn-load-more" 
+                (click)="loadMoreForms()" 
+                [disabled]="loadMoreDisabled()">
+          {{ loadMoreDisabled() ? 'Loading...' : 'Load More Forms' }}
+        </button>
+      </div>
+    </section>
+  </div>
+</app-background-div>

@@ -12,6 +12,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { ResultsComponent } from './pages/results/results.component';
 import { ResultsTeacherComponent } from './pages/results-teacher/results-teacher.component';
 import { ResultsFormComponent } from './pages/results-form/results-form.component';
+import { GlobalReportsComponent } from './pages/global-reports/global-reports.component';
 import { authGuard } from './guards/auth.guard';
 import { teacherAccessGuard } from './guards/teacher-access.guard';
 
@@ -55,6 +56,11 @@ export const routes: Routes = [
   {
     path: 'admin/manage/students',
     component: ManageStudentsComponent
+  },
+  {
+    path: 'admin/reports',
+    component: GlobalReportsComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'results/:id',
