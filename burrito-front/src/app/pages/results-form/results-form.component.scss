@@ -579,6 +579,154 @@
             }
           }
         }
+
+        .sentiment-analysis {
+          margin-bottom: 1.5rem;
+
+          h4 {
+            margin: 0 0 1rem 0;
+            font-size: 0.95rem;
+            color: theme.$text-dark;
+            text-transform: uppercase;
+          }
+
+          .sentiment-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+          }
+
+          .sentiment-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+
+            .sentiment-label {
+              min-width: 70px;
+              font-weight: 600;
+              font-size: 0.9rem;
+              color: theme.$text-dark;
+            }
+
+            .sentiment-bar {
+              flex: 1;
+              height: 24px;
+              background: theme.$light-bg;
+              border-radius: 4px;
+              overflow: hidden;
+              position: relative;
+
+              .bar-fill {
+                height: 100%;
+                transition: width 0.3s ease;
+              }
+            }
+
+            .sentiment-pct {
+              min-width: 50px;
+              text-align: right;
+              font-weight: 600;
+              font-size: 0.9rem;
+            }
+
+            &.positive {
+              .bar-fill {
+                background: #10b981;
+              }
+
+              .sentiment-pct {
+                color: #10b981;
+              }
+            }
+
+            &.neutral {
+              .bar-fill {
+                background: #f59e0b;
+              }
+
+              .sentiment-pct {
+                color: #f59e0b;
+              }
+            }
+
+            &.negative {
+              .bar-fill {
+                background: #ef4444;
+              }
+
+              .sentiment-pct {
+                color: #ef4444;
+              }
+            }
+          }
+        }
+
+        .analysis-unavailable {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1rem;
+          background: #fef3c7;
+          border: 1px solid #fcd34d;
+          border-radius: 4px;
+          margin-bottom: 1.5rem;
+
+          .icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+          }
+
+          p {
+            margin: 0;
+            color: #92400e;
+            font-weight: 500;
+          }
+        }
+
+        .analysis-failed {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1rem;
+          background: #fee2e2;
+          border: 1px solid #fecaca;
+          border-radius: 4px;
+          margin-bottom: 1.5rem;
+
+          .icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+          }
+
+          p {
+            margin: 0;
+            color: #7f1d1d;
+            font-weight: 500;
+          }
+        }
+
+        .analysis-pending {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1rem;
+          background: #dbeafe;
+          border: 1px solid #bfdbfe;
+          border-radius: 4px;
+          margin-bottom: 1.5rem;
+
+          .icon {
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            animation: pulse 2s infinite;
+          }
+
+          p {
+            margin: 0;
+            color: #1e40af;
+            font-weight: 500;
+          }
+        }
       }
     }
   }

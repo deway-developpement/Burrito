@@ -68,7 +68,13 @@ interface QuestionAnalytics {
   };
   text?: {
     responseCount: number;
+    analysisStatus: 'DISABLED' | 'FAILED' | 'PENDING' | 'READY';
     topIdeas: Array<{ idea: string; count: number }>;
+    sentiment: {
+      positivePct: number;
+      neutralPct: number;
+      negativePct: number;
+    };
   };
 }
 
@@ -116,7 +122,13 @@ const GET_ANALYTICS_SNAPSHOT = gql`
         }
         text {
           responseCount
+          analysisStatus
           topIdeas { idea count }
+          sentiment {
+            positivePct
+            neutralPct
+            negativePct
+          }
         }
       }
     }
