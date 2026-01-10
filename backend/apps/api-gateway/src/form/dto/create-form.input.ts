@@ -33,11 +33,6 @@ export class CreateFormInput {
 
   @Field({ nullable: true })
   @IsOptional()
-  @IsString()
-  targetCourseId?: string;
-
-  @Field({ nullable: true })
-  @IsOptional()
   @IsDateString()
   startDate?: string;
 

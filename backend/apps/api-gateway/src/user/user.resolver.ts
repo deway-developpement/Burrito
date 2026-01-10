@@ -46,6 +46,10 @@ export class UserResolver extends CRUDResolver(UserDto, {
       GqlOrGuard(new GqlCurrentUserGuard(), GqlCredentialGuard(UserType.ADMIN)),
     ],
   },
+  aggregate: {
+    enabled: true,
+    guards: [GqlCredentialGuard(UserType.ADMIN)],
+  },
 }) {
   constructor(
     @Inject(UserService) private readonly userService: UserService,
