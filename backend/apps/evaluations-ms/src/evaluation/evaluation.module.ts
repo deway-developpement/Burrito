@@ -28,6 +28,26 @@ import { EvaluationController } from './evaluation.controller';
               },
             }),
           },
+          {
+            name: 'GROUPS_SERVICE',
+            useFactory: () => ({
+              transport: Transport.REDIS,
+              options: {
+                port: parseInt(process.env.REDIS_PORT || '6379'),
+                host: process.env.REDIS_HOST || 'localhost',
+              },
+            }),
+          },
+          {
+            name: 'NOTIFICATIONS_EVENTS',
+            useFactory: () => ({
+              transport: Transport.REDIS,
+              options: {
+                port: parseInt(process.env.REDIS_PORT || '6379'),
+                host: process.env.REDIS_HOST || 'localhost',
+              },
+            }),
+          },
         ]),
       ],
       services: [EvaluationService],

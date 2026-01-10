@@ -1,4 +1,4 @@
-import { Args, Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
 import { CRUDResolver } from '@nestjs-query/query-graphql';
 import { FormDto } from './dto/form.dto';
 import { FormService } from './form.service';
@@ -17,6 +17,7 @@ import type { AuthCredentials } from '../../../../libs/common/src/interfaces/aut
 import { GroupFormsByFormLoader } from '../loaders/group-forms-by-form.loader';
 import { GroupByIdLoader } from '../loaders/group-by-id.loader';
 import { GroupDto } from '../group/dto/group.dto';
+import { ChangeFormStatusInput } from './dto/change-form-status.input';
 
 @Resolver(() => FormDto)
 @UseInterceptors(TimestampToDateInterceptor)
@@ -66,5 +67,13 @@ export class FormResolver extends CRUDResolver(FormDto, {
       form.id,
       userId || user.id,
     );
+  }
+
+  @Mutation(() => FormDto)
+  @UseGuards(GqlCredentialGuard(UserType.TEACHER))
+  async changeFormStatus(
+    @Args('input') input: ChangeFormStatusInput,
+  ): Promise<FormDto> {
+    return this.service.changeStatus(input.id, input.status);
   }
 }
