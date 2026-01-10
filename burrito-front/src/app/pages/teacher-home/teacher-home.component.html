@@ -7,6 +7,17 @@
 
   <section class="section-container">
     <div class="section-header">
+      <h2 class="section-title">My Analytics</h2>
+    </div>
+    <a class="btn-action view-results-btn" 
+       [routerLink]="['/results/teacher', teacherId]"
+       [class.disabled]="!teacherId">
+      📊 View My Results Dashboard
+    </a>
+  </section>
+
+  <section class="section-container">
+    <div class="section-header">
       <h2 class="section-title">New Feedback</h2>
       <span class="badge-count" *ngIf="unreadEvaluations.length > 0">
         {{ unreadEvaluations.length }} new

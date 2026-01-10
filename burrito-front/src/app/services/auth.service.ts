@@ -7,12 +7,22 @@ interface AuthResponse {
   refresh_token: string; 
 }
 
+interface User {
+  id: string;
+  email: string;
+  fullName: string;
+  userType: 'admin' | 'teacher' | 'student';
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
   
   // Signal for the short-lived Access Token
   token = signal<string | null>(null);
+  
+  // Signal for current user
+  currentUser = signal<User | null>(null);
 
   login(credentials: { email: string; password: string }) {
     return this.http.post<AuthResponse>('/auth/login', credentials).pipe(
@@ -22,6 +32,9 @@ export class AuthService {
 
         // 2. Store Refresh Token locally
         localStorage.setItem('refresh_token', response.refresh_token);
+        
+        // 3. Fetch user info
+        this.fetchCurrentUser();
       })
     );
   }
@@ -34,9 +47,6 @@ export class AuthService {
       return of(null);
     }
 
-    // ✅ CORRECTION BASED ON SCREENSHOT
-    // We set the header key to 'refresh_token'
-    // We send just the token (no 'Bearer ' prefix needed for custom headers usually)
     const headers = new HttpHeaders().set('refresh_token', refreshToken);
 
     return this.http.get<AuthResponse>('/auth/refresh', { headers }).pipe(
@@ -48,6 +58,9 @@ export class AuthService {
         if (response.refresh_token) {
           localStorage.setItem('refresh_token', response.refresh_token);
         }
+        
+        // Fetch user info after session refresh
+        this.fetchCurrentUser();
       }),
       catchError((err) => {
         console.log('Refresh failed', err);
@@ -57,8 +70,39 @@ export class AuthService {
     );
   }
 
+  fetchCurrentUser(): void {
+    const query = `
+      query Whoami {
+        me {
+          email
+          fullName
+          userType
+        }
+      }
+    `;
+
+    const refresh_token = localStorage.getItem('refresh_token');
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${refresh_token || ''}`);
+
+    this.http.post<any>('/graphQL', { query }, { headers }).subscribe({
+      next: (response) => {
+        if (response?.data?.me) {
+          this.currentUser.set(response.data.me);
+        }
+      },
+      error: (err) => {
+        console.error('Failed to fetch current user', err);
+      }
+    });
+  }
+
+  getCurrentUser(): User | null {
+    return this.currentUser();
+  }
+
   logout() {
     this.token.set(null);
+    this.currentUser.set(null);
     localStorage.removeItem('refresh_token');
   }
 }

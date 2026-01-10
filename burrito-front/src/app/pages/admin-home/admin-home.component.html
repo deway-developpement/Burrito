@@ -53,6 +53,16 @@
         </section>
     }
 
+    <section class="quick-results">
+        <h2>Form Results</h2>
+        <div class="forms-list" *ngIf="forms$ | async as forms; else formsLoading">
+            <a class="form-link" *ngFor="let f of forms" [routerLink]="['/results/form', f.id]">
+                {{ f.title }} &rarr;
+            </a>
+        </div>
+        <ng-template #formsLoading><p>Loading forms…</p></ng-template>
+    </section>
+
     <section class="actions-section">
         <h2>Management Center</h2>
         <div class="actions-grid">

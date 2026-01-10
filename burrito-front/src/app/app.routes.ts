@@ -9,6 +9,11 @@ import { ContactComponent } from './pages/contact/contact.component';
 import { ManageTeachersComponent } from './pages/manage/teacher/manage-teachers.component';
 import { ManageStudentsComponent } from './pages/manage/student/manage-students.component';
 import { HomeComponent } from './pages/home/home.component';
+import { ResultsComponent } from './pages/results/results.component';
+import { ResultsTeacherComponent } from './pages/results-teacher/results-teacher.component';
+import { ResultsFormComponent } from './pages/results-form/results-form.component';
+import { authGuard } from './guards/auth.guard';
+import { teacherAccessGuard } from './guards/teacher-access.guard';
 
 export const routes: Routes = [
   {
@@ -51,4 +56,20 @@ export const routes: Routes = [
     path: 'admin/manage/students',
     component: ManageStudentsComponent
   },
+  {
+    path: 'results/:id',
+    component: ResultsComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'results/teacher/:teacherId',
+    component: ResultsTeacherComponent,
+    // canActivate: [authGuard, teacherAccessGuard]
+    //TODO: Temporarily disabled guards for testing
+  },
+  {
+    path: 'results/form/:formId',
+    component: ResultsFormComponent,
+    canActivate: [authGuard]
+  }
 ];
