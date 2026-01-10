@@ -1,8 +1,8 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Subject } from 'rxjs';
+import { Apollo, gql } from 'apollo-angular';
+import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { HeaderComponent } from '../../component/header/header.component';
 import { AuthService } from '../../services/auth.service';
@@ -103,6 +103,75 @@ interface RemarkConnection {
 
 type TimeWindow = 'all' | '30d' | '7d' | 'custom';
 
+const GET_FORMS = gql`
+  query Forms {
+    forms {
+      edges {
+        node {
+          id
+          title
+          targetTeacherId
+        }
+      }
+    }
+  }`;
+
+const GET_ANALYTICS_SNAPSHOT = gql`
+  query AnalyticsSnapshot($formId: String!, $window: AnalyticsWindowInput, $forceSync: Boolean) {
+    analyticsSnapshot(formId: $formId, window: $window, forceSync: $forceSync) {
+      formId
+      totalResponses
+      nps {
+        score
+        promotersPct
+        passivesPct
+        detractorsPct
+        promotersCount
+        passivesCount
+        detractorsCount
+      }
+      questions {
+        questionId
+        label
+        type
+        answeredCount
+        rating {
+          avg
+          npsBuckets {
+            promotersCount
+            passivesCount
+            detractorsCount
+          }
+        }
+      }
+    }
+  }
+`;
+
+const GET_EVALUATIONS = gql`
+  query Evaluations($teacherId: String!) {
+    evaluations(
+      filter: { teacherId: { eq: $teacherId } }
+      sorting: [{ field: id, direction: DESC }]
+    ) {
+      edges {
+        node {
+          id
+          formId
+          teacherId
+          createdAt
+          answers {
+            questionId
+            rating
+            text
+          }
+        }
+      }
+    }
+  }
+`;
+
+
 @Component({
   selector: 'app-results-teacher',
   standalone: true,
@@ -134,7 +203,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private http: HttpClient,
+    private apollo: Apollo,
     private authService: AuthService,
   ) {}
 
@@ -228,33 +297,18 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   }
 
   private fetchFormsForTeacher(): Promise<Form[]> {
-    const query = `
-      query Forms {
-        forms {
-          edges {
-            node {
-              id
-              title
-              targetTeacherId
-            }
-          }
-        }
-      }
-    `;
-
-    return this.http
-      .post<any>('/graphQL', {
-        query,
+    return firstValueFrom(
+      this.apollo.query<{ forms: { edges: { node: Form }[] } }>({
+        query: GET_FORMS,
+        fetchPolicy: 'network-only'
       })
-      .toPromise()
-      .then((response) => {
-        if (response?.data?.forms?.edges) {
-          const allForms = response.data.forms.edges.map((edge: any) => edge.node);
-          // Filter for forms targeting this teacher
-          return allForms.filter((form: Form) => form.targetTeacherId === this.teacherId());
-        }
-        return [];
-      });
+    ).then((response) => {
+      if (response.data?.forms?.edges) {
+        const allForms = response.data.forms.edges.map(edge => edge.node);
+        return allForms.filter(form => form.targetTeacherId === this.teacherId());
+      }
+      return [];
+    });
   }
 
   private fetchFormAnalytics(
@@ -262,51 +316,18 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     forceSync: boolean
   ): Promise<AnalyticsSnapshot | null> {
     const window = this.getAnalyticsWindow();
-    const query = `
-      query AnalyticsSnapshot($formId: String!, $window: AnalyticsWindowInput, $forceSync: Boolean) {
-        analyticsSnapshot(formId: $formId, window: $window, forceSync: $forceSync) {
-          formId
-          totalResponses
-          nps {
-            score
-            promotersPct
-            passivesPct
-            detractorsPct
-            promotersCount
-            passivesCount
-            detractorsCount
-          }
-          questions {
-            questionId
-            label
-            type
-            answeredCount
-            rating {
-              avg
-              npsBuckets {
-                promotersCount
-                passivesCount
-                detractorsCount
-              }
-            }
-          }
-        }
-      }
-    `;
-
-    return this.http
-      .post<any>('/graphQL', {
-        query,
+    return firstValueFrom(
+      this.apollo.query<{ analyticsSnapshot: AnalyticsSnapshot }>({
+        query: GET_ANALYTICS_SNAPSHOT,
         variables: { formId, window, forceSync },
+        fetchPolicy: 'network-only'
       })
-      .toPromise()
-      .then((response) => {
-        if (response?.data?.analyticsSnapshot) {
-          return response.data.analyticsSnapshot;
-        }
-        return null;
-      })
-      .catch(() => null);
+    ).then((response) => {
+      if (response.data?.analyticsSnapshot) {
+        return response.data.analyticsSnapshot;
+      }
+      return null;
+    }).catch(() => null);
   }
 
   private aggregateAnalytics(
@@ -448,51 +469,23 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   }
 
   private fetchEvaluationsForTeacher(): Promise<Evaluation[]> {
-    const formId =
-      this.selectedFormFilter() !== 'all' ? this.selectedFormFilter() : undefined;
-
-    const query = `
-      query Evaluations($teacherId: String!) {
-        evaluations(
-          filter: { teacherId: { eq: $teacherId } }
-          sorting: [{ field: id, direction: DESC }]
-        ) {
-          edges {
-            node {
-              id
-              formId
-              teacherId
-              createdAt
-              answers {
-                questionId
-                rating
-                text
-              }
-            }
-          }
-        }
-      }
-    `;
-
-    return this.http
-      .post<any>('/graphQL', {
-        query,
+    return firstValueFrom(
+      this.apollo.query<{ evaluations: { edges: { node: Evaluation }[] } }>({
+        query: GET_EVALUATIONS,
         variables: { teacherId: this.teacherId() },
+        fetchPolicy: 'network-only'
       })
-      .toPromise()
-      .then((response) => {
-        if (response?.data?.evaluations?.edges) {
-          let evaluations = response.data.evaluations.edges.map((edge: any) => edge.node);
-          
-          // Filter by form if needed
-          if (formId) {
-            evaluations = evaluations.filter((e: Evaluation) => e.formId === formId);
-          }
-          
-          return evaluations;
+    ).then((response) => {
+      if (response.data?.evaluations?.edges) {
+        let evaluations = response.data.evaluations.edges.map(edge => edge.node);
+        const formId = this.selectedFormFilter() !== 'all' ? this.selectedFormFilter() : undefined;
+        if (formId) {
+          evaluations = evaluations.filter(e => e.formId === formId);
         }
-        return [];
-      });
+        return evaluations;
+      }
+      return [];
+    });
   }
 
   private extractRemarksFromEvaluations(

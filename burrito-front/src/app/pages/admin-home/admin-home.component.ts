@@ -2,10 +2,10 @@ import { Component, inject } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';   
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
-import { DashboardService } from '../../services/dashboard.service'; // Assurez-vous du chemin
+import { DashboardService } from '../../services/dashboard.service';
 import { Observable, of, combineLatest, map } from 'rxjs';
-import { EvaluationService, DashboardMetrics } from '../../services/evaluation.service'; // Importer le service modifié
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Apollo, gql } from 'apollo-angular';
+import { EvaluationService, DashboardMetrics } from '../../services/evaluation.service';
 
 @Component({
   selector: 'app-admin-home',
@@ -18,23 +18,20 @@ export class AdminHomeComponent {
   
   today: Date = new Date();
   
-  // Observable qui contiendra nos stats { teacherCount, studentCount }
+  // Observable which will contain our stats { teacherCount, studentCount }
   stats$: Observable<any>;
 
-  // Liste courte de formulaires actifs pour accès rapide aux résultats
+  // Short list of active forms for quick access to results
   forms$: Observable<Array<{ id: string; title: string }>> = of([]);
 
   constructor(
     private dashboardService: DashboardService, 
-    private evaluationService: EvaluationService, // Injectez le service modifié
-    private http: HttpClient
+    private evaluationService: EvaluationService,
+    private apollo: Apollo
   ) {
-    // On peut utiliser forkJoin si on veut tout combiner, 
-    // ou simplement appeler cette méthode pour remplir les cases manquantes.
-    
     this.stats$ = combineLatest([
-      this.dashboardService.getStats(), // Votre ancien service (Profs/Elèves)
-      this.evaluationService.getDashboardMetrics() // La nouvelle méthode
+      this.dashboardService.getStats(),
+      this.evaluationService.getDashboardMetrics()
     ]).pipe(
       map(([counts, metrics]) => ({
         ...counts,
@@ -42,40 +39,36 @@ export class AdminHomeComponent {
       }))
     );
 
-    // Récupère quelques formulaires actifs pour lier vers /results/form/:id
+    // Fetch a few active forms for linking to /results/form/:id
     this.forms$ = this.fetchActiveForms(6);
   }
 
-  // Récupère quelques formulaires actifs pour lier vers /results/form/:id
-  private fetchActiveForms(limit = 6): Observable<Array<{ id: string; title: string }>> {
+  private fetchActiveForms(limit = 6): Observable<Array<{ id: string; title: string; isActive: boolean }>> {
 
-  
-    const query = `
-      query Forms {
-        forms {
-          edges {
-            node {
-              id
-              title
-              isActive
+    return this.apollo.watchQuery<{ forms: { edges: Array<{ node: { id: string; title: string; isActive: boolean } }> } }>({
+      query: gql`
+        query Forms {
+          forms {
+            edges {
+              node {
+                id
+                title
+                isActive
+              }
             }
           }
         }
-      }
-    `;
-
-    return this.http
-      .post<any>('/graphQL', {
-        query,
+      `,
+      fetchPolicy: 'cache-and-network'
+    }).valueChanges.pipe(
+      map((res) => {
+        const edges = res.data?.forms?.edges ?? [];
+        const allForms = edges
+          .map(edge => edge?.node)
+          .filter((form): form is { id: string; title: string; isActive: boolean } => form !== undefined && form !== null);
+        const activeForms = allForms.filter(form => form.isActive);
+        return activeForms.slice(0, limit);
       })
-      .pipe(
-        map((res) => {
-          const edges = res?.data?.forms?.edges ?? [];
-          const allForms = edges.map((edge: any) => edge.node);
-          // Filter for active forms on the client side
-          const activeForms = allForms.filter((form: any) => form.isActive);
-          return activeForms.slice(0, limit);
-        })
-      );
+    );
   }
 }
