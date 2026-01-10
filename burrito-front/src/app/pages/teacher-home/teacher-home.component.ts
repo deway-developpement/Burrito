@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 import { AdminPageHeaderComponent } from '../../component/shared/admin-page-header/admin-page-header.component';
 import { EvaluationService, TeacherEvaluationUI } from '../../services/evaluation.service';
@@ -12,6 +12,7 @@ import { UserService } from '../../services/user.service';
   imports: [
     CommonModule, 
     DatePipe,
+    RouterLink,
     BackgroundDivComponent, 
     AdminPageHeaderComponent
   ],
@@ -70,5 +71,9 @@ export class TeacherHomeComponent implements OnInit {
   viewEvaluation(id: string) {
     console.log(`Viewing evaluation detail #${id}`);
     // this.router.navigate(['/teacher/evaluation', id]);
+  }
+
+  get teacherId(): string | undefined {
+    return this.userService.currentUser()?.id;
   }
 }

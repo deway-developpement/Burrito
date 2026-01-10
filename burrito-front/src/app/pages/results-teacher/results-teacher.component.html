@@ -1,0 +1,196 @@
+<app-header></app-header>
+
+<div class="results-teacher-container">
+  <!-- Admin Context Banner -->
+  @if (showAdminBanner()) {
+    <div class="admin-banner">
+      <span class="admin-icon">👁️</span>
+      <span class="admin-text">You are viewing <strong>{{ analytics()?.teacherName }}'s</strong> evaluation results</span>
+      <button class="btn-close" (click)="showAdminBanner.set(false)">×</button>
+    </div>
+  }
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading analytics...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <div class="error-banner">
+      <span class="error-icon">⚠️</span>
+      <span>{{ error() }}</span>
+      <button class="btn-retry" (click)="onRefreshAnalytics()">Retry</button>
+    </div>
+  }
+
+  <!-- Main Content -->
+  @if (!loading() && analytics()) {
+    <div class="results-content">
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="teacher-info">
+          <h1>{{ analytics()!.teacherName }}</h1>
+          <p class="subtitle">
+            Across {{ analytics()!.formsBreakdown.length }} forms | 
+            Total {{ analytics()!.totalResponsesAcrossAllForms }} responses
+          </p>
+        </div>
+
+        <!-- Time Window Selector -->
+        <div class="time-window-selector">
+          <button
+            *ngFor="let window of ['all', '30d', '7d', 'custom']"
+            [class.active]="timeWindow() === window"
+            (click)="onTimeWindowChange($any(window))"
+            class="time-btn"
+          >
+            {{ getTimeWindowLabel($any(window)) }}
+          </button>
+        </div>
+
+        <!-- General Satisfaction Gauge -->
+        <div class="satisfaction-gauge">
+          <span class="gauge-label">General Satisfaction</span>
+          <div class="gauge-value">{{ analytics()!.generalSatisfactionRating.toFixed(1) }}/5</div>
+          <div class="gauge-bar">
+            <div
+              class="gauge-fill"
+              [style.width.%]="(analytics()!.generalSatisfactionRating / 5) * 100"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aggregate Metrics Row -->
+      <div class="metrics-row">
+        <div class="metric-card nps-card">
+          <div class="metric-label">NPS Score</div>
+          <div class="metric-value" [class]="'nps-' + getNpsColor(analytics()!.nps.score)">
+            {{ analytics()!.nps.score.toFixed(0) }}
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Promoters</div>
+          <div class="metric-value promoters">{{ analytics()!.nps.promotersPct.toFixed(1) }}%</div>
+          <div class="metric-subtext">({{ analytics()!.nps.promotersCount }})</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Passives</div>
+          <div class="metric-value passives">{{ analytics()!.nps.passivesPct.toFixed(1) }}%</div>
+          <div class="metric-subtext">({{ analytics()!.nps.passivesCount }})</div>
+        </div>
+
+        <div class="metric-card">
+          <div class="metric-label">Detractors</div>
+          <div class="metric-value detractors">{{ analytics()!.nps.detractorsPct.toFixed(1) }}%</div>
+          <div class="metric-subtext">({{ analytics()!.nps.detractorsCount }})</div>
+        </div>
+      </div>
+
+      <!-- Forms Breakdown (Collapsible Cards) -->
+      <div class="forms-breakdown">
+        <h2 class="section-title">Forms Breakdown</h2>
+        
+        @for (form of analytics()!.formsBreakdown; track form.formId) {
+          <div class="form-card">
+            <div class="form-card-header">
+              <div class="form-title">
+                <h3>{{ form.title }}</h3>
+              </div>
+              <div class="form-stats">
+                <span class="stat-item">{{ form.totalResponses }} responses</span>
+                <span class="stat-item">NPS: <span [class]="getFormBadgeClass(form.nps.score)">{{ form.nps.score.toFixed(0) }}</span></span>
+                <span class="stat-item">⭐ {{ form.averageRating.toFixed(1) }}/5</span>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Remarks Section -->
+      <div class="remarks-section">
+        <h2 class="section-title">Recent Feedback</h2>
+
+        <!-- Form Filter -->
+        <div class="remarks-controls">
+          <select
+            [value]="selectedFormFilter()"
+            (change)="onFormFilterChange($any($event.target).value)"
+            class="form-filter"
+          >
+            <option value="all">All Forms</option>
+            @for (form of analytics()!.formsBreakdown; track form.formId) {
+              <option [value]="form.formId">{{ form.title }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Remarks List -->
+        <div class="remarks-list">
+          @if (remarks().length === 0) {
+            <div class="empty-state">
+              <p>No feedback found for this time period.</p>
+            </div>
+          }
+
+          @for (remark of remarks(); track remark.id) {
+            <div class="remark-card">
+              <div class="remark-content">
+                <p class="remark-text">{{ remark.text }}</p>
+                <div class="remark-meta">
+                  <span class="remark-form">
+                    @for (form of analytics()!.formsBreakdown; track form.formId) {
+                      @if (form.formId === remark.formId) {
+                        {{ form.title }}
+                      }
+                    }
+                  </span>
+                  <span class="remark-date">{{ formatDate(remark.createdAt) }}</span>
+                  @if (remark.rating) {
+                    <span class="remark-rating">⭐ {{ remark.rating }}/5</span>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Load More Button -->
+        @if (remarks().length > 0) {
+          <div class="remarks-pagination">
+            <button
+              (click)="loadMoreRemarks()"
+              [disabled]="remarksLoading()"
+              class="btn-load-more"
+            >
+              @if (remarksLoading()) {
+                <span class="spinner-small"></span>
+                Loading...
+              } @else {
+                Load More Comments
+              }
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Refresh Info -->
+      <div class="refresh-info">
+        <span class="refresh-timestamp">Last updated {{ formatDate(analytics()!.generatedAt) }}</span>
+        <button (click)="onRefreshAnalytics()" class="btn-refresh">
+          @if (loading()) {
+            <span class="spinner-small"></span>
+          } @else {
+            🔄 Refresh
+          }
+        </button>
+      </div>
+    </div>
+  }
+</div>

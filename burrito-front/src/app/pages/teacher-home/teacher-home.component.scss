@@ -29,6 +29,58 @@
   border-radius: 12px;
 }
 
+.view-results-btn {
+  display: inline-block;
+  margin-bottom: 2rem;
+  padding: 1.2rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, theme.$primary-color 0%, lighten(theme.$primary-color, 10%) 100%);
+  color: theme.$white;
+  border: none;
+  border-radius: theme.$radius-md;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: left 0.3s ease;
+    z-index: 1;
+  }
+
+  &:not(.disabled) {
+    &:hover {
+      background: linear-gradient(135deg, darken(theme.$primary-color, 5%) 0%, theme.$primary-color 100%);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+
+      &::before {
+        left: 100%;
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px);
+    }
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
 // --- UNREAD CARDS GRID ---
 .eval-grid {
   display: grid;
