@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Apollo, gql } from 'apollo-angular';
 import { AuthService } from '../../services/auth.service';
 import { HeaderComponent } from '../../component/header/header.component';
 
@@ -43,6 +43,29 @@ interface FormResponse {
   data: { form: FormDetails | null };
 }
 
+const GET_EVALUATION = gql`
+  query Evaluation($id: ID!) {
+    evaluation(id: $id) {
+      id
+      formId
+      teacherId
+      answers { questionId rating text }
+      createdAt
+    }
+  }
+`;
+
+const GET_FORM = gql`
+  query Form($id: ID!) {
+    form(id: $id) {
+      id
+      title
+      description
+      questions { id label required type }
+    }
+  }
+`;
+
 @Component({
   selector: 'app-results',
   standalone: true,
@@ -52,7 +75,7 @@ interface FormResponse {
 })
 export class ResultsComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private http = inject(HttpClient);
+  private apollo = inject(Apollo);
   private authService = inject(AuthService);
 
   evaluationId = signal<string | null>(null);
@@ -74,33 +97,17 @@ export class ResultsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    const token = this.authService.token();
-    if (!token) {
-      this.error.set('Not authenticated');
-      this.loading.set(false);
-      return;
-    }
-
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    const query = `
-      query Evaluation($id: ID!) {
-        evaluation(id: $id) {
-          id
-          formId
-          teacherId
-          answers { questionId rating text }
-          createdAt
-        }
-      }
-    `;
-
-    this.http
-      .post<EvaluationResponse>('/graphQL', { query, variables: { id } }, { headers })
+    this.apollo
+      .query<{ evaluation: EvaluationResult | null }>({
+        query: GET_EVALUATION,
+        variables: { id },
+        fetchPolicy: 'network-only'
+      })
       .subscribe({
-        next: (data) => {
-          if (data.data.evaluation) {
-            this.evaluation.set(data.data.evaluation);
-            this.loadForm(data.data.evaluation.formId, headers);
+        next: (result) => {
+          if (result?.data?.evaluation) {
+            this.evaluation.set(result.data.evaluation);
+            this.loadForm(result.data.evaluation.formId);
           } else {
             this.error.set('Evaluation not found');
           }
@@ -114,25 +121,18 @@ export class ResultsComponent implements OnInit {
       });
   }
 
-  private loadForm(formId: string, headers: HttpHeaders) {
+  private loadForm(formId: string) {
     this.formLoading.set(true);
 
-    const query = `
-      query Form($id: ID!) {
-        form(id: $id) {
-          id
-          title
-          description
-          questions { id label required type }
-        }
-      }
-    `;
-
-    this.http
-      .post<FormResponse>('/graphQL', { query, variables: { id: formId } }, { headers })
+    this.apollo
+      .query<{ form: FormDetails | null }>({
+        query: GET_FORM,
+        variables: { id: formId },
+        fetchPolicy: 'cache-first'
+      })
       .subscribe({
-        next: (data) => {
-          this.form.set(data.data.form);
+        next: (result) => {
+          this.form.set(result?.data?.form || null);
           this.formLoading.set(false);
         },
         error: (err) => {

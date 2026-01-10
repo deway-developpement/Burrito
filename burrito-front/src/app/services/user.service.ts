@@ -1,6 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
 import { tap, catchError, of, map, Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 // --- QUERIES ---
 
@@ -115,6 +116,7 @@ interface RegisterResponse {
 })
 export class UserService {
   private apollo = inject(Apollo);
+  private authService = inject(AuthService);
   currentUser = signal<UserProfile | null>(null);
 
   getCurrentUser() {
@@ -131,11 +133,13 @@ export class UserService {
         if (user) {
           console.log('User fetched:', user);
           this.currentUser.set(user);
+          this.authService.setCurrentUser(user as any);
         }
       }),
       catchError(error => {
         console.error('FetchMe Error:', error);
         this.currentUser.set(null);
+        this.authService.setCurrentUser(null);
         return of(null);
       })
     );

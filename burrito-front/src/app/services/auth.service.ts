@@ -32,9 +32,6 @@ export class AuthService {
 
         // 2. Store Refresh Token locally
         localStorage.setItem('refresh_token', response.refresh_token);
-        
-        // 3. Fetch user info
-        this.fetchCurrentUser();
       })
     );
   }
@@ -58,9 +55,6 @@ export class AuthService {
         if (response.refresh_token) {
           localStorage.setItem('refresh_token', response.refresh_token);
         }
-        
-        // Fetch user info after session refresh
-        this.fetchCurrentUser();
       }),
       catchError((err) => {
         console.log('Refresh failed', err);
@@ -70,34 +64,12 @@ export class AuthService {
     );
   }
 
-  fetchCurrentUser(): void {
-    const query = `
-      query Whoami {
-        me {
-          email
-          fullName
-          userType
-        }
-      }
-    `;
-
-    const refresh_token = localStorage.getItem('refresh_token');
-    const headers = new HttpHeaders().set('Authorization', `Bearer ${refresh_token || ''}`);
-
-    this.http.post<any>('/graphQL', { query }, { headers }).subscribe({
-      next: (response) => {
-        if (response?.data?.me) {
-          this.currentUser.set(response.data.me);
-        }
-      },
-      error: (err) => {
-        console.error('Failed to fetch current user', err);
-      }
-    });
-  }
-
   getCurrentUser(): User | null {
     return this.currentUser();
+  }
+
+  setCurrentUser(user: User | null): void {
+    this.currentUser.set(user);
   }
 
   logout() {
