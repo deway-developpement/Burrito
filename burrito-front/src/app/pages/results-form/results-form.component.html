@@ -187,7 +187,12 @@
                 @if (question.text) {
                   <div class="text-breakdown">
                     <div class="text-stats">
-                      <span class="stat-label">Text Responses</span>
+                      <button 
+                        class="btn-show-answers"
+                        (click)="openTextResponses(question.questionId)"
+                      >
+                        Show answers
+                      </button>
                       <span class="stat-value">{{ question.text.responseCount }}</span>
                     </div>
 
@@ -220,6 +225,37 @@
             🔄 Refresh
           }
         </button>
+      </div>
+    </div>
+  }
+
+  @if (textModalOpen()) {
+    <div class="modal-overlay" (click)="closeTextResponses()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ currentQuestionId() ? getQuestionLabel(currentQuestionId()!) : 'Text responses' }}</h3>
+          <button class="close-btn" (click)="closeTextResponses()">✕</button>
+        </div>
+
+        @if (textLoading()) {
+          <div class="modal-loading">Loading text responses…</div>
+        } @else if (textError()) {
+          <div class="modal-error">{{ textError() }}</div>
+        } @else if (textResponses().length > 0) {
+          <div class="text-responses">
+            @for (resp of textResponses(); track resp.id) {
+              <div class="text-response">
+                <div class="tr-meta">
+                  <span class="pill neutral">{{ resp.questionLabel }}</span>
+                  <span class="muted">{{ formatDate(resp.createdAt) }}</span>
+                </div>
+                <p class="tr-text">{{ resp.text }}</p>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="modal-empty">No text responses found for this window.</div>
+        }
       </div>
     </div>
   }
