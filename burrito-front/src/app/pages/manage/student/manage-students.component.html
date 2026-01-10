@@ -1,0 +1,31 @@
+<app-background-div>
+  
+  <app-admin-page-header 
+    title="Manage Students" 
+    subtitle="Enroll students, handle accounts, and manage anonymity settings."
+    buttonLabel="Enroll Student"
+    (action)="onAdd()">
+  </app-admin-page-header>
+
+  <app-admin-table 
+    [columns]="tableColumns" 
+    [data]="(students$ | async) || []"
+    (edit)="onEdit($event)"
+    (delete)="onDelete($event)">
+  </app-admin-table>
+
+  <app-edit-user-modal
+    [user]="selectedUser"
+    (close)="closeEditModal()"
+    (saved)="refreshData()">
+  </app-edit-user-modal>
+
+  @if (showAddModal) {
+    <app-add-user-modal 
+      userType="STUDENT"
+      (close)="closeAddModal()" 
+      (saved)="refreshData()">
+    </app-add-user-modal>
+  }
+
+</app-background-div>

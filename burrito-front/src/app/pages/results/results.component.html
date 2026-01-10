@@ -1,0 +1,66 @@
+<app-header></app-header>
+
+<div class="results-container">
+  <h1>Evaluation Results</h1>
+
+  @if (loading()) {
+    <div class="card notice">
+      <p>Loading evaluation results…</p>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="card error">
+      <p>{{ error() }}</p>
+    </div>
+  }
+
+  @if (evaluation() && !loading()) {
+    <div class="card summary">
+      <div class="summary-header">
+        <div>
+          <p class="eyebrow">Form</p>
+          <h2>{{ form()?.title || 'Evaluation' }}</h2>
+          <p class="muted">{{ form()?.description || 'Form details unavailable.' }}</p>
+        </div>
+        <div class="meta">
+          <p class="eyebrow">Submitted on</p>
+          <p>{{ evaluation()!.createdAt | date: 'medium' }}</p>
+        </div>
+      </div>
+
+      @if (formLoading()) {
+        <p class="muted">Loading form details…</p>
+      }
+    </div>
+
+    <div class="card answers">
+      <div class="section-header">
+        <h3>Answers</h3>
+        <p class="muted">
+          Showing {{ evaluation()!.answers.length || 0 }} answer{{ evaluation()!.answers.length === 1 ? '' : 's' }}
+        </p>
+      </div>
+
+      @if (evaluation()!.answers && evaluation()!.answers.length > 0) {
+        <div class="answers-list">
+          @for (answer of evaluation()!.answers; track answer.questionId) {
+            <div class="answer-item">
+              <p class="question">{{ questionLabel(answer.questionId) }}</p>
+              <p class="answer">
+                @if (questionType(answer.questionId) === 'RATING') {
+                  <span class="pill">Rating</span>
+                } @else {
+                  <span class="pill neutral">Response</span>
+                }
+                {{ displayAnswer(answer) }}
+              </p>
+            </div>
+          }
+        </div>
+      } @else {
+        <p class="muted">No answers recorded.</p>
+      }
+    </div>
+  }
+</div>

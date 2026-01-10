@@ -1,0 +1,174 @@
+@use 'burrito-theme' as theme;
+
+.contact-container {
+  min-height: 100vh;
+  background-color: theme.$bg-light;
+  padding: 2rem 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center; // Centered vertically too for this one
+  font-family: theme.$font-family-base;
+}
+
+.contact-card {
+  background-color: theme.$white;
+  max-width: 600px; // Slightly narrower for a contact form
+  width: 100%;
+  border-radius: theme.$radius-lg;
+  box-shadow: theme.$shadow-soft;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.contact-header {
+  background-color: theme.$white;
+  padding: 2.5rem 2rem 1rem;
+  text-align: center;
+  border-bottom: 2px solid theme.$bg-light;
+
+  h1 {
+    margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: theme.$text-dark;
+  }
+
+  .subtitle {
+    margin: 0.5rem 0;
+    font-size: 1.1rem;
+    color: theme.$orange;
+    font-weight: 500;
+  }
+}
+
+.contact-content {
+  padding: 2rem;
+  color: theme.$text-dark;
+}
+
+.info-section {
+  margin-bottom: 2rem;
+  text-align: center;
+
+  p {
+    color: theme.$text-muted;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+}
+
+.direct-contact {
+  background-color: theme.$bg-light;
+  padding: 1rem;
+  border-radius: theme.$radius-lg;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  font-size: 0.9rem;
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: theme.$text-dark;
+    
+    .icon {
+      font-style: normal;
+    }
+  }
+}
+
+// Form Styles
+.form-group {
+  margin-bottom: 1.5rem;
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: theme.$text-dark;
+    font-size: 0.95rem;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid theme.$bg-light;
+    border-radius: 12px;
+    background-color: theme.$bg-light;
+    font-family: inherit;
+    color: theme.$text-dark;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+
+    &:focus {
+      outline: none;
+      border-color: theme.$orange;
+      background-color: theme.$white;
+      box-shadow: 0 0 0 4px rgba(theme.$orange, 0.1);
+    }
+  }
+
+  textarea {
+    resize: vertical;
+  }
+}
+
+.btn-submit {
+  width: 100%;
+  background-color: theme.$orange;
+  color: theme.$white;
+  border: none;
+  padding: 1rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(theme.$orange, 0.3);
+  transition: all 0.3s ease;
+  margin-top: 1rem;
+
+  &:hover {
+    background-color: darken(theme.$orange, 5%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(theme.$orange, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.contact-footer {
+  padding: 1.5rem;
+  text-align: center;
+  border-top: 1px solid theme.$bg-light;
+}
+
+.btn-back {
+  background: transparent;
+  border: none;
+  color: theme.$text-muted;
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-decoration: underline;
+
+  &:hover {
+    color: theme.$orange;
+  }
+}
+
+// Responsive
+@media (max-width: 600px) {
+  .contact-header {
+    padding: 2rem 1.5rem 1rem;
+    h1 { font-size: 1.8rem; }
+  }
+  
+  .contact-content {
+    padding: 1.5rem;
+  }
+}

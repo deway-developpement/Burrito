@@ -1,0 +1,58 @@
+<div class="contact-container">
+  <div class="contact-card">
+    <header class="contact-header">
+      <h1>Contact Us</h1>
+      <p class="subtitle">We'd love to hear from you</p>
+    </header>
+
+    <div class="contact-content">
+      
+      <section class="info-section">
+        <p>
+          Having trouble with the platform? Have a suggestion for the Burito team? 
+          Fill out the form below or reach us directly.
+        </p>
+        <div class="direct-contact">
+          <div class="contact-item">
+            <i class="icon">📍</i>
+            <span>EFREI, 30-32 Avenue de la République, Villejuif</span>
+          </div>
+          <div class="contact-item">
+            <i class="icon">✉️</i>
+            <span>support@burito.efrei.net</span>
+          </div>
+        </div>
+      </section>
+
+      <form (submit)="onSubmit($event)">
+        <div class="form-group">
+          <label for="email">Your Email</label>
+          <input type="email" id="email" placeholder="student@efrei.net" required>
+        </div>
+
+        <div class="form-group">
+          <label for="subject">Subject</label>
+          <select id="subject" required>
+            <option value="" disabled selected>Select a topic</option>
+            <option value="tech">Technical Issue / Bug</option>
+            <option value="account">Account Access</option>
+            <option value="feedback">General Feedback</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="message">Message</label>
+          <textarea id="message" rows="5" placeholder="How can we help you?" required></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">Send Message</button>
+      </form>
+
+    </div>
+
+    <footer class="contact-footer">
+      <button class="btn-back" (click)="goBack()">Back to Home</button>
+    </footer>
+  </div>
+</div>

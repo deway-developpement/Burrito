@@ -1,0 +1,1 @@
+export const MICROSERVICE_TIMEOUT_MS = 5000;

@@ -7,27 +7,56 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
+    "populate": "node scripts/seed-analytics.js",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/main",
+    "start:prod": "node dist/apps/backend/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./apps/backend/test/jest-e2e.json"
   },
   "dependencies": {
-    "@apollo/server": "^5.1.0",
+    "@apollo/server": "5.2.0",
     "@as-integrations/express5": "^1.1.2",
+    "@nestjs-query/core": "^0.30.0",
+    "@nestjs-query/query-graphql": "^0.30.0",
+    "@nestjs-query/query-mongoose": "^0.30.0",
+    "@nestjs-query/query-typegoose": "^0.30.0",
     "@nestjs/apollo": "^13.2.1",
-    "@nestjs/common": "^11.0.1",
+    "@nestjs/common": "^11.1.9",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/graphql": "^13.2.0",
+    "@nestjs/jwt": "11.0.1",
+    "@nestjs/microservices": "^11.1.9",
+    "@nestjs/mongoose": "^11.0.3",
+    "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/typeorm": "^11.0.0",
+    "@typegoose/typegoose": "^8.3.0",
+    "@willsoto/nestjs-prometheus": "^6.0.2",
+    "bcrypt": "6.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.3",
+    "dataloader": "^2.2.3",
     "graphql": "^16.12.0",
+    "graphql-subscriptions": "^1.2.1",
+    "ioredis": "^5.8.2",
+    "joi": "^18.0.1",
+    "mongodb": "^7.0.0",
+    "mongoose": "^8.20.0",
+    "nestjs-pino": "^4.5.0",
+    "nestjs-typegoose": "^7.1.38",
+    "passport-jwt": "^4.0.1",
+    "passport-local": "^1.0.0",
+    "pino": "^10.1.0",
+    "pino-http": "^11.0.0",
+    "prom-client": "^15.1.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
   },
@@ -37,9 +66,13 @@
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
+    "@types/joi": "^17.2.2",
     "@types/node": "^22.10.7",
+    "@types/passport-jwt": "^4.0.1",
+    "@types/passport-local": "^1.0.38",
     "@types/supertest": "^6.0.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^10.0.1",
@@ -62,7 +95,7 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
+    "rootDir": ".",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
@@ -70,7 +103,14 @@
     "collectCoverageFrom": [
       "**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "coverageDirectory": "./coverage",
+    "testEnvironment": "node",
+    "roots": [
+      "<rootDir>/apps/",
+      "<rootDir>/libs/"
+    ],
+    "moduleNameMapper": {
+      "^@app/common(|/.*)$": "<rootDir>/libs/common/src/$1"
+    }
   }
 }

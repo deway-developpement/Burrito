@@ -1,0 +1,443 @@
+@use 'burrito-theme' as theme;
+
+.section-container {
+  margin-bottom: 3rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.2rem;
+  color: theme.$text-dark;
+  font-weight: 700;
+  margin: 0;
+  padding-left: 0.5rem;
+  border-left: 4px solid theme.$orange;
+}
+
+.badge-count {
+  background-color: theme.$orange;
+  color: theme.$white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+}
+
+.view-results-btn {
+  display: inline-block;
+  margin-bottom: 2rem;
+  padding: 1.2rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, theme.$primary-color 0%, lighten(theme.$primary-color, 10%) 100%);
+  color: theme.$white;
+  border: none;
+  border-radius: theme.$radius-md;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: left 0.3s ease;
+    z-index: 1;
+  }
+
+  &:not(.disabled) {
+    &:hover {
+      background: linear-gradient(135deg, darken(theme.$primary-color, 5%) 0%, theme.$primary-color 100%);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+
+      &::before {
+        left: 100%;
+      }
+    }
+
+    &:active {
+      transform: translateY(-1px);
+    }
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+// --- UNREAD CARDS GRID ---
+.eval-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.eval-card {
+  background: theme.$white;
+  border-radius: theme.$radius-lg;
+  box-shadow: theme.$shadow-soft;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid transparent;
+
+  // Specific style for Unread items to make them pop
+  &.unread-card {
+    border-left: 4px solid theme.$orange; 
+  }
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+    position: relative;
+
+    .avatar-anon {
+      width: 40px;
+      height: 40px;
+      background-color: theme.$bg-light;
+      color: theme.$text-muted;
+      border-radius: 8px; // Square-ish for anonymous
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1.2rem;
+    }
+
+    .meta {
+      h3 {
+        margin: 0;
+        font-size: 1rem;
+        color: theme.$text-dark;
+        font-weight: 600;
+      }
+      .date-sub {
+        font-size: 0.8rem;
+        color: theme.$text-muted;
+      }
+    }
+
+    .status-badge.new {
+      margin-left: auto;
+      background-color: rgba(theme.$orange, 0.15);
+      color: theme.$orange;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .card-body {
+    margin-bottom: 1.5rem;
+    
+    .rating-display {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      
+      .label {
+        font-size: 0.85rem;
+        color: theme.$text-muted;
+      }
+
+      .stars {
+        color: #e0e0e0; // Empty star color
+        font-size: 1.1rem;
+        
+        .filled {
+          color: #f1c40f; // Star Yellow
+        }
+      }
+    }
+  }
+
+  .card-footer {
+    margin-top: auto;
+
+    .btn-action {
+      width: 100%;
+      background-color: theme.$white;
+      color: theme.$text-dark;
+      border: 2px solid theme.$bg-light;
+      padding: 0.7rem;
+      border-radius: theme.$radius-lg;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+
+      &:hover {
+        border-color: theme.$orange;
+        color: theme.$orange;
+        background-color: #fff;
+      }
+    }
+  }
+}
+
+// --- HISTORY TABLE ---
+.history-container {
+  background: theme.$white;
+  border-radius: theme.$radius-lg;
+  box-shadow: theme.$shadow-soft;
+  overflow: hidden;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    padding: 1rem 1.5rem;
+    background-color: theme.$bg-light;
+    color: theme.$text-muted;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid theme.$bg-light;
+    color: theme.$text-dark;
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.mini-rating {
+  font-weight: 600;
+  color: theme.$text-dark;
+  font-size: 0.9rem;
+}
+
+.btn-text {
+  background: none;
+  border: none;
+  color: theme.$text-muted;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: underline;
+  transition: color 0.2s;
+
+  &:hover {
+    color: theme.$orange;
+  }
+}
+
+.text-muted { color: theme.$text-muted; }
+.text-right { text-align: right; }
+.course-col { font-weight: 600; }
+
+// --- EMPTY STATE ---
+.empty-state {
+  background-color: theme.$white;
+  border-radius: theme.$radius-lg;
+  padding: 3rem;
+  text-align: center;
+  border: 2px dashed theme.$bg-light;
+
+  .icon {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 1rem;
+  }
+  
+  p {
+    color: theme.$text-muted;
+    font-weight: 500;
+    margin: 0;
+  }
+}
+
+// Modal Styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: theme.$white;
+  border-radius: theme.$radius-lg;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid theme.$border-color;
+
+  h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: theme.$text-dark;
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: theme.$text-muted;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: theme.$radius-md;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: theme.$border-color;
+      color: theme.$text-dark;
+    }
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid theme.$border-color;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.feedback-header {
+  margin-bottom: 1.5rem;
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    color: theme.$text-dark;
+  }
+
+  .feedback-date {
+    margin: 0;
+    font-size: 0.9rem;
+    color: theme.$text-muted;
+  }
+}
+
+.feedback-rating {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: theme.$light-bg;
+  border-radius: theme.$radius-md;
+
+  .label {
+    font-weight: 600;
+    color: theme.$text-dark;
+  }
+
+  .stars {
+    display: flex;
+    gap: 0.3rem;
+
+    span {
+      font-size: 1.5rem;
+      color: theme.$border-color;
+      transition: color 0.2s ease;
+
+      &.filled {
+        color: theme.$orange;
+      }
+    }
+  }
+
+  .rating-text {
+    margin-left: auto;
+    font-weight: 700;
+    color: theme.$orange;
+    font-size: 1rem;
+  }
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: theme.$text-muted;
+  font-size: 0.95rem;
+}
+
+.error-state {
+  padding: 1rem;
+  background-color: theme.$error-light;
+  color: theme.$error;
+  border-radius: theme.$radius-md;
+  font-weight: 500;
+}
+
+.btn-primary {
+  padding: 0.6rem 1.5rem;
+  background-color: theme.$primary-color;
+  color: theme.$white;
+  border: none;
+  border-radius: theme.$radius-md;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: darken(theme.$primary-color, 10%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}

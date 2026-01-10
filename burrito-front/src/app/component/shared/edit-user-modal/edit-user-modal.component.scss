@@ -1,0 +1,157 @@
+@use 'burrito-theme' as theme;
+
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px); // Added for a softer feel
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal-container {
+  background: theme.$white;
+  width: 90%;
+  max-width: 500px;
+  // Use the theme radius and shadow
+  border-radius: theme.$radius-lg;
+  box-shadow: theme.$shadow-soft;
+  font-family: theme.$font-family-base;
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+  padding: 20px 24px; // Slightly more breathing room
+  border-bottom: 1px solid theme.$orange-light; // Use the light orange for dividers
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  h2 { 
+    margin: 0; 
+    font-size: 1.25rem; 
+    color: theme.$text-dark;
+    font-weight: 700;
+  }
+  
+  .close-btn { 
+    background: none; 
+    border: none; 
+    font-size: 1.5rem; 
+    color: theme.$text-muted;
+    cursor: pointer; 
+    transition: color 0.2s;
+
+    &:hover {
+      color: theme.$orange;
+    }
+  }
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  
+  label { 
+    display: block; 
+    margin-bottom: 8px; 
+    font-weight: 600; 
+    font-size: 0.9rem; 
+    color: theme.$text-dark; 
+  }
+  
+  input { 
+    width: 100%; 
+    padding: 12px; 
+    border: 2px solid theme.$bg-light; // Start with a soft border
+    background-color: theme.$bg-light;
+    border-radius: 12px; // Slightly less than container, but still round
+    color: theme.$text-dark;
+    font-family: theme.$font-family-base;
+    transition: all 0.2s;
+
+    &:focus { 
+      background-color: theme.$white;
+      border-color: theme.$orange; 
+      outline: none; 
+      box-shadow: 0 0 0 3px theme.$orange-light; // Nice glow effect
+    }
+  }
+
+  small { 
+    color: #dc2626; // Kept hardcoded red for errors (theme doesn't have error color)
+    font-size: 0.8rem; 
+    margin-top: 6px; 
+    display: block; 
+    font-weight: 500;
+  }
+}
+
+.alert-error {
+  background: #fee2e2; 
+  color: #dc2626; 
+  padding: 12px; 
+  border-radius: 12px; 
+  margin-bottom: 20px; 
+  font-size: 0.9rem;
+  border: 1px solid #fca5a5;
+}
+
+.modal-footer {
+  padding: 20px 24px;
+  background: theme.$bg-light; // Using the theme off-white
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+
+  button { 
+    padding: 10px 20px; 
+    border-radius: 12px; // Matching input radius
+    border: none; 
+    cursor: pointer; 
+    font-weight: 600; 
+    font-family: theme.$font-family-base;
+    transition: transform 0.1s, opacity 0.2s;
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+
+  .btn-secondary { 
+    background: theme.$white; 
+    border: 2px solid theme.$orange-light; 
+    color: theme.$text-muted; 
+    
+    &:hover {
+      color: theme.$text-dark;
+      border-color: theme.$orange;
+    }
+  }
+
+  .btn-primary { 
+    background: theme.$orange; 
+    color: theme.$white; 
+    box-shadow: 0 4px 12px rgba(255, 138, 0, 0.2); // Subtle orange shadow
+
+    &:hover {
+      background: darken(#ff8a00, 5%);
+    }
+
+    &:disabled { 
+      opacity: 0.5; 
+      cursor: not-allowed; 
+      box-shadow: none;
+    } 
+  }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }

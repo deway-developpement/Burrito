@@ -1,0 +1,262 @@
+<app-header></app-header>
+
+<div class="results-form-container">
+  <!-- Navigation Bar -->
+  <div class="nav-bar">
+    <button class="btn-back" (click)="goBack()" title="Go back">
+      ← Back
+    </button>
+    <h1 class="page-title">Form Results</h1>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading analytics...</p>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (error()) {
+    <div class="error-banner">
+      <span class="error-icon">⚠️</span>
+      <span>{{ error() }}</span>
+      <button class="btn-retry" (click)="onRefreshAnalytics()">Retry</button>
+    </div>
+  }
+
+  <!-- Main Content -->
+  @if (!loading() && analytics()) {
+    <div class="results-content">
+      <!-- Header Section -->
+      <div class="header-section">
+        <div class="form-info">
+          <h1>{{ analytics()!.formTitle }}</h1>
+        </div>
+
+        <!-- Time Window Selector -->
+        <div class="time-window-selector">
+          @for (window of ['all', '30d', '7d', 'custom']; track window) {
+            <button
+              [class.active]="timeWindow() === window"
+              (click)="onTimeWindowChange($any(window))"
+              class="time-btn"
+            >
+              {{ getTimeWindowLabel($any(window)) }}
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Response Summary (Hero Section) -->
+      <div class="response-summary">
+        <div class="summary-stats">
+          <div class="stat">
+            <div class="stat-value">{{ analytics()!.totalResponses }}</div>
+            <div class="stat-label">Total Responses</div>
+          </div>
+
+          <div class="stat nps-stat">
+            <div class="stat-value" [class]="'nps-' + getNpsColor(analytics()!.nps.score)">
+              {{ analytics()!.nps.score.toFixed(0) }}
+            </div>
+            <div class="stat-label">NPS Score</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overall Satisfaction -->
+      <div class="satisfaction-card">
+        <div class="satisfaction-content">
+          <div class="nps-metric">
+            <span class="metric-label">Overall NPS</span>
+            <div class="metric-value-large" [class]="'nps-' + getNpsColor(analytics()!.nps.score)">
+              {{ analytics()!.nps.score.toFixed(0) }}
+            </div>
+          </div>
+
+          <div class="satisfaction-breakdown">
+            <div class="breakdown-item promoters">
+              <span class="breakdown-label">Promoters</span>
+              <span class="breakdown-value">{{ analytics()!.nps.promotersPct.toFixed(1) }}% ({{ analytics()!.nps.promotersCount }})</span>
+            </div>
+            <div class="breakdown-item passives">
+              <span class="breakdown-label">Passives</span>
+              <span class="breakdown-value">{{ analytics()!.nps.passivesPct.toFixed(1) }}% ({{ analytics()!.nps.passivesCount }})</span>
+            </div>
+            <div class="breakdown-item detractors">
+              <span class="breakdown-label">Detractors</span>
+              <span class="breakdown-value">{{ analytics()!.nps.detractorsPct.toFixed(1) }}% ({{ analytics()!.nps.detractorsCount }})</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teachers Breakdown (Admin Only) -->
+      @if (isAdmin()) {
+        <div class="teachers-breakdown">
+          <h2 class="section-title">Teachers Breakdown</h2>
+          <div class="teachers-table-container">
+            <table class="teachers-table">
+              <thead>
+                <tr>
+                  <th>Teacher Name</th>
+                  <th>Responses</th>
+                  <th>NPS</th>
+                  <th>Avg Rating</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (teacher of analytics()!.teachersBreakdown; track teacher.teacherId) {
+                  <tr class="teacher-row" (click)="navigateToTeacherResults(teacher.teacherId)">
+                    <td class="teacher-name">{{ teacher.teacherName }}</td>
+                    <td>{{ teacher.totalResponses }}</td>
+                    <td>
+                      <span [class]="getTeacherBadgeClass(teacher.nps.score)">
+                        {{ teacher.nps.score.toFixed(0) }}
+                      </span>
+                    </td>
+                    <td>{{ teacher.averageRating.toFixed(1) }}/5</td>
+                    <td class="action-cell">
+                      <button class="btn-view" (click)="navigateToTeacherResults(teacher.teacherId)">
+                        View Results →
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+
+      <!-- Per-Question Breakdown -->
+      <div class="questions-breakdown">
+        <h2 class="section-title">Per-Question Breakdown</h2>
+
+        @for (question of analytics()!.questions; track question.questionId) {
+          <div class="question-card">
+            <div
+              class="question-header"
+              (click)="toggleQuestionExpanded(question.questionId)"
+            >
+              <div class="question-title">
+                <span class="expand-icon">
+                  {{ isQuestionExpanded(question.questionId) ? '▼' : '▶' }}
+                </span>
+                <h3>{{ question.label }}</h3>
+              </div>
+              <div class="question-meta">
+                <span class="answered-count">{{ question.answeredCount }} answered</span>
+              </div>
+            </div>
+
+            @if (isQuestionExpanded(question.questionId)) {
+              <div class="question-content">
+                <!-- Rating Question -->
+                @if (question.rating) {
+                  <div class="rating-breakdown">
+                    <div class="rating-stats">
+                      <div class="stat-box">
+                        <span class="stat-label">Average</span>
+                        <span class="stat-value">{{ question.rating.avg.toFixed(2) }}/5</span>
+                      </div>
+                    </div>
+
+                    <div class="rating-distribution">
+                      <h4>Distribution</h4>
+                      @for (bucket of question.rating.distribution; track bucket.rating) {
+                        <div class="distribution-item">
+                          <span class="rating-label">{{ bucket.rating }} ⭐</span>
+                          <div class="rating-bar">
+                            <div
+                              class="bar-fill"
+                              [style.width.%]="(bucket.count / question.answeredCount) * 100"
+                            ></div>
+                          </div>
+                          <span class="count">{{ bucket.count }}</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+
+                <!-- Text Question -->
+                @if (question.text) {
+                  <div class="text-breakdown">
+                    <div class="text-stats">
+                      <button 
+                        class="btn-show-answers"
+                        (click)="openTextResponses(question.questionId)"
+                      >
+                        Show answers
+                      </button>
+                      <span class="stat-value">{{ question.text.responseCount }}</span>
+                    </div>
+
+                    @if (question.text.topIdeas && question.text.topIdeas.length > 0) {
+                      <div class="top-ideas">
+                        <h4>Top Ideas</h4>
+                        @for (idea of question.text.topIdeas; track idea.idea) {
+                          <div class="idea-item">
+                            <span class="idea-text">{{ idea.idea }}</span>
+                            <span class="idea-count">{{ idea.count }}x</span>
+                          </div>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Refresh Info -->
+      <div class="refresh-info">
+        <span class="refresh-timestamp">Last updated {{ formatDate(analytics()!.generatedAt) }}</span>
+        <button (click)="onRefreshAnalytics()" class="btn-refresh">
+          @if (loading()) {
+            <span class="spinner-small"></span>
+          } @else {
+            🔄 Refresh
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (textModalOpen()) {
+    <div class="modal-overlay" (click)="closeTextResponses()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>{{ currentQuestionId() ? getQuestionLabel(currentQuestionId()!) : 'Text responses' }}</h3>
+          <button class="close-btn" (click)="closeTextResponses()">✕</button>
+        </div>
+
+        @if (textLoading()) {
+          <div class="modal-loading">Loading text responses…</div>
+        } @else if (textError()) {
+          <div class="modal-error">{{ textError() }}</div>
+        } @else if (textResponses().length > 0) {
+          <div class="text-responses">
+            @for (resp of textResponses(); track resp.id) {
+              <div class="text-response">
+                <div class="tr-meta">
+                  <span class="pill neutral">{{ resp.questionLabel }}</span>
+                  <span class="muted">{{ formatDate(resp.createdAt) }}</span>
+                </div>
+                <p class="tr-text">{{ resp.text }}</p>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="modal-empty">No text responses found for this window.</div>
+        }
+      </div>
+    </div>
+  }
+</div>

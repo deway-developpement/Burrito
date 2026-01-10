@@ -1,0 +1,106 @@
+<app-background-div>
+    <header class="dashboard-header">
+        <div class="header-content">
+            <h1>Admin Dashboard</h1>
+            <p class="subtitle">Welcome back, Administrator. Here is what's happening today.</p>
+        </div>
+        <div class="date-badge">
+            {{ today | date:'fullDate' }}
+        </div>
+    </header>
+
+    @if (stats$ | async; as stats) {
+        <section class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">👨‍🏫</div>
+                <div class="stat-info">
+                    <h3>Teachers</h3>
+                    <p class="number">{{ stats.teacherCount }}</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🎓</div>
+                <div class="stat-info">
+                    <h3>Students</h3>
+                    <p class="number">{{ stats.studentCount | number }}</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📝</div>
+                <div class="stat-info">
+                    <h3>Evaluations</h3>
+                    <p class="number">{{ stats.completionRate }}%</p>
+                    <span class="trend">Completion Rate</span>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📬</div>
+                <div class="stat-info">
+                    <h3>New Feedback</h3>
+                    <p class="number">+{{ stats.newFeedbackCount }}</p>
+                    <span class="trend">This week</span>
+                </div>
+            </div>
+        </section>
+    } @else {
+        <section class="stats-grid">
+            <div class="stat-card skeleton-loader">
+                <p>Chargement des statistiques...</p>
+            </div>
+        </section>
+    }
+
+    <section class="actions-section">
+        <h2>Management Center</h2>
+        <div class="actions-grid">
+            
+            <div class="action-card" routerLink="/admin/manage/teachers">
+                <div class="card-content">
+                    <span class="icon-bg">👨‍🏫</span>
+                    <h3>Manage Teachers</h3>
+                    <p>Add new professors, update profiles, and assign courses.</p>
+                </div>
+                <div class="card-footer">
+                    <span>Go to Teachers &rarr;</span>
+                </div>
+            </div>
+
+            <div class="action-card" routerLink="/admin/manage/students">
+                <div class="card-content">
+                    <span class="icon-bg">🎓</span>
+                    <h3>Manage Students</h3>
+                    <p>Enroll students, handle accounts, and manage anonymity settings.</p>
+                </div>
+                <div class="card-footer">
+                    <span>Go to Students &rarr;</span>
+                </div>
+            </div>
+
+            <div class="action-card" routerLink="/admin/forms">
+                <div class="card-content">
+                    <span class="icon-bg">📋</span>
+                    <h3>Evaluation Forms</h3>
+                    <p>Create new questionnaires and manage evaluation criteria.</p>
+                </div>
+                <div class="card-footer">
+                    <span>Manage Forms &rarr;</span>
+                </div>
+            </div>
+
+            <div class="action-card highlight" routerLink="/admin/reports">
+                <div class="card-content">
+                    <span class="icon-bg">📊</span>
+                    <h3>Global Reports</h3>
+                    <p>Visualize trends, performance graphs, and export data.</p>
+                </div>
+                <div class="card-footer">
+                    <span>View Analytics &rarr;</span>
+                </div>
+            </div>
+
+        </div>
+    </section>
+</app-background-div>

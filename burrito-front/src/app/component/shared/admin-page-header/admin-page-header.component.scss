@@ -1,0 +1,64 @@
+@use 'burrito-theme' as theme;
+
+// Header Container
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 2.5rem 0;
+  background-color: theme.$white;
+  padding: 2rem;
+  border-radius: theme.$radius-lg;
+  box-shadow: theme.$shadow-soft;
+
+  h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: theme.$text-dark;
+    font-weight: 700;
+  }
+
+  .subtitle {
+    margin: 0.5rem 0 0;
+    color: theme.$text-muted;
+  }
+}
+
+// Primary Action Button
+.btn-primary {
+  background-color: theme.$orange;
+  color: theme.$white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: theme.$radius-lg;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background-color: darken(theme.$orange, 5%);
+    transform: translateY(-2px);
+  }
+
+  .icon {
+    font-size: 1.2rem;
+    font-weight: bold;
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    
+    .btn-primary {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}

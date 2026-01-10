@@ -20,7 +20,7 @@
 
   &__title {
     font-size: 1.6rem;
-    margin-bottom: 0.4rem;
+    margin-bottom: 1rem;
   }
 
   &__subtitle {
@@ -69,21 +69,6 @@
     justify-content: space-between;
     gap: 0.75rem;
     margin-top: 0.5rem;
-  }
-
-  &__forgot {
-    border: none;
-    background: transparent;
-    padding: 0;
-    font-size: 0.82rem;
-    color: theme.$text-muted;
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-
-    &:hover {
-      color: theme.$text-dark;
-    }
   }
 
 }
