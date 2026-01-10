@@ -24,3 +24,10 @@ export type AnalyticsDigestReadyEvent = BaseEvent & {
   reportUrl?: string;
   highlightsHtml?: string;
 };
+
+export type EmailVerificationEvent = BaseEvent & {
+  userId: string;
+  email: string;
+  fullName?: string;
+  verificationUrl: string;
+};

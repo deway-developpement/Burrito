@@ -47,4 +47,14 @@ export class UserController {
   findByEmail(email: string) {
     return this.userService.findByEmail(email);
   }
+
+  @MessagePattern({ cmd: 'user.verifyEmail' })
+  verifyEmail(token: string) {
+    return this.userService.verifyEmail(token);
+  }
+
+  @MessagePattern({ cmd: 'user.resendVerification' })
+  resendVerification(userId: string) {
+    return this.userService.resendVerification(userId);
+  }
 }

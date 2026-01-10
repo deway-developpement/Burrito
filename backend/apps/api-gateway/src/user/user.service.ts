@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   GatewayTimeoutException,
   Inject,
   Injectable,
@@ -342,6 +343,18 @@ export class UserService {
     );
   }
 
+  async verifyEmail(token: string): Promise<IUser> {
+    return this.sendWithTimeout(
+      this.userClient.send<IUser>({ cmd: 'user.verifyEmail' }, token),
+    );
+  }
+
+  async resendVerification(userId: string): Promise<IUser> {
+    return this.sendWithTimeout(
+      this.userClient.send<IUser>({ cmd: 'user.resendVerification' }, userId),
+    );
+  }
+
   private async sendWithTimeout<T>(observable: Observable<T>): Promise<T> {
     return firstValueFrom(
       observable.pipe(
@@ -349,6 +362,16 @@ export class UserService {
         catchError((err) => {
           if (err instanceof TimeoutError) {
             throw new GatewayTimeoutException('User service timed out');
+          }
+          const status =
+            (err as { status?: number })?.status ??
+            (err as { error?: { status?: number } })?.error?.status;
+          if (status === 400) {
+            const message =
+              (err as { message?: string })?.message ??
+              (err as { error?: { message?: string } })?.error?.message ??
+              'Invalid request';
+            throw new BadRequestException(message);
           }
           throw err;
         }),
