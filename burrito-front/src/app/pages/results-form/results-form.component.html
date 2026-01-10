@@ -186,27 +186,86 @@
                 <!-- Text Question -->
                 @if (question.text) {
                   <div class="text-breakdown">
+                    <!-- Analysis Disabled Message -->
+                    @if (question.text.analysisStatus === 'DISABLED') {
+                      <div class="analysis-unavailable">
+                        <span class="icon">⚠️</span>
+                        <p>Text analysis is disabled for this question.</p>
+                      </div>
+                    }
+
+                    <!-- Analysis Failed Message -->
+                    @if (question.text.analysisStatus === 'FAILED') {
+                      <div class="analysis-failed">
+                        <span class="icon">❌</span>
+                        <p>Text analysis failed. Unable to generate summary for this question.</p>
+                      </div>
+                    }
+
+                    <!-- Analysis Pending Message -->
+                    @if (question.text.analysisStatus === 'PENDING') {
+                      <div class="analysis-pending">
+                        <span class="icon">⏳</span>
+                        <p>Text analysis is in progress. Summary will be available soon.</p>
+                      </div>
+                    }
+
+                    <!-- Analysis Ready - Sentiment and Ideas -->
+                    @if (question.text.analysisStatus === 'READY') {
+                      <!-- Sentiment Analysis -->
+                      @if (question.text.sentiment) {
+                        <div class="sentiment-analysis">
+                          <h4>Sentiment</h4>
+                          <div class="sentiment-breakdown">
+                            <div class="sentiment-item positive">
+                              <span class="sentiment-label">Positive</span>
+                              <span class="sentiment-bar">
+                                <div class="bar-fill" [style.width.%]="question.text.sentiment.positivePct"></div>
+                              </span>
+                              <span class="sentiment-pct">{{ question.text.sentiment.positivePct.toFixed(1) }}%</span>
+                            </div>
+                            <div class="sentiment-item neutral">
+                              <span class="sentiment-label">Neutral</span>
+                              <span class="sentiment-bar">
+                                <div class="bar-fill" [style.width.%]="question.text.sentiment.neutralPct"></div>
+                              </span>
+                              <span class="sentiment-pct">{{ question.text.sentiment.neutralPct.toFixed(1) }}%</span>
+                            </div>
+                            <div class="sentiment-item negative">
+                              <span class="sentiment-label">Negative</span>
+                              <span class="sentiment-bar">
+                                <div class="bar-fill" [style.width.%]="question.text.sentiment.negativePct"></div>
+                              </span>
+                              <span class="sentiment-pct">{{ question.text.sentiment.negativePct.toFixed(1) }}%</span>
+                            </div>
+                          </div>
+                        </div>
+                      }
+
+                      <!-- Top Ideas -->
+                      @if (question.text.topIdeas && question.text.topIdeas.length > 0) {
+                        <div class="top-ideas">
+                          <h4>Top Ideas</h4>
+                          @for (idea of question.text.topIdeas; track idea.idea) {
+                            <div class="idea-item">
+                              <span class="idea-text">{{ idea.idea }}</span>
+                              <span class="idea-count">{{ idea.count }}x</span>
+                            </div>
+                          }
+                        </div>
+                      }
+                    }
+
+                    <!-- Show Details Button (always visible) -->
                     <div class="text-stats">
                       <button 
                         class="btn-show-answers"
                         (click)="openTextResponses(question.questionId)"
                       >
-                        Show answers
+                        Show details
                       </button>
                       <span class="stat-value">{{ question.text.responseCount }}</span>
                     </div>
-
-                    @if (question.text.topIdeas && question.text.topIdeas.length > 0) {
-                      <div class="top-ideas">
-                        <h4>Top Ideas</h4>
-                        @for (idea of question.text.topIdeas; track idea.idea) {
-                          <div class="idea-item">
-                            <span class="idea-text">{{ idea.idea }}</span>
-                            <span class="idea-count">{{ idea.count }}x</span>
-                          </div>
-                        }
-                      </div>
-                    }
                   </div>
                 }
               </div>
