@@ -277,3 +277,167 @@
     margin: 0;
   }
 }
+
+// Modal Styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background: theme.$white;
+  border-radius: theme.$radius-lg;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid theme.$border-color;
+
+  h2 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: theme.$text-dark;
+  }
+
+  .btn-close {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: theme.$text-muted;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: theme.$radius-md;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: theme.$border-color;
+      color: theme.$text-dark;
+    }
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid theme.$border-color;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.feedback-header {
+  margin-bottom: 1.5rem;
+
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+    color: theme.$text-dark;
+  }
+
+  .feedback-date {
+    margin: 0;
+    font-size: 0.9rem;
+    color: theme.$text-muted;
+  }
+}
+
+.feedback-rating {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: theme.$light-bg;
+  border-radius: theme.$radius-md;
+
+  .label {
+    font-weight: 600;
+    color: theme.$text-dark;
+  }
+
+  .stars {
+    display: flex;
+    gap: 0.3rem;
+
+    span {
+      font-size: 1.5rem;
+      color: theme.$border-color;
+      transition: color 0.2s ease;
+
+      &.filled {
+        color: theme.$orange;
+      }
+    }
+  }
+
+  .rating-text {
+    margin-left: auto;
+    font-weight: 700;
+    color: theme.$orange;
+    font-size: 1rem;
+  }
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  color: theme.$text-muted;
+  font-size: 0.95rem;
+}
+
+.error-state {
+  padding: 1rem;
+  background-color: theme.$error-light;
+  color: theme.$error;
+  border-radius: theme.$radius-md;
+  font-weight: 500;
+}
+
+.btn-primary {
+  padding: 0.6rem 1.5rem;
+  background-color: theme.$primary-color;
+  color: theme.$white;
+  border: none;
+  border-radius: theme.$radius-md;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: darken(theme.$primary-color, 10%);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
