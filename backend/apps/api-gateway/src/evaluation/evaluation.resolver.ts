@@ -32,6 +32,10 @@ export class EvaluationResolver extends CRUDResolver(EvaluationDto, {
     ],
   },
   delete: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
+  aggregate: {
+    enabled: true,
+    guards: [GqlCredentialGuard(UserType.ADMIN)],
+  },
 }) {
   constructor(readonly service: EvaluationService) {
     super(service);

@@ -1,4 +1,10 @@
-import { Args, Mutation, Parent, ResolveField, Resolver } from '@nestjs/graphql';
+import {
+  Args,
+  Mutation,
+  Parent,
+  ResolveField,
+  Resolver,
+} from '@nestjs/graphql';
 import { CRUDResolver } from '@nestjs-query/query-graphql';
 import { FormDto } from './dto/form.dto';
 import { FormService } from './form.service';
@@ -18,6 +24,8 @@ import { GroupFormsByFormLoader } from '../loaders/group-forms-by-form.loader';
 import { GroupByIdLoader } from '../loaders/group-by-id.loader';
 import { GroupDto } from '../group/dto/group.dto';
 import { ChangeFormStatusInput } from './dto/change-form-status.input';
+import { UserDto } from '../user/dto/user.dto';
+import { UserByIdLoader } from '../loaders/user-by-id.loader';
 
 @Resolver(() => FormDto)
 @UseInterceptors(TimestampToDateInterceptor)
@@ -25,15 +33,20 @@ export class FormResolver extends CRUDResolver(FormDto, {
   CreateDTOClass: CreateFormInput,
   UpdateDTOClass: UpdateFormInput,
   read: { guards: [GqlAuthGuard] },
-  create: { guards: [GqlCredentialGuard(UserType.TEACHER)] },
-  update: { guards: [GqlCredentialGuard(UserType.TEACHER)] },
-  delete: { guards: [GqlCredentialGuard(UserType.TEACHER)] },
+  create: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
+  update: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
+  delete: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
+  aggregate: {
+    enabled: true,
+    guards: [GqlCredentialGuard(UserType.ADMIN)],
+  },
 }) {
   constructor(
     readonly service: FormService,
     private readonly evaluationService: EvaluationService,
     private readonly groupFormsByFormLoader: GroupFormsByFormLoader,
     private readonly groupByIdLoader: GroupByIdLoader,
+    private readonly userByIdLoader: UserByIdLoader,
   ) {
     super(service);
   }
@@ -67,6 +80,18 @@ export class FormResolver extends CRUDResolver(FormDto, {
       form.id,
       userId || user.id,
     );
+  }
+
+  @ResolveField(() => UserDto, { nullable: true })
+  async teacher(@Parent() form: FormDto): Promise<UserDto | undefined> {
+    if (!form.targetTeacherId) {
+      return undefined;
+    }
+    const teacher = await this.userByIdLoader.load(form.targetTeacherId);
+    if (!teacher || teacher instanceof Error) {
+      return undefined;
+    }
+    return teacher;
   }
 
   @Mutation(() => FormDto)
