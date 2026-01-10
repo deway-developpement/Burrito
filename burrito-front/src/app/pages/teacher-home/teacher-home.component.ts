@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
@@ -28,6 +28,11 @@ export class TeacherHomeComponent implements OnInit {
 
   unreadEvaluations: TeacherEvaluationUI[] = [];
   readEvaluations: TeacherEvaluationUI[] = [];
+  
+  feedbackModalOpen = signal(false);
+  selectedEvaluation: any = null;
+  feedbackLoading = signal(false);
+  feedbackError = signal('');
 
   ngOnInit() {
     // 1. Récupérer l'utilisateur courant pour avoir son ID
@@ -55,22 +60,30 @@ export class TeacherHomeComponent implements OnInit {
       },
       error: (err) => console.error('Error loading evaluations:', err)
     });
-    // this.evaluationService.getAllEvaluationsForDebug().subscribe({
-    //   next: (evals) => {
-    //     console.log('DEBUG: Loaded ALL evaluations:', evals);
-
-    //     this.unreadEvaluations = evals.filter(e => !e.isRead);
-    //     this.readEvaluations = evals.filter(e => e.isRead);
-
-    //     this.cdr.detectChanges();
-    //   },
-    //   error: (err) => console.error('Error loading evaluations:', err)
-    // });
   }
 
   viewEvaluation(id: string) {
     console.log(`Viewing evaluation detail #${id}`);
-    // this.router.navigate(['/teacher/evaluation', id]);
+    this.feedbackLoading.set(true);
+    this.feedbackError.set('');
+    
+    // Find the evaluation in the lists
+    const evaluation = [...this.unreadEvaluations, ...this.readEvaluations].find(e => e.id === id);
+    
+    if (evaluation) {
+      this.selectedEvaluation = evaluation;
+      this.feedbackModalOpen.set(true);
+      this.feedbackLoading.set(false);
+    } else {
+      this.feedbackError.set('Evaluation not found');
+      this.feedbackLoading.set(false);
+    }
+  }
+
+  closeFeedbackModal() {
+    this.feedbackModalOpen.set(false);
+    this.selectedEvaluation = null;
+    this.feedbackError.set('');
   }
 
   get teacherId(): string | undefined {

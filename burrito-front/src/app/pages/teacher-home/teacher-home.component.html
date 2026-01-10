@@ -91,4 +91,46 @@
     </div>
   </section>
 
+  <!-- Feedback Modal -->
+  @if (feedbackModalOpen()) {
+    <div class="modal-overlay" (click)="closeFeedbackModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Evaluation Details</h2>
+          <button class="btn-close" (click)="closeFeedbackModal()" aria-label="Close">×</button>
+        </div>
+        
+        @if (feedbackLoading()) {
+          <div class="modal-body">
+            <div class="loading-state">Loading feedback…</div>
+          </div>
+        } @else if (feedbackError()) {
+          <div class="modal-body">
+            <div class="error-state">{{ feedbackError() }}</div>
+          </div>
+        } @else if (selectedEvaluation) {
+          <div class="modal-body">
+            <div class="feedback-header">
+              <h3>{{ selectedEvaluation.courseName }}</h3>
+              <p class="feedback-date">Submitted: {{ selectedEvaluation.submittedDate | date:'MMM d, yyyy' }}</p>
+            </div>
+
+            <div class="feedback-rating">
+              <span class="label">Overall Rating:</span>
+              <div class="stars">
+                <span *ngFor="let star of [1,2,3,4,5]" 
+                      [class.filled]="star <= selectedEvaluation.rating">★</span>
+              </div>
+              <span class="rating-text">{{ selectedEvaluation.rating }}/5</span>
+            </div>
+          </div>
+        }
+
+        <div class="modal-footer">
+          <button class="btn-primary" (click)="closeFeedbackModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  }
+
 </app-background-div>
