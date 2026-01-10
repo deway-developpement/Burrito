@@ -206,6 +206,10 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     this.fetchFormAnalytics(true).finally(() => this.loading.set(false));
   }
 
+  goBack(): void {
+    this.router.navigate(['/admin/reports']);
+  }
+
   toggleQuestionExpanded(questionId: string): void {
     const expanded = new Set(this.expandedQuestions());
     if (expanded.has(questionId)) {

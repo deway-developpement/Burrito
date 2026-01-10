@@ -13,15 +13,17 @@ import { routes } from './app.routes';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
 
-// ... ta factory Apollo reste identique ...
 function apolloOptionsFactory() {
-    // ... (ton code précédent)
     const httpLink = inject(HttpLink);
     const authService = inject(AuthService);
     const http = httpLink.create({ uri: '/graphQL', withCredentials: true });
     const authLink = new ApolloLink((operation, forward) => {
         const token = authService.token();
-        if (token) operation.setContext({ headers: new HttpHeaders().set('Authorization', `Bearer ${token}`) });
+        if (token) {
+            operation.setContext(({ headers }: any = {}) => ({
+                headers: new HttpHeaders(headers).set('Authorization', `Bearer ${token}`)
+            }));
+        }
         return forward(operation);
     });
     return { link: ApolloLink.from([authLink, http]), cache: new InMemoryCache() };

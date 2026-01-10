@@ -247,6 +247,10 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     this.fetchTeacherAnalytics(true).finally(() => this.loading.set(false));
   }
 
+  goBack(): void {
+    this.router.navigate(['/']);
+  }
+
   loadMoreRemarks(): void {
     this.remarksLoading.set(true);
     const nextPage = this.remarksPage() + 1;

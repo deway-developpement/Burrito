@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';   
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
@@ -14,7 +14,7 @@ import { EvaluationService, DashboardMetrics } from '../../services/evaluation.s
   templateUrl: './admin-home.component.html',
   styleUrls: ['./admin-home.component.scss']
 })
-export class AdminHomeComponent {
+export class AdminHomeComponent implements OnInit {
   
   today: Date = new Date();
   
@@ -38,8 +38,10 @@ export class AdminHomeComponent {
         ...metrics
       }))
     );
+  }
 
-    // Fetch a few active forms for linking to /results/form/:id
+  ngOnInit(): void {
+    // Defer form fetching until after component initialization and auth is ready
     this.forms$ = this.fetchActiveForms(6);
   }
 
