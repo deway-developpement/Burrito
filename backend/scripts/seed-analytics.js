@@ -575,7 +575,7 @@ async function main() {
       questions: questionsMeta.map((q) => q.doc),
       targetTeacherId: template.teacherId,
       targetCourseId: template.targetCourseId,
-      isActive: true,
+      status: 'PUBLISHED',
       startDate: new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000),
       endDate: new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000),
       createdAt: new Date(now.getTime() - 120 * 24 * 60 * 60 * 1000),

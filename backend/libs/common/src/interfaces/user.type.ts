@@ -16,6 +16,8 @@ export interface IUser {
 
   readonly refresh_token: string | null;
 
+  readonly emailVerified: boolean;
+
   readonly createdAt: Date;
 
   readonly updatedAt: Date;

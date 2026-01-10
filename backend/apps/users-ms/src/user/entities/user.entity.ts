@@ -26,6 +26,15 @@ export class User extends Document implements IUser {
   @Prop({ default: null, nullable: true, type: String })
   readonly refresh_token: string | null;
 
+  @Prop({ default: false })
+  emailVerified: boolean;
+
+  @Prop({ default: null, nullable: true, type: String, select: false })
+  emailVerificationTokenHash: string | null;
+
+  @Prop({ default: null, nullable: true, type: Date, select: false })
+  emailVerificationExpiresAt: Date | null;
+
   @Prop({
     type: {
       emailEnabled: { type: Boolean, default: true },

@@ -35,10 +35,12 @@ import {
 } from './entities/notification.entity';
 import type {
   AnalyticsDigestReadyEvent,
+  EmailVerificationEvent,
   EvaluationSubmittedEvent,
   FormEvent,
   FormReminderEvent,
 } from './notification.events';
+import { emailVerificationTemplate } from './email-verification.template';
 
 const DEFAULT_TIMEOUT_MS = 5000;
 
@@ -184,6 +186,24 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       event,
       undefined,
       recipients,
+    );
+  }
+
+  async handleEmailVerification(event: EmailVerificationEvent): Promise<void> {
+    if (!event.email || !event.verificationUrl) {
+      this.logger.warn('Email verification event missing email or URL');
+      return;
+    }
+    const recipient: Recipient = {
+      userId: event.userId,
+      email: event.email,
+      fullName: event.fullName,
+    };
+    await this.dispatchNotifications(
+      NotificationType.EMAIL_VERIFICATION,
+      event,
+      undefined,
+      [recipient],
     );
   }
 
@@ -571,6 +591,20 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
           ctaText: reportUrl ? 'Open report' : undefined,
           ctaUrl: reportUrl,
           footerNote,
+        };
+      }
+      case NotificationType.EMAIL_VERIFICATION: {
+        const verificationUrl =
+          typeof event.verificationUrl === 'string'
+            ? event.verificationUrl
+            : undefined;
+        return {
+          subject: emailVerificationTemplate.subject,
+          headline: emailVerificationTemplate.headline,
+          message: emailVerificationTemplate.message,
+          ctaText: verificationUrl ? emailVerificationTemplate.ctaText : undefined,
+          ctaUrl: verificationUrl,
+          footerNote: emailVerificationTemplate.footerNote,
         };
       }
       default:

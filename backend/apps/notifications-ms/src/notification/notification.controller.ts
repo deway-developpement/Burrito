@@ -3,6 +3,7 @@ import { EventPattern } from '@nestjs/microservices';
 import { NotificationService } from './notification.service';
 import type {
   AnalyticsDigestReadyEvent,
+  EmailVerificationEvent,
   EvaluationSubmittedEvent,
   FormEvent,
   FormReminderEvent,
@@ -42,6 +43,11 @@ export class NotificationController {
     event: AnalyticsDigestReadyEvent,
   ): Promise<void> {
     await this.notificationService.handleAnalyticsDigestReady(event);
+  }
+
+  @EventPattern('user.emailVerification')
+  async onEmailVerification(event: EmailVerificationEvent): Promise<void> {
+    await this.notificationService.handleEmailVerification(event);
   }
 
   @Get('failures')

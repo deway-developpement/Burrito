@@ -4,6 +4,8 @@ import {
   Directive,
   ResolveField,
   Parent,
+  Mutation,
+  Args,
 } from '@nestjs/graphql';
 import { UserService } from './user.service';
 import { CreateUserInput } from './dto/create-user.input';
@@ -24,6 +26,7 @@ import { UpdateUserInput } from './dto/update-user.input';
 import { GroupDto } from '../group/dto/group.dto';
 import { MembershipsByMemberLoader } from '../loaders/memberships-by-member.loader';
 import { GroupByIdLoader } from '../loaders/group-by-id.loader';
+import { VerifyEmailInput } from './dto/verify-email.input';
 
 @Resolver(() => UserDto)
 @Directive('@auth(role: "ADMIN")')
@@ -73,5 +76,18 @@ export class UserResolver extends CRUDResolver(UserDto, {
     return groups.filter(
       (group): group is GroupDto => !(group instanceof Error) && Boolean(group),
     );
+  }
+
+  @Mutation(() => UserDto)
+  async verifyEmail(@Args('input') input: VerifyEmailInput): Promise<UserDto> {
+    return this.userService.verifyEmail(input.token);
+  }
+
+  @Mutation(() => UserDto)
+  @UseGuards(GqlAuthGuard)
+  async resendEmailVerification(
+    @CurrentUser() user: AuthCredentials,
+  ): Promise<UserDto> {
+    return this.userService.resendVerification(user.id);
   }
 }
