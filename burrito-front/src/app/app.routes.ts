@@ -15,6 +15,7 @@ import { ResultsFormComponent } from './pages/results-form/results-form.componen
 import { GlobalReportsComponent } from './pages/global-reports/global-reports.component';
 import { authGuard } from './guards/auth.guard';
 import { teacherAccessGuard } from './guards/teacher-access.guard';
+import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
 
 export const routes: Routes = [
   {
@@ -77,5 +78,10 @@ export const routes: Routes = [
     path: 'results/form/:formId',
     component: ResultsFormComponent,
     canActivate: [authGuard]
+  }
+  ,
+  {
+    path: 'verify-email',
+    component: VerifyEmailComponent
   }
 ];

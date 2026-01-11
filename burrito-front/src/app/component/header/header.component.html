@@ -1,3 +1,24 @@
+@if (userService.currentUser(); as user) {
+  @if (!user.emailVerified) {
+    <div class="verify-banner" role="alert">
+      <span>Please verify your email to access all features.</span>
+      <app-button
+        variant="primary"
+        [disabled]="isResending()"
+        (click)="resendVerification()"
+      >
+        {{ isResending() ? 'Sending…' : 'Resend verification email' }}
+      </app-button>
+      @if (resendStatus() === 'success') {
+        <span class="verify-banner__status success">Email sent. Check your inbox.</span>
+      }
+      @if (resendStatus() === 'error') {
+        <span class="verify-banner__status error">Failed to send. Try again.</span>
+      }
+    </div>
+  }
+}
+
 <header class="home__header">
   <div class="home__logo" routerLink="/">
     <span class="home__logo-icon">🌯</span>
