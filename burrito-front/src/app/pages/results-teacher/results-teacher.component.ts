@@ -33,7 +33,6 @@ interface FormBreakdown {
 interface Form {
   id: string;
   title: string;
-  targetTeacherId: string;
 }
 
 interface AnalyticsSnapshot {
@@ -110,7 +109,28 @@ const GET_FORMS = gql`
         node {
           id
           title
-          targetTeacherId
+          targetTeacherId @client
+        }
+      }
+    }
+  }`;
+
+// We need to fetch targetTeacherId differently since it's hidden from GraphQL
+// Let's fetch all forms and filter client-side using the evaluation data
+const GET_FORMS_WITH_EVALUATIONS = gql`
+  query FormsWithEvaluations($teacherId: String!) {
+    evaluations(filter: { teacherId: { eq: $teacherId } }) {
+      edges {
+        node {
+          formId
+        }
+      }
+    }
+    forms {
+      edges {
+        node {
+          id
+          title
         }
       }
     }
@@ -223,7 +243,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
 
   private checkAdminContext(): void {
     const user = this.authService.getCurrentUser();
-    this.showAdminBanner.set(user?.userType === 'admin' && user?.id !== this.teacherId());
+    this.showAdminBanner.set(user?.userType === 'ADMIN' && user?.id !== this.teacherId());
   }
 
   onTimeWindowChange(window: TimeWindow): void {
@@ -281,6 +301,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
           generalSatisfactionRating: 0,
           formsBreakdown: [],
         });
+        this.error.set(null);
         return;
       }
 
@@ -289,6 +310,31 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
         this.fetchFormAnalytics(form.id, forceSync)
       );
       const analyticsResults = await Promise.all(analyticsPromises);
+
+      // Check if all analytics failed
+      const allFailed = analyticsResults.every(result => result === null);
+      if (allFailed && forms.length > 0) {
+        console.warn('All analytics queries failed - analytics service may be unavailable');
+        // Still show the forms with empty analytics
+        this.analytics.set({
+          teacherId: this.teacherId(),
+          teacherName: 'Teacher',
+          generatedAt: new Date(),
+          staleAt: new Date(),
+          totalResponsesAcrossAllForms: 0,
+          nps: this.createEmptyNps(),
+          generalSatisfactionRating: 0,
+          formsBreakdown: forms.map(form => ({
+            formId: form.id,
+            title: form.title,
+            totalResponses: 0,
+            nps: this.createEmptyNps(),
+            averageRating: 0
+          })),
+        });
+        this.error.set('Analytics service unavailable - showing forms without data');
+        return;
+      }
 
       // Step 3: Aggregate analytics
       const aggregated = this.aggregateAnalytics(forms, analyticsResults);
@@ -302,16 +348,28 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
 
   private fetchFormsForTeacher(): Promise<Form[]> {
     return firstValueFrom(
-      this.apollo.query<{ forms: { edges: { node: Form }[] } }>({
-        query: GET_FORMS,
+      this.apollo.query<{
+        evaluations: { edges: { node: { formId: string } }[] };
+        forms: { edges: { node: Form }[] };
+      }>({
+        query: GET_FORMS_WITH_EVALUATIONS,
+        variables: { teacherId: this.teacherId() },
         fetchPolicy: 'network-only'
       })
     ).then((response) => {
-      if (response.data?.forms?.edges) {
-        const allForms = response.data.forms.edges.map(edge => edge.node);
-        return allForms.filter(form => form.targetTeacherId === this.teacherId());
+      if (!response.data?.forms?.edges || !response.data?.evaluations?.edges) {
+        return [];
       }
-      return [];
+
+      // Get unique form IDs from evaluations for this teacher
+      const teacherFormIds = new Set(
+        response.data.evaluations.edges.map(edge => edge.node.formId)
+      );
+
+      // Filter forms to only those the teacher has evaluations for
+      return response.data.forms.edges
+        .map(edge => edge.node)
+        .filter(form => teacherFormIds.has(form.id));
     });
   }
 
@@ -331,7 +389,10 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
         return response.data.analyticsSnapshot;
       }
       return null;
-    }).catch(() => null);
+    }).catch((err) => {
+      console.warn(`Failed to fetch analytics for form ${formId}:`, err);
+      return null;
+    });
   }
 
   private aggregateAnalytics(

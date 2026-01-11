@@ -213,7 +213,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
-    this.isAdmin.set(user?.userType === 'admin');
+    this.isAdmin.set(user?.userType === 'ADMIN');
 
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       this.formId.set(params['formId']);
