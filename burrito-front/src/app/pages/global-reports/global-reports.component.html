@@ -16,11 +16,11 @@
         <div class="form-card" 
              *ngFor="let form of forms()" 
              (click)="navigateToFormResults(form.id)"
-             [class.inactive]="!form.isActive">
+             [class.inactive]="form.status !== 'PUBLISHED'">
           
           <div class="card-header">
-            <div class="status-badge" [ngClass]="getStatusClass(form.isActive)">
-              {{ getStatusBadge(form.isActive) }}
+            <div class="status-badge" [ngClass]="getStatusClass(form.status)">
+              {{ getStatusBadge(form.status) }}
             </div>
           </div>
 

@@ -18,7 +18,7 @@ const GET_FORMS = gql`
           description
           createdAt
           endDate
-          isActive
+          status
         }
       }
       pageInfo {
@@ -34,7 +34,7 @@ interface Form {
   title: string;
   description?: string;
   createdAt: Date;
-  isActive: boolean;
+  status: 'DRAFT' | 'PUBLISHED' | 'CLOSED';
 }
 
 interface FormCardData extends Form {
@@ -136,11 +136,20 @@ export class GlobalReportsComponent implements OnInit {
     });
   }
 
-  getStatusBadge(isActive: boolean): string {
-    return isActive ? 'Active' : 'Inactive';
+  getStatusBadge(status: 'DRAFT' | 'PUBLISHED' | 'CLOSED'): string {
+    return status;
   }
 
-  getStatusClass(isActive: boolean): string {
-    return isActive ? 'badge-active' : 'badge-inactive';
+  getStatusClass(status: 'DRAFT' | 'PUBLISHED' | 'CLOSED'): string {
+    switch (status) {
+      case 'PUBLISHED':
+        return 'badge-published';
+      case 'DRAFT':
+        return 'badge-draft';
+      case 'CLOSED':
+        return 'badge-closed';
+      default:
+        return 'badge-draft';
+    }
   }
 }

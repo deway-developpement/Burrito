@@ -6,7 +6,7 @@ const GET_FORMS_AND_TEACHERS = gql`
   query GetFormsAndTeachers {
     # Partie 1 : Les formulaires
     forms(
-      filter: { isActive: { is: true } }
+      filter: { status: { eq: PUBLISHED } }
       sorting: [{ field: endDate, direction: ASC }]
     ) {
       edges {

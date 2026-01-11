@@ -45,9 +45,9 @@ export class AdminHomeComponent implements OnInit {
     this.forms$ = this.fetchActiveForms(6);
   }
 
-  private fetchActiveForms(limit = 6): Observable<Array<{ id: string; title: string; isActive: boolean }>> {
+  private fetchActiveForms(limit = 6): Observable<Array<{ id: string; title: string; status: string }>> {
 
-    return this.apollo.watchQuery<{ forms: { edges: Array<{ node: { id: string; title: string; isActive: boolean } }> } }>({
+    return this.apollo.watchQuery<{ forms: { edges: Array<{ node: { id: string; title: string; status: string } }> } }>({
       query: gql`
         query Forms {
           forms {
@@ -55,7 +55,7 @@ export class AdminHomeComponent implements OnInit {
               node {
                 id
                 title
-                isActive
+                status
               }
             }
           }
@@ -67,9 +67,9 @@ export class AdminHomeComponent implements OnInit {
         const edges = res.data?.forms?.edges ?? [];
         const allForms = edges
           .map(edge => edge?.node)
-          .filter((form): form is { id: string; title: string; isActive: boolean } => form !== undefined && form !== null);
-        const activeForms = allForms.filter(form => form.isActive);
-        return activeForms.slice(0, limit);
+          .filter((form): form is { id: string; title: string; status: string } => form !== undefined && form !== null);
+        const publishedForms = allForms.filter(form => form.status === 'PUBLISHED');
+        return publishedForms.slice(0, limit);
       })
     );
   }
