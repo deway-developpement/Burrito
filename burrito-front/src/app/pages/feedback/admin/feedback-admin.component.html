@@ -191,6 +191,9 @@
           @if (publishAttempted && formInvalid) {
             <p class="builder__error">Please complete required fields before publishing.</p>
           }
+          @if (saveError) {
+            <p class="builder__error">{{ saveError }}</p>
+          }
           @if (savedMessage) {
             <p class="builder__success">{{ savedMessage }}</p>
           }
@@ -204,8 +207,8 @@
               <span>Active form <span class="required">*</span></span>
             </label>
             <div class="hint">You can edit the template after publishing.</div>
-            <app-button variant="primary" type="submit">
-              Publish form
+            <app-button variant="primary" type="submit" [disabled]="formInvalid || isSaving">
+              {{ isSaving ? 'Publishing...' : 'Publish form' }}
             </app-button>
           </div>
         </div>

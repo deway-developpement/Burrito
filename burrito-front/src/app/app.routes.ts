@@ -79,7 +79,7 @@ export const routes: Routes = [
     path: 'results/form/:formId',
     component: ResultsFormComponent,
     canActivate: [authGuard]
-  }
+  },
   {
     path: 'feedback/student',
     component: FeedbackStudentComponent

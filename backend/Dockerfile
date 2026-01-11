@@ -51,7 +51,7 @@ EXPOSE ${PORT}
 ARG SERVICE_NAME
 
 # Make shortcut to service start
-RUN ln -s /app/dist/apps/${SERVICE_NAME}/main.js /app/dist/main.js
+RUN ln -sf /app/dist/apps/${SERVICE_NAME}/main.js /app/dist/main.js
 
 
 # Start the NestJS app after waiting for MongoDB to be ready
