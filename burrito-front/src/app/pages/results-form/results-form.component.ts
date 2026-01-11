@@ -53,8 +53,7 @@ interface TextResponse {
 
 interface User {
   id: string;
-  firstName: string;
-  lastName: string;
+  fullName: string;
 }
 
 interface QuestionAnalytics {
@@ -163,12 +162,11 @@ const GET_EVALUATIONS = gql`
   }
 `;
 
-const GET_USERS = gql`
-  query Users($filter: UserFilter) {
-    users(filter: $filter) {
+const GET_USER = gql`
+  query GetUser($id: ID!) {
+    user(id: $id) {
       id
-      firstName
-      lastName
+      fullName
     }
   }
 `;
@@ -419,24 +417,29 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
 
   private async fetchTeacherNames(teacherIds: string[]): Promise<Map<string, string>> {
     try {
-      const response = await firstValueFrom(
-        this.apollo.query<{ users: User[] }>({
-          query: GET_USERS,
-          variables: {
-            filter: {
-              id: { in: teacherIds },
-            },
-          },
-          fetchPolicy: 'network-only'
+      const nameMap = new Map<string, string>();
+      
+      // Fetch each teacher individually
+      await Promise.all(
+        teacherIds.map(async (teacherId) => {
+          try {
+            const response = await firstValueFrom(
+              this.apollo.query<{ user: User | null }>({
+                query: GET_USER,
+                variables: { id: teacherId },
+                fetchPolicy: 'network-only'
+              })
+            );
+            
+            if (response.data?.user) {
+              nameMap.set(response.data.user.id, response.data.user.fullName);
+            }
+          } catch (err) {
+            console.error(`Failed to fetch user ${teacherId}:`, err);
+          }
         })
       );
-
-      const nameMap = new Map<string, string>();
-      if (response.data?.users) {
-        response.data.users.forEach((user: User) => {
-          nameMap.set(user.id, `${user.firstName} ${user.lastName}`);
-        });
-      }
+      
       return nameMap;
     } catch {
       return new Map();
