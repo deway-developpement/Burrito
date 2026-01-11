@@ -10,6 +10,7 @@ import { EvaluationModule } from '../evaluation/evaluation.module';
 import { GroupFormModule } from '../group-form/group-form.module';
 import { GroupModule } from '../group/group.module';
 import { FormByIdLoader } from '../loaders/form-by-id.loader';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { FormByIdLoader } from '../loaders/form-by-id.loader';
             }),
           },
         ]),
+        forwardRef(() => UserModule),
       ],
       services: [FormService],
       dtos: [
@@ -40,6 +42,7 @@ import { FormByIdLoader } from '../loaders/form-by-id.loader';
     EvaluationModule,
     GroupFormModule,
     forwardRef(() => GroupModule),
+    forwardRef(() => UserModule),
   ],
   providers: [FormResolver, FormService, FormByIdLoader],
   exports: [FormService, FormByIdLoader],

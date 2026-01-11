@@ -17,10 +17,20 @@ data:
   DATABASE_NAME: burrito
   ANALYTICS_SNAPSHOT_TTL_SECONDS: "3600"
   ANALYTICS_TIME_BUCKET: day
-  ANALYTICS_ENABLE_INTELLIGENCE: "false"
+  ANALYTICS_ENABLE_INTELLIGENCE: "true"
   ANALYTICS_INTELLIGENCE_TIMEOUT_MS: "5000"
   INTELLIGENCE_GRPC_HOST: intelligence-ms
   INTELLIGENCE_GRPC_PORT: "50051"
+  NOTIFICATIONS_QUEUE_ENABLED: "true"
+  NOTIFICATIONS_RETRY_ATTEMPTS: "5"
+  NOTIFICATIONS_BACKOFF_MS: "1000"
+  NOTIFICATIONS_DIRECT_RETRY_ATTEMPTS: "2"
+  NOTIFICATIONS_REMINDER_ONLY_PENDING: "true"
+  WEB_APP_URL: "http://localhost:3000"
+  EMAIL_VERIFICATION_URL_BASE: "http://localhost:3000/verify-email"
+  EMAIL_VERIFICATION_TTL_HOURS: "24"
+  SMTP_HOST: "smtp.example.com"
+  SMTP_PORT: "587"
 ---
 apiVersion: v1
 kind: Secret
@@ -34,6 +44,9 @@ stringData:
   JWT_SECRET: Girp&87Vws7Wx5v7+/.jNw3We7:;1pAY5967CdZm0DGhN2$^kFxNqWKrGp
   JWT_EXPIRES_IN: 30min
   JWT_REFRESH_EXPIRES_IN: 30d
+  SMTP_USER: smtp-user
+  SMTP_PASS: smtp-pass
+  SMTP_FROM: no-reply@example.com
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -465,6 +478,46 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: intelligence-ms
+  namespace: evaluation-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: intelligence-ms
+  template:
+    metadata:
+      labels:
+        app: intelligence-ms
+    spec:
+      containers:
+        - name: intelligence-ms
+          image: burrito-intelligence-ms:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 50051
+          envFrom:
+            - configMapRef:
+                name: burrito-config
+            - secretRef:
+                name: burrito-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: intelligence-ms
+  namespace: evaluation-system
+spec:
+  selector:
+    app: intelligence-ms
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: 50051
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: groups-ms
   namespace: evaluation-system
 spec:
@@ -501,6 +554,50 @@ metadata:
 spec:
   selector:
     app: groups-ms
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notifications-ms
+  namespace: evaluation-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notifications-ms
+  template:
+    metadata:
+      labels:
+        app: notifications-ms
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: notifications-ms
+          image: burrito-notifications-ms:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: burrito-config
+            - secretRef:
+                name: burrito-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notifications-ms
+  namespace: evaluation-system
+spec:
+  selector:
+    app: notifications-ms
   ports:
     - name: http
       port: 3000

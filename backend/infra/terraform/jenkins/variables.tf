@@ -40,3 +40,48 @@ variable "k8s_namespace" {
   description = "Kubernetes namespace for Burrito workloads"
   default     = "evaluation-system"
 }
+
+variable "burrito_database_username" {
+  type        = string
+  description = "Placeholder database username for Jenkins credentials"
+  default     = "root"
+}
+
+variable "burrito_database_password" {
+  type        = string
+  description = "Placeholder database password for Jenkins credentials"
+  default     = "root"
+  sensitive   = true
+}
+
+variable "burrito_jwt_secret" {
+  type        = string
+  description = "Placeholder JWT secret for Jenkins credentials"
+  default     = "Nwrb2!1501BvS85pB@u9%*vm*4B#D37o"
+  sensitive   = true
+}
+
+variable "burrito_jwt_expires_in" {
+  type        = string
+  description = "Placeholder JWT access token TTL"
+  default     = "30min"
+}
+
+variable "burrito_jwt_refresh_expires_in" {
+  type        = string
+  description = "Placeholder JWT refresh token TTL"
+  default     = "30d"
+}
+
+variable "burrito_smtp_user" {
+  type        = string
+  description = "Placeholder SMTP user or API key"
+  default     = "smtp-user"
+}
+
+variable "burrito_smtp_pass" {
+  type        = string
+  description = "Placeholder SMTP password or API secret"
+  default     = "smtp-pass"
+  sensitive   = true
+}

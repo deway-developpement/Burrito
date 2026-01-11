@@ -23,6 +23,14 @@ services:
     restart: unless-stopped
     ports:
       - "${REDIS_PORT:-6379}:6379"
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: ${MAILHOG_CONTAINER_NAME:-burrito-mailhog}
+    restart: unless-stopped
+    ports:
+      - "${MAILHOG_SMTP_PORT:-1025}:1025"
+      - "${MAILHOG_WEB_PORT:-8025}:8025"
   
   api-gateway:
     build:
@@ -34,7 +42,7 @@ services:
       - forms-ms
       - evaluations-ms
       - analytics-ms
-      # - notifications-ms
+      - notifications-ms
       - mongo
       - redis
     ports:
@@ -93,6 +101,21 @@ services:
     volumes:
       - ./.env:/app/.env:ro
 
+  groups-ms:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: groups-ms
+    depends_on: [mongo, redis]
+    environment:
+      - MONGODB_MODE=docker
+      - REDIS_HOST=${REDIS_CONTAINER_NAME:-burrito-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
+      - MONGODB_PORT=${MONGODB_PORT:-27017}
+    volumes:
+      - ./.env:/app/.env:ro
+
   analytics-ms:
     build:
       context: .
@@ -114,6 +137,23 @@ services:
     volumes:
       - ./.env:/app/.env:ro
 
+  notifications-ms:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: notifications-ms
+    depends_on: [mongo, redis, mailhog, users-ms, forms-ms, evaluations-ms, groups-ms]
+    environment:
+      - MONGODB_MODE=docker
+      - REDIS_HOST=${REDIS_CONTAINER_NAME:-burrito-redis}
+      - REDIS_PORT=${REDIS_PORT:-6379}
+      - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
+      - MONGODB_PORT=${MONGODB_PORT:-27017}
+      - SMTP_HOST=${SMTP_HOST:-mailhog}
+      - SMTP_PORT=${SMTP_PORT:-1025}
+    volumes:
+      - ./.env:/app/.env:ro
+
   intelligence-ms:
     build:
       context: ./apps/intelligence-ms
@@ -127,10 +167,6 @@ services:
       - MONGODB_PORT=${MONGODB_PORT:-27017}
     volumes:
       - ./.env:/app/.env:ro
-
-  # notifications-ms:
-  #   build: ./apps/notifications-ms
-  #   depends_on: [redis]
 
 volumes:
   mongo-data:
