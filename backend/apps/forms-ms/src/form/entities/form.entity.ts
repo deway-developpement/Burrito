@@ -1,7 +1,7 @@
 // apps/forms-ms/src/form/entities/form.entity.ts
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { IForm, IQuestion, QuestionType } from '@app/common';
+import { FormStatus, IForm, IQuestion, QuestionType } from '@app/common';
 
 @Schema({
   toJSON: { virtuals: true },
@@ -42,11 +42,8 @@ export class Form extends Document implements IForm {
   @Prop()
   readonly targetTeacherId?: string;
 
-  @Prop()
-  readonly targetCourseId?: string;
-
-  @Prop({ default: true })
-  readonly isActive: boolean;
+  @Prop({ enum: FormStatus, default: FormStatus.DRAFT, type: String })
+  readonly status: FormStatus;
 
   @Prop()
   readonly startDate?: Date;

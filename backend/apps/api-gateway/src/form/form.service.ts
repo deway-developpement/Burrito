@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   GatewayTimeoutException,
   Inject,
   Injectable,
@@ -26,12 +27,15 @@ import {
 import { FormDto } from './dto/form.dto';
 import { CreateFormInput } from './dto/create-form.input';
 import { UpdateFormInput } from './dto/update-form.input';
+import { FormStatus, UserType } from '@app/common';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 @QueryService<FormDto>(FormDto)
 export class FormService {
   constructor(
     @Inject('FORM_SERVICE') private readonly formClient: ClientProxy,
+    private readonly userService: UserService,
   ) {}
 
   // === READ APIs ===
@@ -296,20 +300,37 @@ export class FormService {
   // === WRITE APIs (used by CRUDResolver for mutations) ===
 
   async createOne(dto: CreateFormInput): Promise<FormDto> {
+    await this.ensureTeacherIds(dto.targetTeacherId ? [dto.targetTeacherId] : []);
     return this.sendWithTimeout(
       this.formClient.send<FormDto>({ cmd: 'form.createOne' }, dto),
     );
   }
 
   async createMany(dtos: CreateFormInput[]): Promise<FormDto[]> {
+    const teacherIds = dtos
+      .map((dto) => dto.targetTeacherId)
+      .filter((teacherId): teacherId is string => Boolean(teacherId));
+    await this.ensureTeacherIds(teacherIds);
     return this.sendWithTimeout(
       this.formClient.send<FormDto[]>({ cmd: 'form.createMany' }, dtos),
     );
   }
 
   async updateOne(id: string, update: UpdateFormInput): Promise<FormDto> {
+    await this.ensureTeacherIds(
+      update.targetTeacherId ? [update.targetTeacherId] : [],
+    );
     return this.sendWithTimeout(
       this.formClient.send<FormDto>({ cmd: 'form.updateOne' }, { id, update }),
+    );
+  }
+
+  async changeStatus(id: string, status: FormStatus): Promise<FormDto> {
+    return this.sendWithTimeout(
+      this.formClient.send<FormDto>(
+        { cmd: 'form.updateOne' },
+        { id, update: { status } },
+      ),
     );
   }
 
@@ -317,6 +338,9 @@ export class FormService {
     update: UpdateFormInput,
     filter: Filter<FormDto>,
   ): Promise<UpdateManyResponse> {
+    await this.ensureTeacherIds(
+      update.targetTeacherId ? [update.targetTeacherId] : [],
+    );
     return this.sendWithTimeout(
       this.formClient.send<UpdateManyResponse>(
         { cmd: 'form.updateMany' },
@@ -345,9 +369,40 @@ export class FormService {
           if (err instanceof TimeoutError) {
             throw new GatewayTimeoutException('Form service timed out');
           }
+          const status =
+            (err as { status?: number })?.status ??
+            (err as { error?: { status?: number } })?.error?.status;
+          if (status === 400) {
+            const message =
+              (err as { message?: string })?.message ??
+              (err as { error?: { message?: string } })?.error?.message ??
+              'Invalid form data';
+            throw new BadRequestException(message);
+          }
           throw err;
         }),
       ),
     );
+  }
+
+  private async ensureTeacherIds(teacherIds: string[]): Promise<void> {
+    const normalized = Array.from(
+      new Set(teacherIds.filter((teacherId) => teacherId.trim() !== '')),
+    );
+    if (normalized.length === 0) {
+      return;
+    }
+    const users = await this.userService.findByIds(normalized);
+    const teacherIdsSet = new Set(
+      users
+        .filter((user) => user.userType === UserType.TEACHER)
+        .map((user) => user.id),
+    );
+    const invalid = normalized.filter((id) => !teacherIdsSet.has(id));
+    if (invalid.length > 0) {
+      throw new BadRequestException(
+        'targetTeacherId must reference an existing teacher',
+      );
+    }
   }
 }

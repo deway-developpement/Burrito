@@ -19,7 +19,17 @@ export class RedisLoggerInterceptor implements NestInterceptor {
     const rpcContext = context.switchToRpc();
     const redisContext = rpcContext.getContext<RedisContext>();
     const rawChannel = redisContext.getChannel();
-    const channel = JSON.parse(rawChannel).cmd;
+    let channel = 'unknown';
+    if (typeof rawChannel === 'string') {
+      try {
+        const parsed = JSON.parse(rawChannel) as { cmd?: string };
+        channel = parsed?.cmd || rawChannel;
+      } catch {
+        channel = rawChannel;
+      }
+    } else if (rawChannel && typeof rawChannel === 'object') {
+      channel = (rawChannel as { cmd?: string }).cmd || String(rawChannel);
+    }
 
     // Log when request is received
     this.logger.info({ channel }, 'Incoming message');

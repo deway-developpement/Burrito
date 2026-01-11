@@ -34,6 +34,9 @@ export class UserDto {
   @FilterableField(() => UserType, { description: 'User type' })
   userType: UserType;
 
+  @Field(() => Boolean, { description: 'Whether email is verified' })
+  emailVerified: boolean;
+
   @Field(() => GraphQLISODateTime, { description: 'Creation date' })
   createdAt: Date;
 

@@ -16,9 +16,13 @@ export interface IUser {
 
   readonly refresh_token: string | null;
 
+  readonly emailVerified: boolean;
+
   readonly createdAt: Date;
 
   readonly updatedAt: Date;
+
+  readonly notificationPreferences?: INotificationPreferences;
 }
 
 export interface ICreateUser {
@@ -35,4 +39,10 @@ export interface IUpdateUser {
   fullName?: string;
   userType?: UserType;
   refresh_token?: string | null;
+}
+
+export interface INotificationPreferences {
+  emailEnabled?: boolean;
+  language?: string;
+  digestFrequency?: string;
 }
