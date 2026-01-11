@@ -170,7 +170,7 @@
         </div>
 
         <!-- Load More Button -->
-        @if (remarks().length > 0) {
+        @if (remarks().length > 0 && hasMoreRemarks()) {
           <div class="remarks-pagination">
             <button
               (click)="loadMoreRemarks()"

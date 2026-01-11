@@ -211,12 +211,14 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   selectedFormFilter = signal<string>('all');
   remarksPage = signal<number>(0);
   remarksPageSize = signal<number>(20);
+  hasMoreRemarks = signal<boolean>(false);
 
   loading = signal<boolean>(false);
   remarksLoading = signal<boolean>(false);
   error = signal<string | null>(null);
   showAdminBanner = signal<boolean>(false);
 
+  private allRemarks: EvaluationRemark[] = [];
   private destroy$ = new Subject<void>();
   private debounceTimer: any = null;
 
@@ -499,6 +501,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   private loadRemarks(): void {
     this.remarks.set([]);
     this.remarksPage.set(0);
+    this.allRemarks = [];
     this.fetchRemarks(0, true);
   }
 
@@ -517,10 +520,19 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       // Extract remarks from evaluation answers
       const remarks = this.extractRemarksFromEvaluations(evaluations);
       
+      // Store all remarks for pagination
+      if (isInitial) {
+        this.allRemarks = remarks;
+      }
+      
       // Apply pagination
       const start = offset;
       const end = offset + this.remarksPageSize();
       const paginatedRemarks = remarks.slice(start, end);
+
+      // Check if there are more remarks to load
+      const hasMore = end < remarks.length;
+      this.hasMoreRemarks.set(hasMore);
 
       if (isInitial) {
         this.remarks.set(paginatedRemarks);
