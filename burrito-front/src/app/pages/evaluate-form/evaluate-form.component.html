@@ -1,0 +1,85 @@
+<app-background-div>
+  <app-admin-page-header></app-admin-page-header>
+
+  <div class="evaluate-container">
+    <div class="evaluate-card" *ngIf="!loading && !error && formData">
+      <div class="form-header">
+        <h1>{{ formData.title }}</h1>
+        <p class="form-description" *ngIf="formData.description">{{ formData.description }}</p>
+        <div class="form-meta">
+          <span *ngIf="formData.teacher">Teacher: {{ formData.teacher.fullName }}</span>
+          <span *ngIf="formData.endDate" class="deadline">Deadline: {{ formData.endDate | date: 'medium' }}</span>
+        </div>
+      </div>
+
+      <form [formGroup]="evaluationForm" (ngSubmit)="onSubmit()" class="evaluation-form">
+        <div class="question-block" *ngFor="let question of formData.questions; let i = index">
+          <label class="question-label">
+            {{ i + 1 }}. {{ question.label }}
+            <span class="required" *ngIf="question.required">*</span>
+          </label>
+
+          <!-- Rating Question -->
+          <div *ngIf="question.type === 'RATING'" class="rating-container">
+            <div class="rating-options">
+              <label *ngFor="let rating of getRatingArray()" class="rating-option">
+                <input
+                  type="radio"
+                  [formControlName]="question.id"
+                  [value]="rating"
+                  [id]="'rating-' + question.id + '-' + rating"
+                />
+                <span class="rating-label">{{ rating }}</span>
+              </label>
+            </div>
+            <div class="rating-scale-labels">
+              <span>Poor</span>
+              <span>Excellent</span>
+            </div>
+          </div>
+
+          <!-- Text Question -->
+          <div *ngIf="question.type === 'TEXT'" class="text-container">
+            <textarea
+              [formControlName]="question.id"
+              [id]="'text-' + question.id"
+              rows="4"
+              placeholder="Enter your response..."
+              class="text-input"
+            ></textarea>
+          </div>
+
+          <div class="error-message" *ngIf="isFieldInvalid(question.id)">
+            This field is required
+          </div>
+        </div>
+
+        <div class="error-banner" *ngIf="validationError">
+          {{ validationError }}
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="router.navigate(['/'])" [disabled]="submitting">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="submitting">
+            {{ submitting ? 'Submitting...' : 'Submit Evaluation' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="loading-container" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Loading form...</p>
+    </div>
+
+    <div class="error-container" *ngIf="error && !formData">
+      <div class="error-icon">⚠️</div>
+      <h2>{{ error }}</h2>
+      <button class="btn btn-primary" (click)="router.navigate(['/'])">
+        Back to Home
+      </button>
+    </div>
+  </div>
+</app-background-div>
