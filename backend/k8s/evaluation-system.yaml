@@ -17,7 +17,7 @@ data:
   DATABASE_NAME: burrito
   ANALYTICS_SNAPSHOT_TTL_SECONDS: "3600"
   ANALYTICS_TIME_BUCKET: day
-  ANALYTICS_ENABLE_INTELLIGENCE: "false"
+  ANALYTICS_ENABLE_INTELLIGENCE: "true"
   ANALYTICS_INTELLIGENCE_TIMEOUT_MS: "5000"
   INTELLIGENCE_GRPC_HOST: intelligence-ms
   INTELLIGENCE_GRPC_PORT: "50051"
@@ -438,6 +438,46 @@ spec:
     - name: http
       port: 3000
       targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: intelligence-ms
+  namespace: evaluation-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: intelligence-ms
+  template:
+    metadata:
+      labels:
+        app: intelligence-ms
+    spec:
+      containers:
+        - name: intelligence-ms
+          image: burrito-intelligence-ms:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 50051
+          envFrom:
+            - configMapRef:
+                name: burrito-config
+            - secretRef:
+                name: burrito-secrets
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: intelligence-ms
+  namespace: evaluation-system
+spec:
+  selector:
+    app: intelligence-ms
+  ports:
+    - name: grpc
+      port: 50051
+      targetPort: 50051
 ---
 apiVersion: apps/v1
 kind: Deployment

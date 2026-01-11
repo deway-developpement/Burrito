@@ -88,6 +88,19 @@ pipeline {
                 --opt "build-arg:SERVICE_NAME=${svc}" \
                 --output type=image,\\"name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-${svc}:latest\\",push=true
             done
+
+            echo "-------------------------------------------------"
+            echo "Building Service: intelligence-ms"
+            echo "-------------------------------------------------"
+
+            buildctl \
+              --addr "${BUILDKIT_HOST}" \
+              build \
+              --frontend dockerfile.v0 \
+              --local context=apps/intelligence-ms \
+              --local dockerfile=apps/intelligence-ms \
+              --opt filename=Dockerfile \
+              --output type=image,\\"name=${REGISTRY_HOST}/burrito-intelligence-ms:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-intelligence-ms:latest\\",push=true
           '''
         }
       }
@@ -155,9 +168,13 @@ pipeline {
             kubectl set image deployment/groups-ms \
               groups-ms=${REGISTRY_HOST}/burrito-groups-ms:${BUILD_NUMBER} \
               -n "$K8S_NAMESPACE"
-            
+
             kubectl set image deployment/notifications-ms \
               notifications-ms=${REGISTRY_HOST}/burrito-notifications-ms:${BUILD_NUMBER} \
+              -n "$K8S_NAMESPACE"
+
+            kubectl set image deployment/intelligence-ms \
+              intelligence-ms=${REGISTRY_HOST}/burrito-intelligence-ms:${BUILD_NUMBER} \
               -n "$K8S_NAMESPACE"
 
             echo "Deployment updated successfully."
@@ -169,6 +186,7 @@ pipeline {
             kubectl rollout status deployment/analytics-ms -n "$K8S_NAMESPACE"
             kubectl rollout status deployment/groups-ms -n "$K8S_NAMESPACE"
             kubectl rollout status deployment/notifications-ms -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/intelligence-ms -n "$K8S_NAMESPACE"
           '''
         }
       }

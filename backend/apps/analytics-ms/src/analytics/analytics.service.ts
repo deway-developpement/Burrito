@@ -5,6 +5,8 @@ import { Model, Types } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
 import { createHash } from 'crypto';
 import path from 'path';
+import * as grpc from '@grpc/grpc-js';
+import * as protoLoader from '@grpc/proto-loader';
 import {
   AnalyticsSnapshot,
   NpsBuckets,
@@ -827,11 +829,6 @@ export class AnalyticsService {
     }
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const grpc = require('@grpc/grpc-js');
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const protoLoader = require('@grpc/proto-loader');
-
       const protoPath = path.resolve(
         process.cwd(),
         'apps/intelligence-ms/proto/analytics.proto',
