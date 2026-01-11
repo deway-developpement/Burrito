@@ -27,8 +27,8 @@ const VERIFY_EMAIL_MUTATION = gql`
 
       <div *ngIf="status() === 'loading'">Verifying your email…</div>
       <div *ngIf="status() === 'success'" class="success">
-        Your email has been verified. You can now continue.
-        <a routerLink="/">Go to home</a>
+        ✓ Your email has been verified successfully!
+        <p>Redirecting to home in a moment…</p>
       </div>
       <div *ngIf="status() === 'error'" class="error">
         Verification failed: {{ errorMessage() || 'Invalid or expired token.' }}
@@ -53,8 +53,15 @@ export class VerifyEmailComponent implements OnInit {
 
   status = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
   errorMessage = signal<string | null>(null);
+  private hasAttempted = false;
 
   async ngOnInit() {
+    // Prevent re-running verification on reinit
+    if (this.hasAttempted) {
+      return;
+    }
+    this.hasAttempted = true;
+    
     this.status.set('loading');
     const token = this.route.snapshot.queryParamMap.get('token');
 
@@ -84,6 +91,9 @@ export class VerifyEmailComponent implements OnInit {
           userType: updatedUser.userType,
         });
         this.status.set('success');
+        
+        // Auto-redirect immediately (no wait)
+        this.router.navigate(['/']);
       } else {
         this.status.set('error');
       }
