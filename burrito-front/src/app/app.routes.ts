@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { SignInComponent } from './pages/sign-in/sign-in.component';
-import { RegisterComponent } from './pages/register/register.component';
 import { FeedbackStudentComponent } from './pages/feedback/student/feedback-student.component';
 import { FeedbackAdminComponent } from './pages/feedback/admin/feedback-admin.component';
 import { PrivacyPolicyComponent } from './pages/privacy/privacy-policy.component';
@@ -31,10 +30,6 @@ export const routes: Routes = [
     component: SignInComponent
   },
   {
-    path: 'register',
-    component: RegisterComponent
-  },
-  {
     path: 'legal/privacy',
     component: PrivacyPolicyComponent
   },
@@ -56,11 +51,13 @@ export const routes: Routes = [
   },
   {
     path: 'admin/manage/teachers',
-    component: ManageTeachersComponent
+    component: ManageTeachersComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'admin/manage/students',
-    component: ManageStudentsComponent
+    component: ManageStudentsComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'admin/reports',
@@ -69,7 +66,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin/forms',
-    component: AdminFormsComponent
+    component: AdminFormsComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'results/:id',
@@ -93,14 +91,17 @@ export const routes: Routes = [
   },
   {
     path: 'verify-email',
-    component: VerifyEmailComponent
+    component: VerifyEmailComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'feedback/student',
-    component: FeedbackStudentComponent
+    component: FeedbackStudentComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'feedback/admin',
-    component: FeedbackAdminComponent
+    component: FeedbackAdminComponent,
+    canActivate: [authGuard]
   }
 ];
