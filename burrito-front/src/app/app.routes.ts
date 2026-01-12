@@ -15,6 +15,7 @@ import { ResultsTeacherComponent } from './pages/results-teacher/results-teacher
 import { ResultsFormComponent } from './pages/results-form/results-form.component';
 import { GlobalReportsComponent } from './pages/global-reports/global-reports.component';
 import { authGuard } from './guards/auth.guard';
+import { guestGuard } from './guards/guest.guard';
 import { teacherAccessGuard } from './guards/teacher-access.guard';
 import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
 import { EvaluateFormComponent } from './pages/evaluate-form/evaluate-form.component';
@@ -27,7 +28,8 @@ export const routes: Routes = [
   },
   {
     path: 'sign-in',
-    component: SignInComponent
+    component: SignInComponent,
+    canActivate: [guestGuard]
   },
   {
     path: 'legal/privacy',
