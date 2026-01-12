@@ -1,0 +1,37 @@
+"""Configuration defaults for intelligence-ms."""
+import os
+
+BASE_DIR = os.getenv(
+    'INTELLIGENCE_MS_ROOT',
+    os.path.abspath(os.path.join(os.path.dirname(__file__), '..')),
+)
+
+HF_HOME = os.getenv('HF_HOME', os.path.join(BASE_DIR, '.cache', 'huggingface'))
+NLTK_DATA = os.getenv('NLTK_DATA', os.path.join(BASE_DIR, '.cache', 'nltk'))
+
+os.environ.setdefault('HF_HOME', HF_HOME)
+os.environ.setdefault('TRANSFORMERS_CACHE', HF_HOME)
+os.environ.setdefault('NLTK_DATA', NLTK_DATA)
+os.environ.setdefault('TRANSFORMERS_OFFLINE', '1')
+os.environ.setdefault('HF_HUB_DISABLE_TELEMETRY', '1')
+
+EMBEDDING_MODEL = os.getenv(
+    'EMBEDDING_MODEL',
+    'sentence-transformers/all-MiniLM-L6-v2',
+)
+PARAPHRASE_MODEL = os.getenv(
+    'PARAPHRASE_MODEL',
+    'google/flan-t5-small',
+)
+
+CLUSTER_DISTANCE_THRESHOLD = float(
+    os.getenv('CLUSTER_DISTANCE_THRESHOLD', '0.35')
+)
+CLUSTER_MIN_SIZE = int(os.getenv('CLUSTER_MIN_SIZE', '2'))
+CLUSTER_MAX_COUNT = int(os.getenv('CLUSTER_MAX_COUNT', '8'))
+MAX_CLUSTER_EXAMPLES = int(os.getenv('MAX_CLUSTER_EXAMPLES', '8'))
+
+PARAPHRASE_MIN_WORDS = int(os.getenv('PARAPHRASE_MIN_WORDS', '6'))
+PARAPHRASE_MAX_WORDS = int(os.getenv('PARAPHRASE_MAX_WORDS', '12'))
+PARAPHRASE_MAX_NEW_TOKENS = int(os.getenv('PARAPHRASE_MAX_NEW_TOKENS', '18'))
+PARAPHRASE_MIN_NEW_TOKENS = int(os.getenv('PARAPHRASE_MIN_NEW_TOKENS', '6'))

@@ -28,8 +28,14 @@ message AnalysisResponse {
   float aggregate_sentiment_score = 3;
   string aggregate_sentiment_label = 4;
   repeated string aggregated_extracted_ideas = 5;
+  repeated ClusterSummary cluster_summaries = 8;
   bool success = 6;
   string error_message = 7;
+}
+
+message ClusterSummary {
+  string summary = 1;
+  int32 count = 2;
 }
 
 message EmptyRequest {}

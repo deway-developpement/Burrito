@@ -7,6 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { HeaderComponent } from '../../component/header/header.component';
 import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 import { AuthService } from '../../services/auth.service';
+import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 
 interface AnalyticsWindow {
   from?: Date;
@@ -205,7 +206,7 @@ const GET_USER = gql`
 @Component({
   selector: 'app-results-teacher',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, GoBackComponent],
+  imports: [CommonModule, BackgroundDivComponent, GoBackComponent],
   templateUrl: './results-teacher.component.html',
   styleUrls: ['./results-teacher.component.scss'],
 })

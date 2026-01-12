@@ -3,7 +3,6 @@ MongoDB Database Module for Analytics
 """
 from typing import Dict, Any, List
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
 import os
 from datetime import datetime
 
@@ -143,18 +142,47 @@ class MongoDBManager:
             Dictionary with sentiment stats
         """
         try:
-            stats = list(self.db['sentiment_stats'].find({}, {'_id': 0}))
-            total = sum(stat['count'] for stat in stats)
+            pipeline = [
+                {'$unwind': '$answers'},
+                {
+                    '$group': {
+                        '_id': '$answers.sentiment_label',
+                        'count': {'$sum': 1},
+                    }
+                },
+            ]
+            stats = list(self.db['analyses'].aggregate(pipeline))
 
+            if not stats:
+                fallback = [
+                    {
+                        '$group': {
+                            '_id': '$aggregate_sentiment_label',
+                            'count': {'$sum': 1},
+                        }
+                    }
+                ]
+                stats = list(self.db['analyses'].aggregate(fallback))
+
+            total = sum(stat.get('count', 0) for stat in stats)
             if total == 0:
                 return {'stats': [], 'total_analyzed': 0}
 
+            formatted = []
             for stat in stats:
-                stat['percentage'] = (stat['count'] / total) * 100
+                label = stat.get('_id') or ''
+                count = int(stat.get('count', 0))
+                formatted.append(
+                    {
+                        'sentiment': label,
+                        'count': count,
+                        'percentage': (count / total) * 100,
+                    }
+                )
 
             return {
-                'stats': stats,
-                'total_analyzed': total
+                'stats': formatted,
+                'total_analyzed': total,
             }
         except Exception as e:
             raise Exception(f"Failed to get sentiment stats: {str(e)}")
@@ -170,24 +198,64 @@ class MongoDBManager:
             Dictionary with frequent ideas
         """
         try:
-            ideas = list(
-                self.db['ideas_frequency']
-                .find({}, {'_id': 0})
-                .sort('frequency', -1)
-                .limit(limit)
+            pipeline = [
+                {'$unwind': '$aggregated_extracted_ideas'},
+                {
+                    '$group': {
+                        '_id': '$aggregated_extracted_ideas',
+                        'frequency': {'$sum': 1},
+                    }
+                },
+                {'$sort': {'frequency': -1}},
+                {'$limit': limit},
+            ]
+            ideas = list(self.db['analyses'].aggregate(pipeline))
+
+            total_frequency = 0
+            total_frequency_result = list(
+                self.db['analyses'].aggregate(
+                    [
+                        {'$unwind': '$aggregated_extracted_ideas'},
+                        {'$group': {'_id': None, 'total': {'$sum': 1}}},
+                    ]
+                )
             )
+            if total_frequency_result:
+                total_frequency = int(total_frequency_result[0].get('total', 0))
 
-            total_ideas = self.db['ideas_frequency'].count_documents({})
+            total_ideas_result = list(
+                self.db['analyses'].aggregate(
+                    [
+                        {'$unwind': '$aggregated_extracted_ideas'},
+                        {'$group': {'_id': '$aggregated_extracted_ideas'}},
+                        {'$count': 'total'},
+                    ]
+                )
+            )
+            total_ideas = 0
+            if total_ideas_result:
+                total_ideas = int(total_ideas_result[0].get('total', 0))
 
-            if total_ideas > 0:
-                total_frequency = sum(idea['frequency'] for idea in ideas)
-                for idea in ideas:
-                    idea['percentage'] = (
-                        idea['frequency'] / total_frequency) * 100
+            formatted = []
+            for idea in ideas:
+                label = idea.get('_id') or ''
+                frequency = int(idea.get('frequency', 0))
+                percentage = (
+                    (frequency / total_frequency) * 100
+                    if total_frequency
+                    else 0
+                )
+                formatted.append(
+                    {
+                        'idea': label,
+                        'frequency': frequency,
+                        'percentage': percentage,
+                    }
+                )
 
             return {
-                'ideas': ideas,
-                'total_ideas': total_ideas
+                'ideas': formatted,
+                'total_ideas': total_ideas,
             }
         except Exception as e:
             raise Exception(f"Failed to get frequent ideas: {str(e)}")

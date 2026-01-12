@@ -5,7 +5,6 @@ Provides gRPC endpoints for sentiment analysis and idea extraction
 import sys
 import os
 import logging
-import subprocess
 from concurrent import futures
 import grpc
 from dotenv import load_dotenv
@@ -24,88 +23,17 @@ else:
         load_dotenv(local_env_path)
 
 # Configure logging
+log_level = os.getenv('INTELLIGENCE_LOG_LEVEL', os.getenv('LOG_LEVEL', 'INFO')).upper()
 logging.basicConfig(
-    level=logging.INFO,
+    level=getattr(logging, log_level, logging.INFO),
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# Generate proto files
-def generate_proto_files():
-    """Generate Python files from proto definitions"""
-    proto_dir = os.path.join(SCRIPT_DIR, 'proto')
-    output_dir = os.path.join(SCRIPT_DIR, 'intelligence')
-    proto_file = os.path.join(proto_dir, 'analytics.proto')
-    
-    # Check if proto file exists
-    if not os.path.exists(proto_file):
-        logger.error(f"Proto file not found at {proto_file}")
-        sys.exit(1)
-    
-    try:
-        logger.info("Generating proto files...")
-        result = subprocess.run(
-            [
-                sys.executable, '-m', 'grpc_tools.protoc',
-                f'-I{proto_dir}',
-                f'--python_out={output_dir}',
-                f'--grpc_python_out={output_dir}',
-                proto_file
-            ],
-            capture_output=True,
-            text=True,
-            check=False
-        )
-        
-        if result.returncode != 0:
-            logger.error(f"Proto generation error: {result.stderr}")
-            sys.exit(1)
-        
-        logger.info("Proto files generated successfully")
-        
-        # Fix imports in generated files
-        fix_proto_imports()
-        
-        return True
-        
-    except FileNotFoundError:
-        logger.error("grpc_tools.protoc not found. Please install grpcio-tools: pip install grpcio-tools")
-        sys.exit(1)
-    except Exception as e:
-        logger.error(f"Failed to generate proto files: {str(e)}")
-        sys.exit(1)
-
-
-def fix_proto_imports():
-    """Fix relative imports in generated proto files"""
-    grpc_file = os.path.join(SCRIPT_DIR, 'intelligence', 'analytics_pb2_grpc.py')
-    
-    if os.path.exists(grpc_file):
-        try:
-            with open(grpc_file, 'r') as f:
-                content = f.read()
-            
-            # Replace absolute import with relative import
-            if 'import analytics_pb2 as analytics__pb2' in content:
-                content = content.replace(
-                    'import analytics_pb2 as analytics__pb2',
-                    'from . import analytics_pb2 as analytics__pb2'
-                )
-                
-                with open(grpc_file, 'w') as f:
-                    f.write(content)
-                
-                logger.info("Fixed proto imports")
-        except Exception as e:
-            logger.warning(f"Could not fix proto imports: {str(e)}")
-
-
 def main():
     """Main entry point"""
     try:
-        # Generate proto files first
         logger.info("Starting Intelligence Microservice...")
-        generate_proto_files()
         
         # Add script directory to path so imports work
         if SCRIPT_DIR not in sys.path:
@@ -115,6 +43,7 @@ def main():
         logger.info("Importing modules...")
         from intelligence.servicer import AnalyticsServicer
         from intelligence.sentiment_analyzer import SentimentAnalyzer
+        from intelligence.idea_summarizer import IdeaSummarizer
         from intelligence.database import MongoDBManager
         from intelligence import analytics_pb2_grpc
         
@@ -124,6 +53,9 @@ def main():
         # Initialize sentiment analyzer
         sentiment_analyzer = SentimentAnalyzer()
         logger.info("Sentiment analyzer initialized")
+
+        idea_summarizer = IdeaSummarizer()
+        logger.info("Idea summarizer initialized")
         
         # Initialize database manager
         db_manager = MongoDBManager()
@@ -133,7 +65,7 @@ def main():
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         
         # Create the servicer and dynamically make it inherit from the gRPC base class
-        servicer = AnalyticsServicer(db_manager, sentiment_analyzer)
+        servicer = AnalyticsServicer(db_manager, sentiment_analyzer, idea_summarizer)
         
         # Register the servicer with the server
         analytics_pb2_grpc.add_AnalyticsServiceServicer_to_server(servicer, server)
