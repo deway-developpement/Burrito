@@ -22,6 +22,7 @@ import { AddUserModalComponent } from '../../../component/shared/add-user-modal/
     AddUserModalComponent
   ],
   templateUrl: './manage-teachers.component.html',
+  styleUrls: ['./manage-teachers.component.scss']
 })
 export class ManageTeachersComponent {
 

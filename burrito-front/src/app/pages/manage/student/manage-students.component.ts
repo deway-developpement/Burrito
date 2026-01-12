@@ -22,6 +22,7 @@ import { Observable, map, tap, take } from 'rxjs';
     AddUserModalComponent
   ],
   templateUrl: './manage-students.component.html',
+  styleUrls: ['./manage-students.component.scss']
 })
 export class ManageStudentsComponent {
 
