@@ -1,11 +1,15 @@
 <app-background-div>
+  <div class="nav-bar">
+    <app-go-back></app-go-back>
+  </div>
   
-  <app-admin-page-header 
-    title="Manage Teachers" 
-    subtitle="View, edit, or onboard new teaching staff."
-    buttonLabel="Add New Teacher"
-    (action)="onAdd()">
-  </app-admin-page-header>
+  <div class="page-container">
+    <app-admin-page-header 
+      title="Manage Teachers" 
+      subtitle="View, edit, or onboard new teaching staff."
+      buttonLabel="Add New Teacher"
+      (action)="onAdd()">
+    </app-admin-page-header>
 
   <app-admin-table 
     [columns]="tableColumns" 
@@ -27,5 +31,6 @@
       (saved)="refreshData()">
     </app-add-user-modal>
   }
+  </div>
 
 </app-background-div>

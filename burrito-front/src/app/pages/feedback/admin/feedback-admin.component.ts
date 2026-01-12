@@ -3,6 +3,7 @@ import { ViewportScroller } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BackgroundDivComponent } from '../../../component/shared/background-div/background-div.component';
+import { GoBackComponent } from '../../../component/shared/go-back/go-back.component';
 import { ButtonComponent } from '../../../component/shared/button/button.component';
 import { InputComponent } from '../../../component/shared/input/input.component';
 import {
@@ -36,6 +37,7 @@ interface FormQuestion {
   imports: [
     FormsModule,
     BackgroundDivComponent,
+    GoBackComponent,
     ButtonComponent,
     InputComponent,
     SelectComponent,

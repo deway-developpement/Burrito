@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Apollo, gql } from 'apollo-angular';
 import { AuthService } from '../../services/auth.service';
 import { HeaderComponent } from '../../component/header/header.component';
+import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 
 type QuestionType = 'RATING' | 'TEXT';
 
@@ -69,7 +70,7 @@ const GET_FORM = gql`
 @Component({
   selector: 'app-results',
   standalone: true,
-  imports: [CommonModule, HeaderComponent],
+  imports: [CommonModule, HeaderComponent, GoBackComponent],
   templateUrl: './results.component.html',
   styleUrls: ['./results.component.scss']
 })
@@ -77,6 +78,7 @@ export class ResultsComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private apollo = inject(Apollo);
   private authService = inject(AuthService);
+
 
   evaluationId = signal<string | null>(null);
   evaluation = signal<EvaluationResult | null>(null);

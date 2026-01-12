@@ -5,6 +5,7 @@ import { Apollo, gql } from 'apollo-angular';
 import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { HeaderComponent } from '../../component/header/header.component';
+import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 import { AuthService } from '../../services/auth.service';
 
 interface AnalyticsWindow {
@@ -174,7 +175,7 @@ const GET_USER = gql`
 @Component({
   selector: 'app-results-form',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, RouterModule],
+  imports: [CommonModule, HeaderComponent, GoBackComponent, RouterModule],
   templateUrl: './results-form.component.html',
   styleUrls: ['./results-form.component.scss'],
 })
@@ -235,10 +236,6 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   onRefreshAnalytics(): void {
     this.loading.set(true);
     this.fetchFormAnalytics(true).finally(() => this.loading.set(false));
-  }
-
-  goBack(): void {
-    this.router.navigate(['/admin/reports']);
   }
 
   toggleQuestionExpanded(questionId: string): void {

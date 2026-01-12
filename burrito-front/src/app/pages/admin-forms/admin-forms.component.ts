@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
+import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 import { AdminPageHeaderComponent } from '../../component/shared/admin-page-header/admin-page-header.component';
 import { ButtonComponent } from '../../component/shared/button/button.component';
 import {
@@ -62,6 +63,7 @@ type StatusFilter = FormStatus | 'ALL';
   imports: [
     CommonModule,
     BackgroundDivComponent,
+    GoBackComponent,
     AdminPageHeaderComponent,
     ButtonComponent,
     SelectComponent,
