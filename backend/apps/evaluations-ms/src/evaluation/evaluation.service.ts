@@ -167,8 +167,8 @@ export class EvaluationService extends MongooseQueryService<Evaluation> {
           }),
         ),
       );
-      const tokens = respondentTokens.filter(
-        (token): token is string => Boolean(token),
+      const tokens = respondentTokens.filter((token): token is string =>
+        Boolean(token),
       );
       if (tokens.length === 0) {
         return;

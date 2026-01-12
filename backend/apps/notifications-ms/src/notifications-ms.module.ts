@@ -39,6 +39,10 @@ import { NotificationModule } from './notification/notification.module';
     NotificationModule,
   ],
   controllers: [NotificationsMsController, MetricsController],
-  providers: [NotificationsMsService, PrometheusService, RedisLoggerInterceptor],
+  providers: [
+    NotificationsMsService,
+    PrometheusService,
+    RedisLoggerInterceptor,
+  ],
 })
 export class NotificationsMsModule {}

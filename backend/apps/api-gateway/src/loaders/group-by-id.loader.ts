@@ -20,7 +20,9 @@ export class GroupByIdLoader {
             return { ...group, id };
           })
           .filter((group): group is GroupDto => Boolean(group));
-        const byId = new Map(normalizedGroups.map((group) => [group.id, group]));
+        const byId = new Map(
+          normalizedGroups.map((group) => [group.id, group]),
+        );
         return groupIds.map((groupId) => byId.get(groupId));
       },
     );

@@ -19,7 +19,11 @@ import { GroupFormsByFormLoader } from '../loaders/group-forms-by-form.loader';
       },
     ]),
   ],
-  providers: [GroupFormService, GroupFormsByGroupLoader, GroupFormsByFormLoader],
+  providers: [
+    GroupFormService,
+    GroupFormsByGroupLoader,
+    GroupFormsByFormLoader,
+  ],
   exports: [GroupFormService, GroupFormsByGroupLoader, GroupFormsByFormLoader],
 })
 export class GroupFormModule {}

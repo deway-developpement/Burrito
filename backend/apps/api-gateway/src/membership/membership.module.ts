@@ -19,7 +19,15 @@ import { MembershipsByMemberLoader } from '../loaders/memberships-by-member.load
       },
     ]),
   ],
-  providers: [MembershipService, MembershipsByGroupLoader, MembershipsByMemberLoader],
-  exports: [MembershipService, MembershipsByGroupLoader, MembershipsByMemberLoader],
+  providers: [
+    MembershipService,
+    MembershipsByGroupLoader,
+    MembershipsByMemberLoader,
+  ],
+  exports: [
+    MembershipService,
+    MembershipsByGroupLoader,
+    MembershipsByMemberLoader,
+  ],
 })
 export class MembershipModule {}

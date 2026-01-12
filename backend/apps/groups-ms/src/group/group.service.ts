@@ -8,7 +8,9 @@ import { Group } from './entities/group.entity';
 @Injectable()
 @QueryService(Group)
 export class GroupService extends MongooseQueryService<Group> {
-  constructor(@InjectModel(Group.name) private readonly groupModel: Model<Group>) {
+  constructor(
+    @InjectModel(Group.name) private readonly groupModel: Model<Group>,
+  ) {
     super(groupModel);
   }
 

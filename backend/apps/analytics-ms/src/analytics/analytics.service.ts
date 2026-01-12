@@ -83,6 +83,25 @@ type IntelligenceResponse = {
   aggregated_extracted_ideas?: string[];
 };
 
+type IntelligenceAnalyzeRequest = {
+  question_id: string;
+  question_text: string;
+  answer_text: string[];
+};
+
+type IntelligenceClient = {
+  analyzeQuestion(
+    request: IntelligenceAnalyzeRequest,
+    options: { deadline: Date },
+    callback: (err: Error | null, response: IntelligenceResponse) => void,
+  ): void;
+};
+
+type SnapshotTextUpdate = {
+  $set: Record<string, unknown>;
+  $unset?: Record<string, unknown>;
+};
+
 const TEXT_ANALYSIS_STATUS = {
   pending: 'PENDING',
   ready: 'READY',
@@ -116,7 +135,7 @@ export class AnalyticsService {
     parseInt(process.env.ANALYTICS_INTELLIGENCE_TIMEOUT_MS || '5000'),
   );
 
-  private intelligenceClient?: any;
+  private intelligenceClient?: IntelligenceClient;
   private intelligenceClientReady = false;
 
   constructor(
@@ -429,7 +448,7 @@ export class AnalyticsService {
     try {
       return JSON.stringify(error);
     } catch {
-      return String(error);
+      return 'Unknown error';
     }
   }
 
@@ -666,7 +685,7 @@ export class AnalyticsService {
       try {
         const response = await this.callIntelligence(client, input);
         const enrichment = this.buildTextEnrichment(response);
-        const update: Record<string, any> = {
+        const update: SnapshotTextUpdate = {
           $set: {
             'questions.$.text.topIdeas': enrichment.topIdeas,
             'questions.$.text.sentiment': enrichment.sentiment,
@@ -702,7 +721,7 @@ export class AnalyticsService {
           },
         );
         this.logger.warn(
-          `Intelligence enrichment failed for question ${input.questionId}: ${error}`,
+          `Intelligence enrichment failed for question ${input.questionId}: ${this.describeError(error)}`,
         );
       }
     }
@@ -805,7 +824,7 @@ export class AnalyticsService {
   }
 
   private async callIntelligence(
-    client: any,
+    client: IntelligenceClient,
     input: TextInput,
   ): Promise<IntelligenceResponse> {
     return new Promise((resolve, reject) => {
@@ -828,7 +847,7 @@ export class AnalyticsService {
     });
   }
 
-  private getIntelligenceClient(): any {
+  private getIntelligenceClient(): IntelligenceClient | undefined {
     if (this.intelligenceClientReady) {
       return this.intelligenceClient;
     }
@@ -852,7 +871,7 @@ export class AnalyticsService {
           AnalyticsService: new (
             address: string,
             credentials: grpc.ChannelCredentials,
-          ) => unknown;
+          ) => IntelligenceClient;
         };
       };
 
@@ -865,7 +884,7 @@ export class AnalyticsService {
       this.intelligenceClientReady = true;
     } catch (error) {
       this.logger.warn(
-        `Intelligence client unavailable: ${error instanceof Error ? error.message : error}`,
+        `Intelligence client unavailable: ${this.describeError(error)}`,
       );
       this.intelligenceClientReady = true;
       this.intelligenceClient = undefined;
