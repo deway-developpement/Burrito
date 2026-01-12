@@ -16,6 +16,9 @@ export class ButtonComponent {
   /** button type (button, submit, reset) */
   @Input() type: 'button' | 'submit' | 'reset' = 'button';
 
+  /** button size */
+  @Input() size: 'small' | 'medium' = 'medium';
+
   /** make the button take full width if needed */
   @Input() fullWidth = false;
 

@@ -3,8 +3,8 @@
 .btn {
   border: none;
   border-radius: 999px;
-  padding: 0.4rem 1rem;
-  font-size: 0.85rem;
+  padding: 0.55rem 1.3rem;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
   transition:
@@ -58,5 +58,10 @@
 
   &--full {
     width: 100%;
+  }
+
+  &--small {
+    padding: 0.4rem 1rem;
+    font-size: 0.85rem;
   }
 }

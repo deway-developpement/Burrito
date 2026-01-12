@@ -73,13 +73,6 @@
 
       <!-- Aggregate Metrics Row -->
       <div class="metrics-row">
-        <div class="metric-card nps-card">
-          <div class="metric-label">NPS Score</div>
-          <div class="metric-value" [class]="'nps-' + getNpsColor(analytics()!.nps.score)">
-            {{ analytics()!.nps.score.toFixed(0) }}
-          </div>
-        </div>
-
         <div class="metric-card">
           <div class="metric-label">Promoters</div>
           <div class="metric-value promoters">{{ analytics()!.nps.promotersPct.toFixed(1) }}%</div>
