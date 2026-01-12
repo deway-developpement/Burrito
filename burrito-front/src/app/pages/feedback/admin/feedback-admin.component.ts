@@ -17,9 +17,10 @@ import {
   QuestionKind,
   FormDetails,
 } from '../../../services/form.service';
-import { concatMap, of } from 'rxjs';
+import { concatMap, map, of } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 import { ToastService } from '../../../services/toast.service';
+import { GroupService } from '../../../services/group.service';
 
 type QuestionType = 'rating' | 'text';
 
@@ -48,6 +49,7 @@ interface FormQuestion {
 export class FeedbackAdminComponent implements OnInit {
   private formService = inject(FormService);
   private userService = inject(UserService);
+  private groupService = inject(GroupService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private toast = inject(ToastService);
@@ -64,10 +66,12 @@ export class FeedbackAdminComponent implements OnInit {
   // courseTag = '';
   semester = '';
   targetTeacherId = '';
+  groupSelectValue = '';
   startDate = '';
   endDate = '';
   status: FormStatus = 'PUBLISHED';
   originalStatus: FormStatus | null = null;
+  originalGroupIds: string[] = [];
   editingFormId = '';
   isEditing = false;
   publishAttempted = false;
@@ -77,6 +81,8 @@ export class FeedbackAdminComponent implements OnInit {
   isLoadingForm = false;
   isLoadingTeachers = false;
   teachersError = '';
+  isLoadingGroups = false;
+  groupsError = '';
   formLoadError = '';
 
   questionTypeOptions: SelectOption[] = [
@@ -93,10 +99,17 @@ export class FeedbackAdminComponent implements OnInit {
   statusOptions: SelectOption[] = [...this.baseStatusOptions];
 
   teacherOptions: SelectOption[] = [];
+  groupOptions: SelectOption[] = [];
+  selectedGroupIds: string[] = [];
   questions: FormQuestion[] = [];
+
+  goBack(): void {
+    this.router.navigate(['/admin/forms']);
+  }
 
   ngOnInit() {
     this.loadTeachers();
+    this.loadGroups();
     this.watchFormId();
   }
 
@@ -133,11 +146,12 @@ export class FeedbackAdminComponent implements OnInit {
 
   isFormValid(): boolean {
     const metaOk = Boolean(this.formTitle.trim() && this.formDescription.trim());
+    const groupOk = this.selectedGroupIds.length > 0;
     const scheduleOk = !this.requiresSchedule || Boolean(this.startDate && this.endDate);
     const questionsOk =
       this.questions.length > 0 &&
       this.questions.every((q) => this.isQuestionValid(q));
-    return metaOk && scheduleOk && questionsOk;
+    return metaOk && groupOk && scheduleOk && questionsOk;
   }
 
   private loadTeachers() {
@@ -158,6 +172,29 @@ export class FeedbackAdminComponent implements OnInit {
       error: () => {
         this.isLoadingTeachers = false;
         this.teachersError = 'Failed to load teachers.';
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  private loadGroups() {
+    this.isLoadingGroups = true;
+    this.groupsError = '';
+    this.groupService.getGroups().subscribe({
+      next: (groups) => {
+        this.groupOptions = groups.map((group) => ({
+          label: group.name,
+          value: group.id,
+        }));
+        this.isLoadingGroups = false;
+        if (groups.length === 0) {
+          this.groupsError = 'No groups found.';
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoadingGroups = false;
+        this.groupsError = 'Failed to load groups.';
         this.cdr.detectChanges();
       },
     });
@@ -225,6 +262,9 @@ export class FeedbackAdminComponent implements OnInit {
     this.startDate = this.formatDateInput(form.startDate);
     this.endDate = this.formatDateInput(form.endDate);
     this.targetTeacherId = form.teacher?.id ?? '';
+    this.selectedGroupIds = (form.groups ?? []).map((group) => group.id);
+    this.originalGroupIds = [...this.selectedGroupIds];
+    this.groupSelectValue = '';
     this.questions = form.questions.map((question) => ({
       id: question.id,
       label: question.label,
@@ -252,6 +292,9 @@ export class FeedbackAdminComponent implements OnInit {
     this.startDate = '';
     this.endDate = '';
     this.targetTeacherId = '';
+    this.groupSelectValue = '';
+    this.selectedGroupIds = [];
+    this.originalGroupIds = [];
     this.questions = [];
     this.publishAttempted = false;
     this.savedMessage = '';
@@ -310,6 +353,84 @@ export class FeedbackAdminComponent implements OnInit {
     return of(null);
   }
 
+  private syncGroupRelation(formId: string) {
+    const nextGroupIds = this.selectedGroupIds
+      .map((groupId) => groupId.trim())
+      .filter(Boolean);
+    const previousGroupIds = this.originalGroupIds
+      .map((groupId) => groupId.trim())
+      .filter(Boolean);
+    const nextSet = new Set(nextGroupIds);
+    const previousSet = new Set(previousGroupIds);
+    const toRemove = previousGroupIds.filter((groupId) => !nextSet.has(groupId));
+    const toAdd = nextGroupIds.filter((groupId) => !previousSet.has(groupId));
+
+    if (toRemove.length === 0 && toAdd.length === 0) {
+      return of(null);
+    }
+
+    let request$ = of(null);
+
+    toRemove.forEach((groupId) => {
+      request$ = request$.pipe(
+        concatMap(() =>
+          this.groupService
+            .removeFormFromGroup({ groupId, formId })
+            .pipe(map(() => null)),
+        ),
+      );
+    });
+
+    toAdd.forEach((groupId) => {
+      request$ = request$.pipe(
+        concatMap(() =>
+          this.groupService
+            .addFormToGroup({ groupId, formId })
+            .pipe(map(() => null)),
+        ),
+      );
+    });
+
+    return request$;
+  }
+
+  get availableGroupOptions(): SelectOption[] {
+    if (this.selectedGroupIds.length === 0) {
+      return this.groupOptions;
+    }
+    const selected = new Set(this.selectedGroupIds);
+    return this.groupOptions.filter(
+      (option) => !selected.has(String(option.value)),
+    );
+  }
+
+  getGroupLabel(groupId: string): string {
+    const match = this.groupOptions.find(
+      (option) => String(option.value) === groupId,
+    );
+    return match?.label ?? groupId;
+  }
+
+  onGroupSelect(value: string | number | null) {
+    if (!value) {
+      return;
+    }
+    const groupId = String(value);
+    if (!this.selectedGroupIds.includes(groupId)) {
+      this.selectedGroupIds = [...this.selectedGroupIds, groupId];
+    }
+    this.groupSelectValue = groupId;
+    setTimeout(() => {
+      this.groupSelectValue = '';
+    });
+  }
+
+  removeGroup(groupId: string) {
+    this.selectedGroupIds = this.selectedGroupIds.filter(
+      (id) => id !== groupId,
+    );
+  }
+
   onPublish() {
     this.publishAttempted = true;
     this.savedMessage = '';
@@ -347,12 +468,16 @@ export class FeedbackAdminComponent implements OnInit {
           if (!saved?.id) {
             throw new Error('Form save failed.');
           }
-          const currentStatus =
-            this.originalStatus ?? saved.status ?? 'DRAFT';
-          return this.applyStatusTransition(
-            saved.id,
-            currentStatus,
-            this.status,
+          return this.syncGroupRelation(saved.id).pipe(
+            concatMap(() => {
+              const currentStatus =
+                this.originalStatus ?? saved.status ?? 'DRAFT';
+              return this.applyStatusTransition(
+                saved.id,
+                currentStatus,
+                this.status,
+              );
+            }),
           );
         }),
       )
@@ -360,6 +485,7 @@ export class FeedbackAdminComponent implements OnInit {
         next: () => {
           this.isSaving = false;
           this.originalStatus = this.status;
+          this.originalGroupIds = [...this.selectedGroupIds];
           this.statusOptions = this.buildStatusOptions(this.status);
           this.toast.show(
             this.isEditing

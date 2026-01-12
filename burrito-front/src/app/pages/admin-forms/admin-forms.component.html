@@ -16,14 +16,16 @@
       <div class="forms-filter">
         <span class="forms-filter__label">Status</span>
         <app-select
-          variant="outline"
-          [options]="statusOptions"
-          [value]="statusFilter"
-          (valueChange)="onStatusFilterChange($event)"
+        variant="outline"
+        [options]="statusOptions"
+        [value]="statusFilter"
+        (valueChange)="onStatusFilterChange($event)"
         ></app-select>
       </div>
+      <app-button variant="primary" type="button" (click)="createForm()">
+        Create new form
+      </app-button>
     </div>
-
     @if (error()) {
       <div class="error-banner">{{ error() }}</div>
     }
@@ -59,12 +61,24 @@
               <span class="meta-value">{{ formatDate(form.endDate) }}</span>
             </div>
           </div>
+          <div class="form-groups">
+            <span class="form-groups__label">Groups</span>
+            <div class="meta-groups">
+              @if (form.groups?.length) {
+                @for (group of form.groups; track group.id) {
+                  <span class="meta-group-pill">{{ group.name }}</span>
+                }
+              } @else {
+                <span class="meta-group-empty">No groups</span>
+              }
+            </div>
+          </div>
         </div>
 
         <footer class="card-footer">
           <div class="card-actions">
             <app-button variant="outline" type="button" (click)="editForm(form.id)">
-              Modify form
+              Modify
             </app-button>
             <app-button variant="outline" type="button" (click)="deleteForm(form.id)">
               Delete

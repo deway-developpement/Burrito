@@ -7,9 +7,14 @@
     <section class="admin__hero">
       <div class="admin__heading">
         <p class="admin__eyebrow">Admin</p>
-        <h1 class="admin__title">
-          {{ isEditing ? 'Edit a feedback form' : 'Create a feedback form' }}
-        </h1>
+        <div class="nav-bar">
+          <button class="btn-back" (click)="goBack()" title="Go back">
+            ← Back
+          </button>
+          <h1 class="admin__title">
+            {{ isEditing ? 'Edit a feedback form' : 'Create a feedback form' }}
+          </h1>
+        </div>
         <p class="admin__lead">
           {{
             isEditing
@@ -68,10 +73,44 @@
                 [disabled]="isLoadingTeachers"
                 [(value)]="targetTeacherId"
               ></app-select>
-              <!-- @if (teachersError) {
-                <span class="field-error">{{ teachersError }}</span>
-              } -->
             </label>
+
+            <div class="form-field form-field--full">
+              <span class="form-label">Groups <span class="required">*</span></span>
+              <div class="group-picker">
+                <div class="group-picker__select">
+                  <app-select
+                    variant="outline"
+                    placeholder="select a group"
+                    [fullWidth]="true"
+                    [options]="availableGroupOptions"
+                    [disabled]="isLoadingGroups"
+                    [required]="true"
+                    [value]="groupSelectValue"
+                    (valueChange)="onGroupSelect($event)"
+                  ></app-select>
+                </div>
+                <div class="group-picker__selected">
+                  @if (selectedGroupIds.length === 0) {
+                    <span class="group-picker__empty">No groups selected</span>
+                  }
+                  @for (groupId of selectedGroupIds; track groupId) {
+                    <button
+                      type="button"
+                      class="group-pill"
+                      (click)="removeGroup(groupId)"
+                      [attr.aria-label]="'Remove group ' + getGroupLabel(groupId)"
+                    >
+                      <span class="group-pill__label">{{ getGroupLabel(groupId) }}</span>
+                      <span class="group-pill__remove">x</span>
+                    </button>
+                  }
+                </div>
+              </div>
+              @if (publishAttempted && selectedGroupIds.length === 0) {
+                <span class="field-error">Group is required.</span>
+              }
+            </div>
 
             <label class="form-field">
               <span class="form-label">

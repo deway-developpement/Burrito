@@ -13,6 +13,10 @@ const GET_ME = gql`
       email
       emailVerified
       userType
+      groups {
+        id
+        name
+      }
     }
   }
 `;
@@ -31,6 +35,11 @@ const GET_TEACHERS = gql`
           email
           createdAt
           userType
+          # FETCHING GROUP DATA
+          groups {
+            id
+            name
+          }
         }
       }
     }
@@ -51,6 +60,11 @@ const GET_STUDENTS = gql`
           email
           createdAt
           userType
+          # FETCHING GROUP DATA
+          groups {
+            id
+            name
+          }
         }
       }
     }
@@ -110,6 +124,11 @@ export interface UserProfile {
   emailVerified?: boolean;
   userType: UserType;
   createdAt?: string;
+  // ADDED GROUPS INTERFACE HERE
+  groups?: {
+    id: string;
+    name: string;
+  }[];
 }
 
 export type UserType = 'STUDENT' | 'TEACHER' | 'ADMIN';
@@ -190,15 +209,15 @@ export class UserService {
       }
     });
   }
+
   // --- FIXED UPDATE FUNCTION ---
   updateUser(id: string, data: { fullName: string; email: string }) {
     return this.apollo.mutate({
       mutation: UPDATE_USER,
       variables: {
         input: {
-          id: id,        // 1. The ID identifies WHICH user to update
-          update: {      // 2. The update object contains only the NEW data
-            // id: id,   <-- REMOVED: This was causing the error
+          id: id,
+          update: {
             fullName: data.fullName,
             email: data.email
           }

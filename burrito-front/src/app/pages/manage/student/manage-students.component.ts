@@ -30,6 +30,7 @@ export class ManageStudentsComponent {
   tableColumns: TableColumn[] = [
     { key: 'name', label: 'Student Name', type: 'user' },
     { key: 'email', label: 'Email Address', type: 'text' },
+    { key: 'groups', label: 'Assigned Groups', type: 'groups' },
     { key: 'actions', label: 'Actions', type: 'actions' }
   ];
 
@@ -52,7 +53,8 @@ export class ManageStudentsComponent {
           id: u.id,
           name: u.fullName || 'Unknown', 
           email: u.email || 'N/A',
-          createdAt: u.createdAt 
+          createdAt: u.createdAt,
+          groups: u.groups || []
         }));
       })
     );
@@ -97,7 +99,8 @@ export class ManageStudentsComponent {
           fullName: found.name,
           email: found.email,
           userType: 'STUDENT',
-          createdAt: found.createdAt
+          createdAt: found.createdAt,
+          groups: found.groups || []
         };
       }
     });
