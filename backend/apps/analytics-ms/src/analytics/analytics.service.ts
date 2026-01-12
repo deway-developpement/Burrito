@@ -132,13 +132,14 @@ export class AnalyticsService {
   private readonly enableIntelligence =
     (process.env.ANALYTICS_ENABLE_INTELLIGENCE || 'false').toLowerCase() ===
     'true';
-  private readonly intelligenceTimeoutMs = Math.max(
-    500,
-    parseInt(process.env.ANALYTICS_INTELLIGENCE_TIMEOUT_MS || '5000'),
+  private readonly intelligenceAsyncTimeoutMs = Math.max(
+    1000,
+    parseInt(process.env.ANALYTICS_INTELLIGENCE_ASYNC_TIMEOUT_MS || '60000'),
   );
 
   private intelligenceClient?: IntelligenceClient;
   private intelligenceClientReady = false;
+  private readonly inFlightEnrichments = new Set<string>();
 
   constructor(
     @InjectModel(AnalyticsSnapshot.name)
@@ -197,14 +198,7 @@ export class AnalyticsService {
     }
 
     if (this.enableIntelligence && textInputs.length > 0 && saved) {
-      if (data.forceSync) {
-        const enriched = await this.enrichSnapshot(saved, textInputs);
-        if (enriched) {
-          return enriched;
-        }
-      } else {
-        void this.enrichSnapshot(saved, textInputs);
-      }
+      void this.enrichSnapshot(saved, textInputs);
     }
 
     return saved;
@@ -656,19 +650,15 @@ export class AnalyticsService {
   ): Promise<AnalyticsSnapshotLean | undefined> {
     const client = this.getIntelligenceClient();
     if (!client) {
-      await this.markEnrichmentFailed(
-        snapshot._id,
-        textInputs,
-        'Intelligence client unavailable',
-      );
-      const refreshed = await this.snapshotModel
-        .findById(snapshot._id)
-        .lean<AnalyticsSnapshotLean>()
-        .exec();
-      return refreshed || undefined;
+      await this.markEnrichmentPending(snapshot._id, textInputs);
+      return snapshot;
     }
 
     for (const input of textInputs) {
+      const enrichmentKey = `${snapshot._id}:${input.questionId}:${input.hash}`;
+      if (this.inFlightEnrichments.has(enrichmentKey)) {
+        continue;
+      }
       const currentQuestion = snapshot.questions.find(
         (question) => question.questionId === input.questionId,
       );
@@ -684,8 +674,30 @@ export class AnalyticsService {
         continue;
       }
 
+      this.inFlightEnrichments.add(enrichmentKey);
       try {
-        const response = await this.callIntelligence(client, input);
+        await this.snapshotModel.updateOne(
+          { _id: snapshot._id, 'questions.questionId': input.questionId },
+          {
+            $set: {
+              'questions.$.text.analysisStatus': TEXT_ANALYSIS_STATUS.pending,
+              'questions.$.text.analysisHash': input.hash,
+            },
+            $unset: { 'questions.$.text.analysisError': '' },
+          },
+        );
+
+        const response = await this.callIntelligence(
+          client,
+          input,
+          this.intelligenceAsyncTimeoutMs,
+        );
+        if (response?.success === false) {
+          this.logger.warn(
+            `Intelligence returned error for question ${input.questionId}: ${response.error_message || 'unknown error'}`,
+          );
+          continue;
+        }
         const enrichment = this.buildTextEnrichment(response);
         const update: SnapshotTextUpdate = {
           $set: {
@@ -710,21 +722,11 @@ export class AnalyticsService {
           update,
         );
       } catch (error) {
-        await this.snapshotModel.updateOne(
-          { _id: snapshot._id, 'questions.questionId': input.questionId },
-          {
-            $set: {
-              'questions.$.text.analysisStatus': TEXT_ANALYSIS_STATUS.failed,
-              'questions.$.text.analysisError':
-                error instanceof Error ? error.message : 'Intelligence error',
-              'questions.$.text.analysisHash': input.hash,
-              'questions.$.text.lastEnrichedAt': new Date(),
-            },
-          },
-        );
         this.logger.warn(
           `Intelligence enrichment failed for question ${input.questionId}: ${this.describeError(error)}`,
         );
+      } finally {
+        this.inFlightEnrichments.delete(enrichmentKey);
       }
     }
 
@@ -736,10 +738,9 @@ export class AnalyticsService {
     return refreshed || undefined;
   }
 
-  private async markEnrichmentFailed(
+  private async markEnrichmentPending(
     snapshotId: Types.ObjectId | string,
     inputs: TextInput[],
-    reason: string,
   ) {
     await Promise.all(
       inputs.map((input) =>
@@ -747,11 +748,10 @@ export class AnalyticsService {
           { _id: snapshotId, 'questions.questionId': input.questionId },
           {
             $set: {
-              'questions.$.text.analysisStatus': TEXT_ANALYSIS_STATUS.failed,
-              'questions.$.text.analysisError': reason,
+              'questions.$.text.analysisStatus': TEXT_ANALYSIS_STATUS.pending,
               'questions.$.text.analysisHash': input.hash,
-              'questions.$.text.lastEnrichedAt': new Date(),
             },
+            $unset: { 'questions.$.text.analysisError': '' },
           },
         ),
       ),
@@ -771,8 +771,7 @@ export class AnalyticsService {
     if (response.success === false) {
       return {
         topIdeas: [],
-        analysisStatus: TEXT_ANALYSIS_STATUS.failed,
-        analysisError: response.error_message || 'Intelligence failed',
+        analysisStatus: TEXT_ANALYSIS_STATUS.pending,
       };
     }
 
@@ -820,9 +819,10 @@ export class AnalyticsService {
   private async callIntelligence(
     client: IntelligenceClient,
     input: TextInput,
+    timeoutMs: number,
   ): Promise<IntelligenceResponse> {
     return new Promise((resolve, reject) => {
-      const deadline = new Date(Date.now() + this.intelligenceTimeoutMs);
+      const deadline = new Date(Date.now() + timeoutMs);
       client.analyzeQuestion(
         {
           question_id: input.questionId,
