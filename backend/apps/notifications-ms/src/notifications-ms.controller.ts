@@ -3,7 +3,9 @@ import { NotificationsMsService } from './notifications-ms.service';
 
 @Controller()
 export class NotificationsMsController {
-  constructor(private readonly notificationsMsService: NotificationsMsService) {}
+  constructor(
+    private readonly notificationsMsService: NotificationsMsService,
+  ) {}
 
   @Get()
   getHello(): string {

@@ -1,6 +1,12 @@
 import { GatewayTimeoutException, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Observable, TimeoutError, catchError, firstValueFrom, timeout } from 'rxjs';
+import {
+  Observable,
+  TimeoutError,
+  catchError,
+  firstValueFrom,
+  timeout,
+} from 'rxjs';
 import { MICROSERVICE_TIMEOUT_MS } from '../constants';
 import type { IGroupForm } from '@app/common';
 
@@ -13,7 +19,10 @@ export class GroupFormService {
 
   async listByGroup(groupId: string): Promise<IGroupForm[]> {
     return this.sendWithTimeout(
-      this.groupsClient.send<IGroupForm[]>({ cmd: 'groupForm.listByGroup' }, groupId),
+      this.groupsClient.send<IGroupForm[]>(
+        { cmd: 'groupForm.listByGroup' },
+        groupId,
+      ),
     );
   }
 
@@ -28,7 +37,10 @@ export class GroupFormService {
 
   async listByForm(formId: string): Promise<IGroupForm[]> {
     return this.sendWithTimeout(
-      this.groupsClient.send<IGroupForm[]>({ cmd: 'groupForm.listByForm' }, formId),
+      this.groupsClient.send<IGroupForm[]>(
+        { cmd: 'groupForm.listByForm' },
+        formId,
+      ),
     );
   }
 
@@ -41,13 +53,19 @@ export class GroupFormService {
     );
   }
 
-  async addForm(data: { groupId: string; formId: string }): Promise<IGroupForm> {
+  async addForm(data: {
+    groupId: string;
+    formId: string;
+  }): Promise<IGroupForm> {
     return this.sendWithTimeout(
       this.groupsClient.send<IGroupForm>({ cmd: 'groupForm.createOne' }, data),
     );
   }
 
-  async removeForm(data: { groupId: string; formId: string }): Promise<boolean> {
+  async removeForm(data: {
+    groupId: string;
+    formId: string;
+  }): Promise<boolean> {
     return this.sendWithTimeout(
       this.groupsClient.send<boolean>(
         { cmd: 'groupForm.removeByComposite' },

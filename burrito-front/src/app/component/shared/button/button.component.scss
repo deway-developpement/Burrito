@@ -26,19 +26,19 @@
   }
 
   &--primary {
-    background: theme.$orange;
+    background: theme.$primary-color;
     color: theme.$white;
     box-shadow: 0 12px 25px rgba(255, 138, 0, 0.45);
 
     &:hover {
-      background: darken(theme.$orange, 4%);
+      background: darken(theme.$primary-color, 4%);
     }
   }
 
   &--outline {
     background: rgba(theme.$white, 0.6);
     color: theme.$text-dark;
-    border: 1px solid rgba(theme.$orange, 0.4);
+    border: 1px solid rgba(theme.$primary-color, 0.4);
     backdrop-filter: blur(10px);
 
     &:hover {
@@ -52,7 +52,7 @@
     border: 1px solid transparent;
 
     &:hover {
-      background: rgba(theme.$orange-light, 0.4);
+      background: rgba(theme.$primary-light, 0.4);
     }
   }
 

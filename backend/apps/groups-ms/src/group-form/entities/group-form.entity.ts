@@ -18,9 +18,6 @@ export class GroupForm extends Document implements IGroupForm {
 
 export const GroupFormSchema = SchemaFactory.createForClass(GroupForm);
 
-GroupFormSchema.index(
-  { groupId: 1, formId: 1 },
-  { unique: true },
-);
+GroupFormSchema.index({ groupId: 1, formId: 1 }, { unique: true });
 GroupFormSchema.index({ groupId: 1 });
 GroupFormSchema.index({ formId: 1 });

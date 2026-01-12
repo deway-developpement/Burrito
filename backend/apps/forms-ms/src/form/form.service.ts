@@ -126,20 +126,14 @@ export class FormService extends MongooseQueryService<Form> {
     }
   }
 
-  private ensureTransition(
-    fromStatus: FormStatus,
-    toStatus: FormStatus,
-  ): void {
+  private ensureTransition(fromStatus: FormStatus, toStatus: FormStatus): void {
     if (fromStatus === toStatus) {
       return;
     }
     if (fromStatus === FormStatus.DRAFT && toStatus === FormStatus.PUBLISHED) {
       return;
     }
-    if (
-      fromStatus === FormStatus.PUBLISHED &&
-      toStatus === FormStatus.CLOSED
-    ) {
+    if (fromStatus === FormStatus.PUBLISHED && toStatus === FormStatus.CLOSED) {
       return;
     }
     throw new RpcException({

@@ -28,12 +28,13 @@ export class ManageTeachersComponent {
   tableColumns: TableColumn[] = [
     { key: 'name', label: 'Name', type: 'user' },
     { key: 'email', label: 'Contact', type: 'text' },
-    { key: 'actions', label: 'Actions', type: 'actions' }
+    { key: 'groups', label: 'Assigned Groups', type: 'groups' },
+    { key: 'actions', label: 'Actions', type: 'actions' },
   ];
 
   teachers$: Observable<any[]>;
   
-  // États pour les modales
+  // États pour les modales 
   selectedUser: UserProfile | null = null; // Pour l'édition
   showAddModal = false;                    // Pour l'ajout
 
@@ -52,7 +53,8 @@ export class ManageTeachersComponent {
           name: u.fullName || 'Unknown', 
           email: u.email || 'N/A',
           // On inclut createdAt ici pour pouvoir le passer à la modal d'édition plus tard
-          createdAt: u.createdAt 
+          createdAt: u.createdAt,
+          groups: u.groups || []
         }));
       })
     );
@@ -100,7 +102,8 @@ export class ManageTeachersComponent {
            fullName: user.name, // Le tableau utilise 'name', la modal veut 'fullName'
            email: user.email,
            userType: 'TEACHER',
-           createdAt: user.createdAt
+           createdAt: user.createdAt,
+            groups: user.groups || []
         };
       }
     });

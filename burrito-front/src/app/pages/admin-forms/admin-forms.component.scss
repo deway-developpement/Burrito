@@ -127,7 +127,7 @@
 
 .error-banner {
   background: rgba(239, 68, 68, 0.12);
-  color: #b91c1c;
+  color: theme.$danger-very-dark;
   padding: 0.85rem 1.2rem;
   border-radius: theme.$radius-md;
   border: 1px solid rgba(239, 68, 68, 0.3);
@@ -177,17 +177,17 @@
 
   &.status-draft {
     background: rgba(100, 116, 139, 0.16);
-    color: #475569;
+    color: theme.$gray-600;
   }
 
   &.status-published {
     background: rgba(34, 197, 94, 0.16);
-    color: #15803d;
+    color: theme.$success-alt-dark;
   }
 
   &.status-closed {
     background: rgba(239, 68, 68, 0.16);
-    color: #b91c1c;
+    color: theme.$danger-very-dark;
   }
 }
 

@@ -1,7 +1,10 @@
-import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserProfile, UserService } from '../../../services/user.service';
+import { GroupService, GroupProfile } from '../../../services/group.service';
+import { ToastService } from '../../../services/toast.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-edit-user-modal',
@@ -10,21 +13,27 @@ import { UserProfile, UserService } from '../../../services/user.service';
   templateUrl: './edit-user-modal.component.html',
   styleUrls: ['./edit-user-modal.component.scss']
 })
-export class EditUserModalComponent implements OnChanges {
+export class EditUserModalComponent implements OnChanges, OnInit {
   
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
+  private groupService = inject(GroupService);
+  private toast = inject(ToastService);
+  private cdr = inject(ChangeDetectorRef);
 
-  // INPUT: Passing a user object opens the modal
   @Input() user: UserProfile | null = null;
-  
-  // OUTPUTS: To tell the parent what happened
   @Output() close = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
   editForm: FormGroup;
   isSubmitting = false;
   errorMessage = '';
+
+  // --- Group Logic State ---
+  allGroups: GroupProfile[] = [];
+  selectedGroups: GroupProfile[] = [];
+  isCreatingGroup = false;
+  isCreatingGroupLoading = false;
 
   constructor() {
     this.editForm = this.fb.group({
@@ -33,38 +42,155 @@ export class EditUserModalComponent implements OnChanges {
     });
   }
 
-  // Detect when the parent passes a new user to edit
+  ngOnInit(): void {
+    this.loadAllGroups();
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['user'] && this.user) {
       this.editForm.patchValue({
         fullName: this.user.fullName,
         email: this.user.email
       });
-      this.errorMessage = ''; // Clear previous errors
+      
+      this.selectedGroups = this.user.groups ? [...this.user.groups] : [];
+      this.errorMessage = '';
+      this.isCreatingGroup = false;
+      this.cdr.detectChanges();
     }
+  }
+
+  loadAllGroups() {
+    this.groupService.getGroups(100).subscribe({
+      next: (groups) => {
+        this.allGroups = groups;
+        this.cdr.detectChanges();
+      },
+      error: () => this.toast.show('Failed to load available groups.', 'error')
+    });
+  }
+
+  get availableGroups(): GroupProfile[] {
+    return this.allGroups.filter(
+      allG => !this.selectedGroups.find(selG => selG.id === allG.id)
+    );
+  }
+
+  // --- UI Actions ---
+
+  addGroupById(id: string) {
+    if (!id) return;
+    const group = this.allGroups.find(g => g.id === id);
+    if (group) {
+      this.selectedGroups.push(group);
+      this.cdr.detectChanges();
+    }
+  }
+
+  toggleGroup(group: GroupProfile) {
+    const index = this.selectedGroups.findIndex(g => g.id === group.id);
+    if (index > -1) {
+      this.selectedGroups.splice(index, 1);
+    } else {
+      this.selectedGroups.push(group);
+    }
+    this.cdr.detectChanges();
+  }
+
+  createNewGroup(name: string) {
+    const trimmedName = name?.trim();
+
+    if (!trimmedName || trimmedName.length < 2) {
+      this.toast.show('Group name must be at least 2 characters long.', 'error');
+      return;
+    }
+
+    this.isCreatingGroupLoading = true;
+    this.cdr.detectChanges(); 
+    
+    this.groupService.createGroup({ name: trimmedName }).subscribe({
+      next: (newGroup) => {
+        this.allGroups.push(newGroup);
+        this.selectedGroups.push(newGroup);
+        
+        this.isCreatingGroupLoading = false;
+        this.isCreatingGroup = false; 
+        this.cdr.detectChanges();
+        
+        this.toast.show(`Group "${newGroup.name}" created.`, 'success');
+      },
+      error: (err) => {
+        this.isCreatingGroupLoading = false;
+        this.cdr.detectChanges();
+        this.toast.show('Could not create group. It might already exist.', 'error');
+      }
+    });
   }
 
   onCancel() {
     this.close.emit();
   }
 
-  onSubmit() {
-    if (this.editForm.invalid || !this.user) return;
+  // --- Submission Logic ---
 
-    this.isSubmitting = true;
-    this.errorMessage = '';
-    const formData = this.editForm.value;
+async onSubmit() {
+  if (this.editForm.invalid || !this.user) return;
 
-    this.userService.updateUser(this.user.id, formData).subscribe({
-      next: () => {
+  this.isSubmitting = true;
+  this.errorMessage = '';
+  this.cdr.detectChanges();
+
+  // 1. Update User Profile (Name/Email)
+  this.userService.updateUser(this.user.id, this.editForm.value).subscribe({
+    next: async () => {
+      try {
+        // 2. Sync Groups
+        // Get the most up-to-date current IDs from the user object
+        const initialIds = this.user?.groups?.map(g => g.id) || [];
+        const selectedIds = this.selectedGroups.map(g => g.id);
+        
+        // Identify which groups to add and which to remove
+        const toAdd = selectedIds.filter(id => !initialIds.includes(id));
+        const toRemove = initialIds.filter(id => !selectedIds.includes(id));
+
+        // --- SAFE ADDITION ---
+        for (const groupId of toAdd) {
+          try {
+            // Final check: only add if NOT already in the initial list
+            // This prevents the 409 error if the button is clicked rapidly
+            await firstValueFrom(this.groupService.addUserToGroup(groupId, this.user!.id));
+          } catch (err: any) {
+            // If it's a 409, we can ignore it and move on, as the user is already there
+            if (err?.networkError?.status !== 409) {
+               throw err; 
+            }
+          }
+        }
+
+        // --- SAFE REMOVAL ---
+        for (const groupId of toRemove) {
+          await firstValueFrom(this.groupService.removeUserFromGroup(groupId, this.user!.id));
+        }
+
+        this.toast.show('User profile and groups updated.', 'success');
+        
         this.isSubmitting = false;
-        this.saved.emit(); // Tell parent to refresh list
-        this.close.emit(); // Close modal
-      },
-      error: (err) => {
+        this.cdr.detectChanges();
+        
+        this.saved.emit();
+        this.close.emit();
+      } catch (err) {
+        console.error('Group sync error:', err);
+        this.toast.show('Profile saved, but there was an error updating groups.', 'error');
         this.isSubmitting = false;
-        this.errorMessage = 'Failed to update user. Please try again.';
+        this.cdr.detectChanges();
       }
-    });
-  }
+    },
+    error: (err) => {
+      this.isSubmitting = false;
+      this.cdr.detectChanges();
+      this.toast.show('Failed to update user profile.', 'error');
+    }
+  });
+}
 }

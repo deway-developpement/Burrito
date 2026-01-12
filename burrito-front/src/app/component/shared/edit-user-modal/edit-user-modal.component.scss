@@ -26,7 +26,7 @@
 
 .modal-header {
   padding: 20px 24px; // Slightly more breathing room
-  border-bottom: 1px solid theme.$orange-light; // Use the light orange for dividers
+  border-bottom: 1px solid theme.$primary-light; // Use the light orange for dividers
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -47,7 +47,7 @@
     transition: color 0.2s;
 
     &:hover {
-      color: theme.$orange;
+      color: theme.$primary-color;
     }
   }
 }
@@ -79,14 +79,14 @@
 
     &:focus { 
       background-color: theme.$white;
-      border-color: theme.$orange; 
+      border-color: theme.$primary-color; 
       outline: none; 
-      box-shadow: 0 0 0 3px theme.$orange-light; // Nice glow effect
+      box-shadow: 0 0 0 3px theme.$primary-light; // Nice glow effect
     }
   }
 
   small { 
-    color: #dc2626; // Kept hardcoded red for errors (theme doesn't have error color)
+    color: theme.$error; // Using theme error color
     font-size: 0.8rem; 
     margin-top: 6px; 
     display: block; 
@@ -95,13 +95,13 @@
 }
 
 .alert-error {
-  background: #fee2e2; 
-  color: #dc2626; 
+  background: theme.$error-light; 
+  color: theme.$error; 
   padding: 12px; 
   border-radius: 12px; 
   margin-bottom: 20px; 
   font-size: 0.9rem;
-  border: 1px solid #fca5a5;
+  border: 1px solid theme.$error-border;
 }
 
 .modal-footer {
@@ -127,22 +127,22 @@
 
   .btn-secondary { 
     background: theme.$white; 
-    border: 2px solid theme.$orange-light; 
+    border: 2px solid theme.$primary-light; 
     color: theme.$text-muted; 
     
     &:hover {
       color: theme.$text-dark;
-      border-color: theme.$orange;
+      border-color: theme.$primary-color;
     }
   }
 
   .btn-primary { 
-    background: theme.$orange; 
+    background: theme.$primary-color; 
     color: theme.$white; 
     box-shadow: 0 4px 12px rgba(255, 138, 0, 0.2); // Subtle orange shadow
 
     &:hover {
-      background: darken(#ff8a00, 5%);
+      background: darken(theme.$primary-color, 5%);
     }
 
     &:disabled { 
@@ -151,6 +151,117 @@
       box-shadow: none;
     } 
   }
+}
+
+.selected-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.group-chip {
+  background-color: theme.$primary-light;
+  color: theme.$primary-color;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid theme.$primary-color;
+
+  .remove-chip {
+    background: none;
+    border: none;
+    color: theme.$primary-color;
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    
+    &:hover { color: theme.$text-dark; }
+  }
+}
+
+.group-selector {
+  display: flex;
+  gap: 8px;
+
+  .group-dropdown {
+    flex: 1;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid theme.$bg-light;
+    background: theme.$bg-light;
+    font-family: theme.$font-family-base;
+    cursor: pointer;
+
+    &:focus { outline: none; border-color: theme.$primary-color; }
+  }
+
+  .btn-add-group {
+    background: theme.$white;
+    border: 2px solid theme.$primary-color;
+    color: theme.$primary-color;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: theme.$primary-color;
+      color: theme.$white;
+    }
+  }
+}
+
+.info-text {
+  color: theme.$text-muted !important;
+  font-style: italic;
+}
+
+.label-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  label { margin-bottom: 0; }
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: theme.$primary-color;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+  &:hover { text-decoration: underline; }
+}
+
+.group-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px solid theme.$bg-light;
+  background: theme.$white;
+  font-family: theme.$font-family-base;
+}
+
+.btn-primary-sm {
+  background: theme.$primary-color;
+  color: theme.$white;
+  border: none;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  
+  &:disabled { opacity: 0.6; }
 }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

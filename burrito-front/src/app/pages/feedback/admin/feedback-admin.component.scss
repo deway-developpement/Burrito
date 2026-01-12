@@ -56,7 +56,7 @@
     letter-spacing: 0.12em;
     font-weight: 700;
     font-size: 0.75rem;
-    color: theme.$orange;
+    color: theme.$primary-color;
   }
 
   &__title {
@@ -82,7 +82,7 @@
     background: theme.$white;
     border-radius: theme.$radius-lg;
     padding: 1.5rem;
-    border: 1px solid rgba(theme.$orange, 0.14);
+    border: 1px solid rgba(theme.$primary-color, 0.14);
     box-shadow: theme.$shadow-soft;
   }
 
@@ -99,19 +99,19 @@
   gap: 0.35rem;
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
-  background: rgba(theme.$orange, 0.1);
+  background: rgba(theme.$primary-color, 0.1);
   color: theme.$text-dark;
   font-size: 0.85rem;
   font-weight: 600;
 
   &--accent {
-    background: theme.$orange;
+    background: theme.$primary-color;
     color: theme.$white;
     box-shadow: 0 12px 25px rgba(255, 138, 0, 0.35);
   }
 
   &--soft {
-    background: rgba(theme.$orange-light, 0.7);
+    background: rgba(theme.$primary-light, 0.7);
   }
 
   &--ghost {
@@ -124,7 +124,7 @@
   padding: 1rem 1.1rem;
   border: 1px solid rgba(theme.$text-dark, 0.06);
   border-radius: 14px;
-  background: rgba(theme.$orange-light, 0.3);
+  background: rgba(theme.$primary-light, 0.3);
 
   &__label {
     margin: 0;
@@ -191,13 +191,13 @@
   }
 
   &__error {
-    color: #d92d20;
+    color: theme.$danger-red;
     font-weight: 600;
     margin: 0;
   }
 
   &__success {
-    color: #1b873f;
+    color: theme.$success-alt-dark;
     margin: 0;
     font-weight: 600;
   }
@@ -235,7 +235,7 @@
   color: theme.$text-dark;
 
   .required {
-    color: #d92d20;
+    color: theme.$danger-red;
   }
 }
 
@@ -306,7 +306,7 @@
   border-radius: 0.85rem;
   border: 1px solid rgba(theme.$text-dark, 0.12);
   padding: 0.75rem 0.9rem;
-  background: #f9fafb;
+  background: theme.$neutral-bg;
   font-size: 0.95rem;
   resize: vertical;
   min-height: 120px;
@@ -317,8 +317,8 @@
 
   &:focus {
     outline: none;
-    border-color: theme.$orange;
-    box-shadow: 0 0 0 2px rgba(theme.$orange, 0.25);
+    border-color: theme.$primary-color;
+    box-shadow: 0 0 0 2px rgba(theme.$primary-color, 0.25);
     background: theme.$white;
   }
 }
@@ -333,7 +333,7 @@
   border: 1px solid rgba(theme.$text-dark, 0.08);
   border-radius: 14px;
   padding: 1rem;
-  background: rgba(theme.$orange-light, 0.25);
+  background: rgba(theme.$primary-light, 0.25);
   display: flex;
   flex-direction: column;
   gap: 0.6rem;
@@ -375,7 +375,7 @@
 .link-button {
   border: none;
   background: transparent;
-  color: theme.$orange;
+  color: theme.$primary-color;
   font-weight: 600;
   cursor: pointer;
   padding: 0;
@@ -414,7 +414,7 @@
 }
 
 .field-error {
-  color: #d92d20;
+  color: theme.$danger-red;
   font-size: 0.85rem;
   margin: 0.15rem 0 0;
 }

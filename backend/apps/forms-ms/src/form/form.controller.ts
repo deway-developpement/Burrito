@@ -1,7 +1,7 @@
 // apps/forms-ms/src/form/form.controller.ts
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
-import type { Filter, Query } from '@nestjs-query/core';
+import type { AggregateQuery, Filter, Query } from '@nestjs-query/core';
 import { Form } from './entities/form.entity';
 import { FormService } from './form.service';
 
@@ -25,12 +25,12 @@ export class FormController {
   }
 
   @MessagePattern({ cmd: 'form.aggregate' })
-  aggregate(data: { filter: any; aggregate: any }) {
+  aggregate(data: { filter: Filter<Form>; aggregate: AggregateQuery<Form> }) {
     return this.formService.aggregate(data.filter, data.aggregate);
   }
 
   @MessagePattern({ cmd: 'form.count' })
-  count(query: any) {
+  count(query: Filter<Form>) {
     return this.formService.count(query);
   }
 
@@ -65,7 +65,7 @@ export class FormController {
   }
 
   @MessagePattern({ cmd: 'form.deleteMany' })
-  deleteMany(filter: any) {
+  deleteMany(filter: Filter<Form>) {
     return this.formService.deleteMany(filter);
   }
 }

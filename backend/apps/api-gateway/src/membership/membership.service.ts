@@ -1,6 +1,12 @@
 import { GatewayTimeoutException, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { Observable, TimeoutError, catchError, firstValueFrom, timeout } from 'rxjs';
+import {
+  Observable,
+  TimeoutError,
+  catchError,
+  firstValueFrom,
+  timeout,
+} from 'rxjs';
 import { MICROSERVICE_TIMEOUT_MS } from '../constants';
 import type { IMembership } from '@app/common';
 
@@ -13,7 +19,10 @@ export class MembershipService {
 
   async listByGroup(groupId: string): Promise<IMembership[]> {
     return this.sendWithTimeout(
-      this.groupsClient.send<IMembership[]>({ cmd: 'membership.listByGroup' }, groupId),
+      this.groupsClient.send<IMembership[]>(
+        { cmd: 'membership.listByGroup' },
+        groupId,
+      ),
     );
   }
 
@@ -49,7 +58,10 @@ export class MembershipService {
     memberId: string;
   }): Promise<IMembership> {
     return this.sendWithTimeout(
-      this.groupsClient.send<IMembership>({ cmd: 'membership.createOne' }, data),
+      this.groupsClient.send<IMembership>(
+        { cmd: 'membership.createOne' },
+        data,
+      ),
     );
   }
 

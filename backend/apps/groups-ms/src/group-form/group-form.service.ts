@@ -35,9 +35,7 @@ export class GroupFormService extends MongooseQueryService<GroupForm> {
   }
 
   async listByGroup(groupId: string): Promise<GroupForm[]> {
-    const groupForms = await this.groupFormModel
-      .find({ groupId })
-      .exec();
+    const groupForms = await this.groupFormModel.find({ groupId }).exec();
     return groupForms;
   }
 
@@ -52,9 +50,7 @@ export class GroupFormService extends MongooseQueryService<GroupForm> {
   }
 
   async listByForm(formId: string): Promise<GroupForm[]> {
-    const groupForms = await this.groupFormModel
-      .find({ formId })
-      .exec();
+    const groupForms = await this.groupFormModel.find({ formId }).exec();
     return groupForms;
   }
 

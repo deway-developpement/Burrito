@@ -301,7 +301,9 @@ export class FormService {
   // === WRITE APIs (used by CRUDResolver for mutations) ===
 
   async createOne(dto: CreateFormInput): Promise<FormDto> {
-    await this.ensureTeacherIds(dto.targetTeacherId ? [dto.targetTeacherId] : []);
+    await this.ensureTeacherIds(
+      dto.targetTeacherId ? [dto.targetTeacherId] : [],
+    );
     return this.sendWithTimeout(
       this.formClient.send<FormDto>({ cmd: 'form.createOne' }, dto),
     );
@@ -358,7 +360,10 @@ export class FormService {
 
   async deleteMany(filter: Filter<FormDto>): Promise<DeleteManyResponse> {
     return this.sendWithTimeout(
-      this.formClient.send<DeleteManyResponse>({ cmd: 'form.deleteMany' }, filter),
+      this.formClient.send<DeleteManyResponse>(
+        { cmd: 'form.deleteMany' },
+        filter,
+      ),
     );
   }
 
@@ -397,9 +402,7 @@ export class FormService {
       (teacherId) => !isValidObjectId(teacherId),
     );
     if (invalidFormat.length > 0) {
-      throw new BadRequestException(
-        'targetTeacherId must be a valid user id',
-      );
+      throw new BadRequestException('targetTeacherId must be a valid user id');
     }
     const users = await this.userService.findByIds(normalized);
     const teacherIdsSet = new Set(

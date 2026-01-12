@@ -1,3 +1,5 @@
+@use 'burrito-theme' as theme;
+
 .toast-container {
   position: fixed;
   top: 20px;
@@ -16,13 +18,13 @@
 
   // Themes
   &.success {
-    background-color: #2ecc71; // Green
-    border-left: 6px solid #27ae60;
+    background-color: theme.$success-green-light; // Green
+    border-left: 6px solid theme.$success-green;
   }
 
   &.error {
-    background-color: #e74c3c; // Red
-    border-left: 6px solid #c0392b;
+    background-color: theme.$error-red; // Red
+    border-left: 6px solid theme.$error-dark-red;
   }
 }
 

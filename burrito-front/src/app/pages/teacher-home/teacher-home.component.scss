@@ -17,11 +17,11 @@
   font-weight: 700;
   margin: 0;
   padding-left: 0.5rem;
-  border-left: 4px solid theme.$orange;
+  border-left: 4px solid theme.$primary-color;
 }
 
 .badge-count {
-  background-color: theme.$orange;
+  background-color: theme.$primary-color;
   color: theme.$white;
   font-size: 0.75rem;
   font-weight: 700;
@@ -100,7 +100,7 @@
 
   // Specific style for Unread items to make them pop
   &.unread-card {
-    border-left: 4px solid theme.$orange; 
+    border-left: 4px solid theme.$primary-color; 
   }
 
   &:hover {
@@ -143,8 +143,8 @@
 
     .status-badge.new {
       margin-left: auto;
-      background-color: rgba(theme.$orange, 0.15);
-      color: theme.$orange;
+      background-color: rgba(theme.$primary-color, 0.15);
+      color: theme.$primary-color;
       font-size: 0.7rem;
       font-weight: 800;
       padding: 0.2rem 0.5rem;
@@ -167,11 +167,11 @@
       }
 
       .stars {
-        color: #e0e0e0; // Empty star color
+        color: theme.$border-light; // Empty star color
         font-size: 1.1rem;
         
         .filled {
-          color: #f1c40f; // Star Yellow
+          color: theme.$star-yellow; // Star Yellow
         }
       }
     }
@@ -192,9 +192,9 @@
       transition: all 0.2s;
 
       &:hover {
-        border-color: theme.$orange;
-        color: theme.$orange;
-        background-color: #fff;
+        border-color: theme.$primary-color;
+        color: theme.$primary-color;
+        background-color: theme.$white;
       }
     }
   }
@@ -249,7 +249,7 @@
   transition: color 0.2s;
 
   &:hover {
-    color: theme.$orange;
+    color: theme.$primary-color;
   }
 }
 
@@ -392,7 +392,7 @@
       transition: color 0.2s ease;
 
       &.filled {
-        color: theme.$orange;
+        color: theme.$primary-color;
       }
     }
   }
@@ -400,7 +400,7 @@
   .rating-text {
     margin-left: auto;
     font-weight: 700;
-    color: theme.$orange;
+    color: theme.$primary-color;
     font-size: 1rem;
   }
 }

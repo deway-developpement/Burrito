@@ -52,7 +52,10 @@ export class MembershipController {
   }
 
   @MessagePattern({ cmd: 'membership.updateMany' })
-  updateMany(data: { filter: Filter<Membership>; update: Partial<Membership> }) {
+  updateMany(data: {
+    filter: Filter<Membership>;
+    update: Partial<Membership>;
+  }) {
     return this.membershipService.updateMany(data.update, data.filter);
   }
 
@@ -87,10 +90,7 @@ export class MembershipController {
   }
 
   @MessagePattern({ cmd: 'membership.removeByComposite' })
-  removeByComposite(data: {
-    groupId: string;
-    memberId: string;
-  }) {
+  removeByComposite(data: { groupId: string; memberId: string }) {
     return this.membershipService.removeByComposite(data);
   }
 }

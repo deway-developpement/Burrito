@@ -60,8 +60,8 @@
   .avatar {
     width: 35px;
     height: 35px;
-    background-color: theme.$orange-light;
-    color: theme.$orange;
+    background-color: theme.$primary-light;
+    color: theme.$primary-color;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -102,12 +102,12 @@
 
   &.active {
     background-color: rgba(46, 204, 113, 0.15);
-    color: #27ae60;
+    color: theme.$success-green;
   }
 
   &.inactive {
     background-color: rgba(231, 76, 60, 0.15);
-    color: #c0392b;
+    color: theme.$error-dark-red;
   }
 }
 
@@ -131,3 +131,26 @@
 // Helpers
 .text-center { text-align: center; }
 .text-right { text-align: center; } // <--- FORCED CENTER EVEN IF HTML REQUESTS RIGHT
+
+.groups-container {
+  display: flex;
+  align-items: center;
+  min-width: 150px;
+}
+
+.group-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+
+  .group-chip {
+    background-color: theme.$bg-light;
+    color: theme.$text-dark;
+    border: 1px solid darken(theme.$bg-light, 5%);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+}

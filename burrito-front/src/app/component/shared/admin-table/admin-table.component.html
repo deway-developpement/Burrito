@@ -2,7 +2,9 @@
   <table class="data-table">
     <thead>
       <tr>
-        <th *ngFor="let col of columns" [class.text-center]="col.type === 'badge'" [class.text-right]="col.type === 'actions'">
+        <th *ngFor="let col of columns" 
+            [class.text-center]="col.type === 'badge'" 
+            [class.text-right]="col.type === 'actions'">
           {{ col.label }}
         </th>
       </tr>
@@ -10,9 +12,20 @@
     <tbody>
       <tr *ngFor="let row of data">
         <td *ngFor="let col of columns" [ngSwitch]="col.type">
+
+          <div *ngSwitchCase="'groups'" class="groups-container">
+            <div class="group-chips" *ngIf="row[col.key] && row[col.key].length > 0; else noGroups">
+              <span *ngFor="let group of row[col.key]" class="group-chip">
+                {{ group.name }}
+              </span>
+            </div>
+            <ng-template #noGroups>
+              <span class="text-muted">No Groups</span>
+            </ng-template>
+          </div>
           
           <div *ngSwitchCase="'user'" class="user-info">
-            <div class="avatar">{{ row[col.key].charAt(0) }}</div>
+            <div class="avatar">{{ row[col.key]?.charAt(0) || '?' }}</div>
             <span class="name">{{ row[col.key] }}</span>
           </div>
 
