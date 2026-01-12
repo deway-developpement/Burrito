@@ -60,8 +60,8 @@
   .avatar {
     width: 35px;
     height: 35px;
-    background-color: theme.$orange-light;
-    color: theme.$orange;
+    background-color: theme.$primary-light;
+    color: theme.$primary-color;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -102,12 +102,12 @@
 
   &.active {
     background-color: rgba(46, 204, 113, 0.15);
-    color: #27ae60;
+    color: theme.$success-green;
   }
 
   &.inactive {
     background-color: rgba(231, 76, 60, 0.15);
-    color: #c0392b;
+    color: theme.$error-dark-red;
   }
 }
 

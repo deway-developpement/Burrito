@@ -6,8 +6,8 @@
   //padding-left: 0.3rem 0.6rem;
   padding: 0.0rem 0.6rem 0.3rem;
   border-radius: 999px;
-  background: rgba(theme.$orange, 0.12);
-  color: theme.$orange;
+  background: rgba(theme.$primary-color, 0.12);
+  color: theme.$primary-color;
 
 }
 
@@ -18,7 +18,7 @@
   color: theme.$white;
 
   &.star-filled {
-    color: theme.$orange;
+    color: theme.$primary-color;
     filter: drop-shadow(0 0 2px rgba(0, 0, 0, 0.3));
   }
 

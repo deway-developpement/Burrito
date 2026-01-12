@@ -13,8 +13,8 @@
 
   &:focus {
     outline: none;
-    border-color: theme.$orange;
-    box-shadow: 0 0 0 2px rgba(theme.$orange, 0.25);
+    border-color: theme.$primary-color;
+    box-shadow: 0 0 0 2px rgba(theme.$primary-color, 0.25);
   }
 
   &:disabled {
@@ -27,13 +27,13 @@
     color: theme.$text-dark;
 
     &:focus {
-      border-color: theme.$orange;
+      border-color: theme.$primary-color;
     }
   }
 
   &--outline {
     background: rgba(theme.$white, 0.6);
-    border: 1px solid rgba(theme.$orange, 0.4);
+    border: 1px solid rgba(theme.$primary-color, 0.4);
     backdrop-filter: blur(10px);
   }
 
@@ -42,7 +42,7 @@
     border: 1px solid transparent;
 
     &:focus {
-      border-color: rgba(theme.$orange, 0.4);
+      border-color: rgba(theme.$primary-color, 0.4);
     }
   }
 

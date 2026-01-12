@@ -18,9 +18,6 @@ export class Membership extends Document implements IMembership {
 
 export const MembershipSchema = SchemaFactory.createForClass(Membership);
 
-MembershipSchema.index(
-  { groupId: 1, memberId: 1 },
-  { unique: true },
-);
+MembershipSchema.index({ groupId: 1, memberId: 1 }, { unique: true });
 MembershipSchema.index({ memberId: 1 });
 MembershipSchema.index({ groupId: 1 });

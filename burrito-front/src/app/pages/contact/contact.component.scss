@@ -37,7 +37,7 @@
   .subtitle {
     margin: 0.5rem 0;
     font-size: 1.1rem;
-    color: theme.$orange;
+    color: theme.$primary-color;
     font-weight: 500;
   }
 }
@@ -106,9 +106,9 @@
 
     &:focus {
       outline: none;
-      border-color: theme.$orange;
+      border-color: theme.$primary-color;
       background-color: theme.$white;
-      box-shadow: 0 0 0 4px rgba(theme.$orange, 0.1);
+      box-shadow: 0 0 0 4px rgba(theme.$primary-color, 0.1);
     }
   }
 
@@ -119,7 +119,7 @@
 
 .btn-submit {
   width: 100%;
-  background-color: theme.$orange;
+  background-color: theme.$primary-color;
   color: theme.$white;
   border: none;
   padding: 1rem;
@@ -127,14 +127,14 @@
   font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(theme.$orange, 0.3);
+  box-shadow: 0 4px 12px rgba(theme.$primary-color, 0.3);
   transition: all 0.3s ease;
   margin-top: 1rem;
 
   &:hover {
-    background-color: darken(theme.$orange, 5%);
+    background-color: darken(theme.$primary-color, 5%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(theme.$orange, 0.4);
+    box-shadow: 0 6px 16px rgba(theme.$primary-color, 0.4);
   }
 
   &:active {
@@ -157,7 +157,7 @@
   text-decoration: underline;
 
   &:hover {
-    color: theme.$orange;
+    color: theme.$primary-color;
   }
 }
 

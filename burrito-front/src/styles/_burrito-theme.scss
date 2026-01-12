@@ -1,29 +1,98 @@
 // src/styles/_burrito-theme.scss
 
 // Primary Colors
-$orange: #ff8a00;
-$orange-light: #ffe4c2;
 $primary-color: #ff8a00;
+$primary-light: #ffe4c2;
 $secondary-color: #ffb347;
+$info-blue: #4a90e2;
+$info-blue-dark: #357abd;
 
 // Background Colors
 $bg-light: #fff9f3;
 $primary-bg: #fff9f3;
 $secondary-bg: #ffe4c2;
 $light-bg: #f8f9fa;
+$light-gray: #f5f5f5;
+$very-light-gray: #f9f9f9;
+$neutral-bg: #f9fafb;
+$light-blue-bg: #dbeafe;
+$light-purple-bg: #ede9fe;
+$light-cyan-bg: #e0f2fe;
+
+// Gray Colors
+$gray-50: #f9fafb;
+$gray-100: #f3f4f6;
+$gray-300: #d1d5db;
+$gray-400: #9ca3af;
+$gray-500: #6b7280;
+$gray-600: #4b5563;
+$gray-700: #374151;
+$gray-800: #1f2937;
+$gray-900: #111827;
 
 // Error Colors
 $error: #dc2626;
 $error-light: #fee2e2;
+$error-red: #e74c3c;
+$error-dark-red: #c0392b;
+$error-border: #fca5a5;
+$error-green-dark: #2e7d32;
+$error-red-dark: #c62828;
+$error-dark-red-accent: #b71c1c;
+$error-light-red: #ffebee;
+$error-deep: #7f1d1d;
+$error-ring: #fecdd3;
+$danger-red: #d92d20;
+$danger-very-dark: #b91c1c;
+
+// Success Colors
+$success: #10b981;
+$success-dark: #059669;
+$success-green: #27ae60;
+$success-green-light: #2ecc71;
+$success-light-bg: #e8f5e9;
+$success-alt-dark: #1b873f;
+
+// Info/Blue Colors
+$info-light: #e3f2fd;
+$info-lighter: #bbdefb;
+$info-border: #bae6fd;
+$info-blue-light: #075985;
+$info-purple-light: #4c1d95;
+
+// Warning/Amber Colors
+$warning: #ff9800;
+$warning-light: #fff3e0;
+$warning-dark: #e65100;
+
+// Alert/Red Colors
+$alert-red: #f44336;
+$alert-red-light: #ff6b6b;
+
+// Neutral/Gray Colors
+$light-yellow: #fff9c4;
+$light-orange: #f57f17;
+
+// Status Colors
+$star-yellow: #f1c40f;
+$border-light: #e0e0e0;
+$border-light-gray: #e0e0e0;
+$border-gray: #e5e7eb;
 
 // Text Colors
-$text-dark: #1f2933;
+$text-dark: #1f2937;
+$text-dark-muted: #1f2933;
 $text-muted: #6b7280;
-$text-light: #6b7280;
+$text-lighter: #6b7280;
+$text-light: #9ca3af;
 
 // UI Colors
 $white: #ffffff;
 $border-color: #e0e0e0;
+
+// Chart/Sentiment Colors
+$chart-green: #22c55e;
+$chart-red: #ef4444;
 
 // Effects
 $shadow-soft: 0 18px 40px rgba(15, 23, 42, 0.14);

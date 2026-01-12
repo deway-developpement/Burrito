@@ -137,12 +137,6 @@ interface MeResponse {
   me: UserProfile;
 }
 
-interface RegisterResponse {
-  createOneUser: {
-    id: string
-  };
-}
-
 @Injectable({
   providedIn: 'root'
 })
@@ -201,23 +195,9 @@ export class UserService {
       })
     );
   }
-  
-  register(payload: CreateUserPayload) {
-    return this.apollo.mutate<RegisterResponse>({
-      mutation: CREATE_ONE_USER,
-      variables: {
-        input: {
-          user: {
-            ...payload,
-            userType: 'STUDENT'
-          }
-        }
-      }
-    });
-  }
 
-  createUser(payload: CreateUserPayload, type: UserType) {
-    return this.apollo.mutate<RegisterResponse>({
+    createUser(payload: CreateUserPayload, type: UserType) {
+    return this.apollo.mutate({
       mutation: CREATE_ONE_USER,
       variables: {
         input: {
@@ -230,6 +210,7 @@ export class UserService {
     });
   }
 
+  // --- FIXED UPDATE FUNCTION ---
   updateUser(id: string, data: { fullName: string; email: string }) {
     return this.apollo.mutate({
       mutation: UPDATE_USER,

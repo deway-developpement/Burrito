@@ -9,6 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { ClientProxy } from '@nestjs/microservices';
 import { Model } from 'mongoose';
 import { Queue, Worker } from 'bullmq';
+import type { Job } from 'bullmq';
 import {
   Observable,
   TimeoutError,
@@ -66,14 +67,18 @@ type NotificationPayload = {
   template: TemplateContext;
 };
 
+type NotificationJobData = {
+  notificationId: string;
+};
+
 @Injectable()
 export class NotificationService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(NotificationService.name);
   private htmlTemplate?: Handlebars.TemplateDelegate<TemplateContext>;
   private textTemplate?: Handlebars.TemplateDelegate<TemplateContext>;
   private transporter?: nodemailer.Transporter;
-  private queue?: Queue;
-  private worker?: Worker;
+  private queue?: Queue<NotificationJobData>;
+  private worker?: Worker<NotificationJobData>;
 
   private readonly queueEnabled =
     (process.env.NOTIFICATIONS_QUEUE_ENABLED || 'true').toLowerCase() !==
@@ -602,7 +607,9 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
           subject: emailVerificationTemplate.subject,
           headline: emailVerificationTemplate.headline,
           message: emailVerificationTemplate.message,
-          ctaText: verificationUrl ? emailVerificationTemplate.ctaText : undefined,
+          ctaText: verificationUrl
+            ? emailVerificationTemplate.ctaText
+            : undefined,
           ctaUrl: verificationUrl,
           footerNote: emailVerificationTemplate.footerNote,
         };
@@ -713,13 +720,17 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       host: process.env.REDIS_HOST || 'localhost',
       port: parseInt(process.env.REDIS_PORT || '6379'),
     };
-    this.queue = new Queue('notifications', { connection });
-    this.worker = new Worker(
+    this.queue = new Queue<NotificationJobData>('notifications', {
+      connection,
+    });
+    this.worker = new Worker<NotificationJobData>(
       'notifications',
-      async (job) => {
-        if (job.data?.notificationId) {
-          await this.sendNotification(job.data.notificationId as string);
+      async (job: Job<NotificationJobData>) => {
+        if (!job.data.notificationId) {
+          this.logger.warn(`Notification job ${job.id} missing notificationId`);
+          return;
         }
+        await this.sendNotification(job.data.notificationId);
       },
       { connection },
     );
