@@ -4,8 +4,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { HeaderComponent } from '../../component/header/header.component';
 import { AuthService } from '../../services/auth.service';
+import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 
 interface AnalyticsWindow {
   from?: Date;
@@ -174,7 +174,7 @@ const GET_USER = gql`
 @Component({
   selector: 'app-results-form',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, RouterModule],
+  imports: [CommonModule, BackgroundDivComponent, RouterModule],
   templateUrl: './results-form.component.html',
   styleUrls: ['./results-form.component.scss'],
 })
