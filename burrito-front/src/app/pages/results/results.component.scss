@@ -1,3 +1,5 @@
+@use 'burrito-theme' as theme;
+
 .results-container {
   max-width: 960px;
   margin: 2rem auto 3rem;
@@ -7,13 +9,13 @@
     font-size: 2rem;
     font-weight: 700;
     margin: 0 0 1.5rem;
-    color: #1f2937;
+    color: theme.$gray-800;
   }
 }
 
 .card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: theme.$white;
+  border: 1px solid theme.$border-gray;
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
@@ -22,13 +24,13 @@
 
 .notice {
   text-align: center;
-  color: #374151;
+  color: theme.$gray-700;
 }
 
 .error {
-  color: #b91c1c;
-  background: #fef2f2;
-  border-color: #fecdd3;
+  color: theme.$danger-very-dark;
+  background: theme.$error-light-red;
+  border-color: theme.$error-ring;
 }
 
 .summary {
@@ -42,12 +44,12 @@
   h2 {
     margin: 0.25rem 0;
     font-size: 1.5rem;
-    color: #111827;
+    color: theme.$gray-900;
   }
 
   .meta {
     text-align: right;
-    color: #374151;
+    color: theme.$gray-700;
   }
 }
 
@@ -61,7 +63,7 @@
     h3 {
       margin: 0;
       font-size: 1.25rem;
-      color: #111827;
+      color: theme.$gray-900;
     }
   }
 
@@ -73,19 +75,19 @@
 
   .answer-item {
     padding: 1rem;
-    border: 1px solid #e5e7eb;
+    border: 1px solid theme.$border-gray;
     border-radius: 10px;
-    background: #f9fafb;
+    background: theme.$neutral-bg;
 
     .question {
       margin: 0 0 0.5rem;
       font-weight: 600;
-      color: #111827;
+      color: theme.$gray-900;
     }
 
     .answer {
       margin: 0;
-      color: #374151;
+      color: theme.$gray-700;
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -97,12 +99,12 @@
   text-transform: uppercase;
   font-size: 0.75rem;
   letter-spacing: 0.04em;
-  color: #6b7280;
+  color: theme.$gray-500;
   margin: 0 0 0.25rem;
 }
 
 .muted {
-  color: #6b7280;
+  color: theme.$gray-500;
   margin: 0.25rem 0 0;
 }
 
@@ -110,15 +112,15 @@
   display: inline-block;
   padding: 0.15rem 0.5rem;
   border-radius: 999px;
-  background: #e0f2fe;
-  color: #075985;
+  background: theme.$light-cyan-bg;
+  color: theme.$info-blue-light;
   font-size: 0.8rem;
-  border: 1px solid #bae6fd;
+  border: 1px solid theme.$info-border;
 
   &.neutral {
-    background: #ede9fe;
-    color: #4c1d95;
-    border-color: #ddd6fe;
+    background: theme.$light-purple-bg;
+    color: theme.$info-purple-light;
+    border-color: theme.$info-border;
   }
 }
 

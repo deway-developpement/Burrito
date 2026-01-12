@@ -2,7 +2,7 @@
 
 .results-form-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, theme.$primary-bg 0%, theme.$secondary-bg 100%);
+  background: linear-gradient(135deg, theme.$bg-light 0%, theme.$secondary-bg 100%);
   padding: 2rem;
 }
 
@@ -63,12 +63,12 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: #ffebee;
-  border-left: 4px solid #c62828;
+  background: theme.$error-light-red;
+  border-left: 4px solid theme.$error-red-dark;
   border-radius: 4px;
   padding: 1rem;
   margin-bottom: 2rem;
-  color: #c62828;
+  color: theme.$error-red-dark;
 
   .error-icon {
     font-size: 1.3rem;
@@ -77,15 +77,15 @@
   .btn-retry {
     margin-left: auto;
     padding: 0.5rem 1rem;
-    background: #c62828;
-    color: white;
+    background: theme.$error-red-dark;
+    color: theme.$white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
 
     &:hover {
-      background: #b71c1c;
+      background: theme.$error-dark-red-accent;
     }
   }
 }
@@ -98,7 +98,7 @@
 
 // Header Section
 .header-section {
-  background: white;
+  background: theme.$white;
   border-radius: 8px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -134,7 +134,7 @@
 
       &.active {
         background: theme.$primary-color;
-        color: white;
+        color: theme.$white;
         border-color: theme.$primary-color;
       }
     }
@@ -143,7 +143,7 @@
 
 // Response Summary
 .response-summary {
-  background: white;
+  background: theme.$white;
   border-radius: 8px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -172,7 +172,7 @@
       .stat-label {
         display: block;
         font-size: 0.85rem;
-        color: theme.$text-light;
+        color: theme.$text-muted;
         text-transform: uppercase;
       }
     }
@@ -181,7 +181,7 @@
   .completion-bar {
     width: 100%;
     height: 10px;
-    background: #e0e0e0;
+    background: theme.$border-light;
     border-radius: 5px;
     overflow: hidden;
 
@@ -195,7 +195,7 @@
 
 // Satisfaction Card
 .satisfaction-card {
-  background: white;
+  background: theme.$white;
   border-radius: 8px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -213,7 +213,7 @@
 
       .metric-label {
         display: block;
-        color: theme.$text-light;
+        color: theme.$text-muted;
         font-size: 0.9rem;
         text-transform: uppercase;
         margin-bottom: 0.5rem;
@@ -225,15 +225,15 @@
         font-weight: 700;
 
         &.nps-green {
-          color: #4caf50;
+          color: theme.$success-green;
         }
 
         &.nps-yellow {
-          color: #ff9800;
+          color: theme.$warning;
         }
 
         &.nps-red {
-          color: #f44336;
+          color: theme.$alert-red;
         }
       }
     }
@@ -261,17 +261,17 @@
 
         &.promoters {
           background: rgba(76, 175, 80, 0.1);
-          color: #2e7d32;
+          color: theme.$error-green-dark;
         }
 
         &.passives {
           background: rgba(255, 152, 0, 0.1);
-          color: #e65100;
+          color: theme.$warning-dark;
         }
 
         &.detractors {
           background: rgba(244, 67, 54, 0.1);
-          color: #c62828;
+          color: theme.$error-red-dark;
         }
       }
     }
@@ -280,7 +280,7 @@
 
 // Teachers Breakdown Table
 .teachers-breakdown {
-  background: white;
+  background: theme.$white;
   border-radius: 8px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -332,8 +332,8 @@
             }
 
             .badge-success {
-              background: #e8f5e9;
-              color: #2e7d32;
+              background: theme.$success-light-bg;
+              color: theme.$error-green-dark;
               padding: 0.3rem 0.8rem;
               border-radius: 3px;
               font-weight: 500;
@@ -341,8 +341,8 @@
             }
 
             .badge-warning {
-              background: #fff3e0;
-              color: #e65100;
+              background: theme.$warning-light;
+              color: theme.$warning-dark;
               padding: 0.3rem 0.8rem;
               border-radius: 3px;
               font-weight: 500;
@@ -350,8 +350,8 @@
             }
 
             .badge-danger {
-              background: #ffebee;
-              color: #c62828;
+              background: theme.$error-light-red;
+              color: theme.$error-red-dark;
               padding: 0.3rem 0.8rem;
               border-radius: 3px;
               font-weight: 500;
@@ -364,7 +364,7 @@
               .btn-view {
                 padding: 0.5rem 1rem;
                 background: theme.$primary-color;
-                color: white;
+                color: theme.$white;
                 border: none;
                 border-radius: 4px;
                 cursor: pointer;
@@ -396,7 +396,7 @@
   }
 
   .question-card {
-    background: white;
+    background: theme.$white;
     border-radius: 8px;
     margin-bottom: 1rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -495,7 +495,7 @@
 
             .rating-bar {
               height: 20px;
-              background: #e0e0e0;
+              background: theme.$border-light;
               border-radius: 3px;
               overflow: hidden;
 
@@ -571,7 +571,7 @@
 
             .idea-count {
               background: theme.$primary-color;
-              color: white;
+              color: theme.$white;
               padding: 0.2rem 0.6rem;
               border-radius: 3px;
               font-weight: 600;
@@ -631,31 +631,31 @@
 
             &.positive {
               .bar-fill {
-                background: #10b981;
+                background: theme.$success;
               }
 
               .sentiment-pct {
-                color: #10b981;
+                color: theme.$success;
               }
             }
 
             &.neutral {
               .bar-fill {
-                background: #f59e0b;
+                background: theme.$warning;
               }
 
               .sentiment-pct {
-                color: #f59e0b;
+                color: theme.$warning;
               }
             }
 
             &.negative {
               .bar-fill {
-                background: #ef4444;
+                background: theme.$alert-red;
               }
 
               .sentiment-pct {
-                color: #ef4444;
+                color: theme.$alert-red;
               }
             }
           }
@@ -666,8 +666,8 @@
           align-items: center;
           gap: 1rem;
           padding: 1rem;
-          background: #fef3c7;
-          border: 1px solid #fcd34d;
+          background: theme.$light-yellow;
+          border: 1px solid theme.$star-yellow;
           border-radius: 4px;
           margin-bottom: 1.5rem;
 
@@ -678,7 +678,7 @@
 
           p {
             margin: 0;
-            color: #92400e;
+            color: theme.$light-orange;
             font-weight: 500;
           }
         }
@@ -688,8 +688,8 @@
           align-items: center;
           gap: 1rem;
           padding: 1rem;
-          background: #fee2e2;
-          border: 1px solid #fecaca;
+          background: theme.$error-light;
+          border: 1px solid theme.$error-border;
           border-radius: 4px;
           margin-bottom: 1.5rem;
 
@@ -700,7 +700,7 @@
 
           p {
             margin: 0;
-            color: #7f1d1d;
+            color: theme.$error-deep;
             font-weight: 500;
           }
         }
@@ -710,8 +710,8 @@
           align-items: center;
           gap: 1rem;
           padding: 1rem;
-          background: #dbeafe;
-          border: 1px solid #bfdbfe;
+          background: theme.$light-blue-bg;
+          border: 1px solid theme.$info-border;
           border-radius: 4px;
           margin-bottom: 1.5rem;
 
@@ -723,7 +723,7 @@
 
           p {
             margin: 0;
-            color: #1e40af;
+            color: theme.$info-blue-light;
             font-weight: 500;
           }
         }
@@ -737,7 +737,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
+  background: theme.$white;
   border-radius: 8px;
   padding: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -752,7 +752,7 @@
   .btn-refresh {
     padding: 0.5rem 1rem;
     background: theme.$primary-color;
-    color: white;
+    color: theme.$white;
     border: none;
     border-radius: 4px;
     cursor: pointer;

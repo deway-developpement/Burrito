@@ -37,7 +37,7 @@
   .subtitle {
     margin: 0.5rem 0;
     font-size: 1.1rem;
-    color: theme.$orange;
+    color: theme.$primary-color;
     font-weight: 500;
   }
 
@@ -75,7 +75,7 @@
         display: block;
         width: 40px;
         height: 3px;
-        background-color: theme.$orange;
+        background-color: theme.$primary-color;
         margin-top: 5px;
         border-radius: 2px;
       }
@@ -87,14 +87,14 @@
     }
 
     a {
-      color: theme.$orange;
+      color: theme.$primary-color;
       text-decoration: none;
       font-weight: 600;
       border-bottom: 1px solid transparent;
       transition: border-color 0.2s;
 
       &:hover {
-        border-bottom-color: theme.$orange;
+        border-bottom-color: theme.$primary-color;
       }
     }
 
@@ -112,7 +112,7 @@
         // Custom orange bullets
         &::before {
           content: '•';
-          color: theme.$orange;
+          color: theme.$primary-color;
           font-weight: bold;
           position: absolute;
           left: 0;
@@ -132,8 +132,8 @@
 // Box for Publisher info
 .highlight-box {
   background-color: theme.$bg-light;
-  border: 1px solid theme.$orange-light;
-  border-left: 4px solid theme.$orange;
+  border: 1px solid theme.$primary-light;
+  border-left: 4px solid theme.$primary-color;
   padding: 1.5rem;
   border-radius: theme.$radius-lg;
   margin: 1.5rem 0;
@@ -154,7 +154,7 @@
 }
 
 .btn-back {
-  background-color: theme.$orange;
+  background-color: theme.$primary-color;
   color: theme.$white;
   border: none;
   padding: 12px 30px;
@@ -162,13 +162,13 @@
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
-  box-shadow: 0 4px 10px rgba(theme.$orange, 0.3);
+  box-shadow: 0 4px 10px rgba(theme.$primary-color, 0.3);
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: darken(theme.$orange, 5%);
+    background-color: darken(theme.$primary-color, 5%);
     transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(theme.$orange, 0.4);
+    box-shadow: 0 6px 15px rgba(theme.$primary-color, 0.4);
   }
 
   &:active {
@@ -176,7 +176,7 @@
   }
 
   &:focus {
-    outline: 2px solid theme.$orange-light;
+    outline: 2px solid theme.$primary-light;
     outline-offset: 2px;
   }
 }
