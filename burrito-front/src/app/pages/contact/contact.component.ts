@@ -1,18 +1,16 @@
 import { Component, inject } from '@angular/core';
-// import { Location } from '@angular/common'; // Plus besoin de Location
 import { Router } from '@angular/router';
 import { ToastService } from '../../services/toast.service';
+import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 
 @Component({
   selector: 'app-contact',
   standalone: true,
+  imports: [GoBackComponent],
   templateUrl: './contact.component.html',
   styleUrls: ['./contact.component.scss']
 })
 export class ContactComponent {
-  
-  // Dependencies
-  // private location = inject(Location); // Supprimé
   private router = inject(Router);
   private toast = inject(ToastService);
 
@@ -29,10 +27,5 @@ export class ContactComponent {
     setTimeout(() => {
       this.router.navigate(['/']);
     }, 1500); 
-  }
-
-  goBack(): void {
-    // Go to home instead of history back
-    this.router.navigate(['/']);
   }
 }

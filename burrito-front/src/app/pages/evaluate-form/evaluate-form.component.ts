@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
+import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 import { AdminPageHeaderComponent } from '../../component/shared/admin-page-header/admin-page-header.component';
 import { EvaluationService } from '../../services/evaluation.service';
 
@@ -13,7 +14,7 @@ import { EvaluationService } from '../../services/evaluation.service';
     CommonModule,
     ReactiveFormsModule,
     BackgroundDivComponent,
-    AdminPageHeaderComponent
+    GoBackComponent
   ],
   templateUrl: './evaluate-form.component.html',
   styleUrls: ['./evaluate-form.component.scss']
