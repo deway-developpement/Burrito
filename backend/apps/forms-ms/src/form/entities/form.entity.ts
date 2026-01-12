@@ -42,6 +42,9 @@ export class Form extends Document implements IForm {
   @Prop()
   readonly targetTeacherId?: string;
 
+  @Prop()
+  readonly targetCourseId?: string;
+
   @Prop({ enum: FormStatus, default: FormStatus.DRAFT, type: String })
   readonly status: FormStatus;
 

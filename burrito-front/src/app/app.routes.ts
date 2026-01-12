@@ -17,6 +17,9 @@ import { ResultsFormComponent } from './pages/results-form/results-form.componen
 import { GlobalReportsComponent } from './pages/global-reports/global-reports.component';
 import { authGuard } from './guards/auth.guard';
 import { teacherAccessGuard } from './guards/teacher-access.guard';
+import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
+import { EvaluateFormComponent } from './pages/evaluate-form/evaluate-form.component';
+import { AdminFormsComponent } from './pages/admin-forms/admin-forms.component';
 
 export const routes: Routes = [
   {
@@ -65,6 +68,10 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'admin/forms',
+    component: AdminFormsComponent
+  },
+  {
     path: 'results/:id',
     component: ResultsComponent,
     canActivate: [authGuard]
@@ -72,13 +79,22 @@ export const routes: Routes = [
   {
     path: 'results/teacher/:teacherId',
     component: ResultsTeacherComponent,
-    // canActivate: [authGuard, teacherAccessGuard]
+    canActivate: [authGuard, teacherAccessGuard]
     //TODO: Temporarily disabled guards for testing
   },
   {
     path: 'results/form/:formId',
     component: ResultsFormComponent,
     canActivate: [authGuard]
+  },
+  {
+    path: 'student/evaluate/:id',
+    component: EvaluateFormComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'verify-email',
+    component: VerifyEmailComponent
   },
   {
     path: 'feedback/student',

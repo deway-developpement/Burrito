@@ -840,7 +840,7 @@ export class AnalyticsService {
         defaults: true,
         oneofs: true,
       });
-      const analyticsProto = grpc.loadPackageDefinition(packageDefinition);
+      const analyticsProto:any = grpc.loadPackageDefinition(packageDefinition);
 
       const host = process.env.INTELLIGENCE_GRPC_HOST || 'localhost';
       const port = process.env.INTELLIGENCE_GRPC_PORT || '50051';

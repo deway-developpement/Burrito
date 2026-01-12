@@ -11,7 +11,7 @@ interface User {
   id: string;
   email: string;
   fullName: string;
-  userType: 'admin' | 'teacher' | 'student';
+  userType: 'ADMIN' | 'TEACHER' | 'STUDENT';
 }
 
 @Injectable({ providedIn: 'root' })

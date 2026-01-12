@@ -1,0 +1,91 @@
+<app-background-div>
+  <app-admin-page-header
+    title="Evaluation Forms"
+    subtitle="Browse, update, and publish the evaluation forms used across the platform."
+    buttonLabel="Create new form"
+    (action)="createForm()"
+  ></app-admin-page-header>
+
+  <section class="forms-section">
+    <div class="forms-toolbar">
+      <div class="forms-filter">
+        <span class="forms-filter__label">Status</span>
+        <app-select
+          variant="outline"
+          [options]="statusOptions"
+          [value]="statusFilter"
+          (valueChange)="onStatusFilterChange($event)"
+        ></app-select>
+      </div>
+    </div>
+
+    @if (error()) {
+      <div class="error-banner">{{ error() }}</div>
+    }
+
+    <div class="forms-grid" *ngIf="!loading()">
+      <article class="form-card" *ngFor="let form of forms()">
+        <header class="card-header">
+          <span class="status-badge" [ngClass]="getStatusClass(form.status)">
+            {{ form.status }}
+          </span>
+          <span class="date-pill">Ends {{ formatDate(form.endDate) }}</span>
+        </header>
+
+        <div class="card-body">
+          <h3 class="form-title">{{ form.title }}</h3>
+          <p class="form-description" *ngIf="form.description">
+            {{ form.description }}
+          </p>
+
+          <div class="form-meta">
+            <div class="meta-row">
+              <span class="meta-label">Teacher</span>
+              <span class="meta-value">
+                {{ form.teacher?.fullName || 'All teachers' }}
+              </span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Starts</span>
+              <span class="meta-value">{{ formatDate(form.startDate) }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Ends</span>
+              <span class="meta-value">{{ formatDate(form.endDate) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <footer class="card-footer">
+          <div class="card-actions">
+            <app-button variant="outline" type="button" (click)="editForm(form.id)">
+              Modify form
+            </app-button>
+            <app-button variant="outline" type="button" (click)="deleteForm(form.id)">
+              Delete
+            </app-button>
+          </div>
+        </footer>
+      </article>
+    </div>
+
+    <div class="loading-container" *ngIf="loading() && forms().length === 0">
+      <p>Loading forms...</p>
+    </div>
+
+    <div class="empty-state" *ngIf="!loading() && forms().length === 0">
+      <p>No forms available yet.</p>
+    </div>
+
+    <div class="load-more-container" *ngIf="hasMore() && forms().length > 0">
+      <app-button
+        variant="primary"
+        type="button"
+        [disabled]="loadMoreDisabled()"
+        (click)="loadMoreForms()"
+      >
+        {{ loadMoreDisabled() ? 'Loading...' : 'Load more forms' }}
+      </app-button>
+    </div>
+  </section>
+</app-background-div>

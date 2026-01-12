@@ -29,6 +29,9 @@ export class FormDto implements IForm {
   @HideField()
   targetTeacherId?: string;
 
+  @Field({ nullable: true })
+  targetCourseId?: string;
+
   @Field(() => UserDto, { nullable: true })
   teacher?: UserDto;
 

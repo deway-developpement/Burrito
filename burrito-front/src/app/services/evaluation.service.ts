@@ -1,12 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { map, forkJoin, Observable  } from 'rxjs';
+import { map, forkJoin, Observable, catchError } from 'rxjs';
+import { of } from 'rxjs';
 
 const GET_FORMS_AND_TEACHERS = gql`
   query GetFormsAndTeachers {
-    # Partie 1 : Les formulaires
     forms(
-      filter: { isActive: { is: true } }
+      filter: { status: { eq: PUBLISHED } }
       sorting: [{ field: endDate, direction: ASC }]
     ) {
       edges {
@@ -15,21 +15,11 @@ const GET_FORMS_AND_TEACHERS = gql`
           title
           description
           endDate
-          targetTeacherId
-        }
-      }
-    }
-
-    # Partie 2 : Les professeurs
-    # AJOUT : paging: { first: 100 } pour être sûr d'en avoir assez
-    users(
-      filter: { userType: { eq: TEACHER } }
-      paging: { first: 100 } 
-    ) {
-      edges {
-        node {
-          id
-          fullName
+          teacher {
+            id
+            fullName
+          }
+          userRespondedToForm
         }
       }
     }
@@ -91,6 +81,38 @@ const GET_ALL_FORM_TITLES = gql`
   }
 `;
 
+const GET_FORM_BY_ID = gql`
+  query GetFormById($id: ID!) {
+    form(id: $id) {
+      id
+      title
+      description
+      endDate
+      questions {
+        id
+        label
+        type
+        required
+      }
+      teacher {
+        id
+        fullName
+      }
+    }
+  }
+`;
+
+const SUBMIT_EVALUATION = gql`
+  mutation SubmitEvaluation($input: CreateEvaluationInput!) {
+    submitEvaluation(input: $input) {
+      id
+      formId
+      teacherId
+      createdAt
+    }
+  }
+`;
+
 const GET_GLOBAL_STATS = gql`
   query GetGlobalStats {
     # 1. On récupère les étudiants pour le dénominateur du "Taux de complétion"
@@ -130,18 +152,36 @@ export interface EvaluationForm {
   title: string;
   description?: string;
   endDate?: string;
-  targetTeacherId?: string;
-  teacherName?: string;
+  teacher?: {
+    id: string;
+    fullName: string;
+  };
+  questions?: Question[];
+  userResponded?: boolean;
+  userRespondedToForm?: boolean;
 }
 
-interface UserNode {
+export interface Question {
   id: string;
-  fullName: string;
+  label: string;
+  type: 'RATING' | 'TEXT';
+  required: boolean;
 }
 
-interface CombinedResponse {
+export interface EvaluationAnswer {
+  questionId: string;
+  rating?: number;
+  text?: string;
+}
+
+export interface SubmitEvaluationInput {
+  formId: string;
+  teacherId: string;
+  answers: EvaluationAnswer[];
+}
+
+interface FormsResponse {
   forms: { edges: { node: EvaluationForm }[] };
-  users: { edges: { node: UserNode }[] };
 }
 
 export interface DashboardMetrics {
@@ -155,44 +195,48 @@ export interface DashboardMetrics {
 export class EvaluationService {
   private apollo = inject(Apollo);
 
-  getActiveForms() {
-    return this.apollo.query<CombinedResponse>({
+  getActiveForms(): Observable<EvaluationForm[]> {
+    return this.apollo.query<FormsResponse>({
       query: GET_FORMS_AND_TEACHERS,
       fetchPolicy: 'network-only'
     }).pipe(
       map(result => {
         const forms = result.data?.forms?.edges.map(e => e.node) || [];
-        const teachers = result.data?.users?.edges.map(e => e.node) || [];
-
-        // Création du dictionnaire
-        const teacherMap: Record<string, string> = {};
-        teachers.forEach(t => {
-          teacherMap[t.id] = t.fullName;
-        });
-
-        // Mapping
-        return forms.map(form => {
-          const targetId = form.targetTeacherId;
-          const foundName = targetId ? teacherMap[targetId] : null;
-
-          return {
-            ...form,
-            teacherName: foundName || 'Enseignant inconnu'
-          };
-        });
-      })
+        // Use the userRespondedToForm field from the backend
+        return forms.map(form => ({
+          ...form,
+          userResponded: form.userRespondedToForm || false
+        }));
+      }),
+      catchError(() => of([]))
     );
   }
 
+  private buildEvaluationsUI(evaluations: any[], formMap: Record<string, string>): TeacherEvaluationUI[] {
+    return evaluations.map((ev: any) => {
+      const ratings = ev.answers
+        .map((a: any) => a.rating)
+        .filter((r: any) => r !== null);
+      const avgRating = ratings.length > 0 
+        ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length 
+        : 0;
+
+      return {
+        id: ev.id,
+        courseName: formMap[ev.formId] || 'Cours inconnu',
+        submittedDate: new Date(ev.createdAt),
+        rating: Math.round(avgRating),
+        isRead: this.isDateOlderThanToday(new Date(ev.createdAt))
+      };
+    });
+  }
+
   getAllEvaluationsForDebug(): Observable<TeacherEvaluationUI[]> {
-    
-    // 1. On lance la requête sans filtre
     const evaluations$ = this.apollo.query<any>({
       query: GET_ALL_EVALUATIONS_DEBUG,
       fetchPolicy: 'network-only'
     });
 
-    // 2. On récupère toujours les titres pour l'affichage
     const forms$ = this.apollo.query<any>({
       query: GET_ALL_FORM_TITLES,
       fetchPolicy: 'cache-first'
@@ -200,47 +244,23 @@ export class EvaluationService {
 
     return forkJoin([evaluations$, forms$]).pipe(
       map(([evalsResult, formsResult]) => {
-        
-        // Dictionnaire ID -> Titre
         const formMap: Record<string, string> = {};
         formsResult.data.forms.edges.forEach((edge: any) => {
           formMap[edge.node.id] = edge.node.title;
         });
-
         const rawEvaluations = evalsResult.data.evaluations.edges.map((e: any) => e.node);
-
-        return rawEvaluations.map((ev: any) => {
-          // Calcul moyenne
-          const ratings = ev.answers
-            .map((a: any) => a.rating)
-            .filter((r: any) => r !== null);
-            
-          const avgRating = ratings.length > 0 
-            ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length 
-            : 0;
-
-          return {
-            id: ev.id,
-            courseName: formMap[ev.formId] || 'Cours inconnu',
-            submittedDate: new Date(ev.createdAt),
-            rating: Math.round(avgRating),
-            isRead: this.isDateOlderThanToday(new Date(ev.createdAt))
-          };
-        });
+        return this.buildEvaluationsUI(rawEvaluations, formMap);
       })
     );
   }
 
   getEvaluationsForTeacher(teacherId: string): Observable<TeacherEvaluationUI[]> {
-    
-    // 1. Requête Evaluations
     const evaluations$ = this.apollo.query<any>({
       query: GET_TEACHER_EVALUATIONS,
       variables: { teacherId },
       fetchPolicy: 'network-only'
     });
 
-    // 2. Requête Titres des cours
     const forms$ = this.apollo.query<any>({
       query: GET_ALL_FORM_TITLES,
       fetchPolicy: 'cache-first'
@@ -248,33 +268,12 @@ export class EvaluationService {
 
     return forkJoin([evaluations$, forms$]).pipe(
       map(([evalsResult, formsResult]) => {
-        
-        // Création du dictionnaire ID -> Titre
         const formMap: Record<string, string> = {};
         formsResult.data.forms.edges.forEach((edge: any) => {
           formMap[edge.node.id] = edge.node.title;
         });
-
         const rawEvaluations = evalsResult.data.evaluations.edges.map((e: any) => e.node);
-
-        return rawEvaluations.map((ev: any) => {
-          // Calcul moyenne
-          const ratings = ev.answers
-            .map((a: any) => a.rating)
-            .filter((r: any) => r !== null);
-            
-          const avgRating = ratings.length > 0 
-            ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length 
-            : 0;
-
-          return {
-            id: ev.id,
-            courseName: formMap[ev.formId] || 'Cours inconnu',
-            submittedDate: new Date(ev.createdAt),
-            rating: Math.round(avgRating),
-            isRead: this.isDateOlderThanToday(new Date(ev.createdAt))
-          };
-        });
+        return this.buildEvaluationsUI(rawEvaluations, formMap);
       })
     );
   }
@@ -287,37 +286,49 @@ export class EvaluationService {
   getDashboardMetrics(): Observable<DashboardMetrics> {
     return this.apollo.query<any>({
       query: GET_GLOBAL_STATS,
-      fetchPolicy: 'network-only' // On veut des stats fraiches
+      fetchPolicy: 'network-only'
     }).pipe(
       map(result => {
         const students = result.data?.students?.edges || [];
         const evaluations = result.data?.evaluations?.edges.map((e: any) => e.node) || [];
 
-        // --- CALC 1 : New Feedback (Cette semaine) ---
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
 
-        const newFeedbackCount = evaluations.filter((ev: any) => {
-          const evalDate = new Date(ev.createdAt);
-          return evalDate >= oneWeekAgo;
-        }).length;
+        const newFeedbackCount = evaluations.filter((ev: any) =>
+          new Date(ev.createdAt) >= oneWeekAgo
+        ).length;
 
-        // --- CALC 2 : Completion Rate (Approximation) ---
-        // Logique : (Nombre total d'évaluations / Nombre total d'élèves) * 100
-        // Note : C'est une approximation car un élève peut remplir plusieurs formulaires.
-        // Pour être précis, il faudrait : (Total Réponses / (Nb Élèves * Nb Formulaires Actifs))
-        
-        const totalStudents = students.length || 1; // Eviter division par 0
-        const totalEvaluations = evaluations.length;
-        
-        // On cap à 100% pour l'UI si jamais il y a plus d'évals que d'élèves
-        let completionRate = Math.round((totalEvaluations / totalStudents) * 100);
+        const totalStudents = students.length || 1;
+        let completionRate = Math.round((evaluations.length / totalStudents) * 100);
         if (completionRate > 100) completionRate = 100;
 
-        return {
-          completionRate,
-          newFeedbackCount
-        };
+        return { completionRate, newFeedbackCount };
+      })
+    );
+  }
+
+  getFormById(id: string): Observable<EvaluationForm> {
+    return this.apollo.query<{ form: EvaluationForm }>({
+      query: GET_FORM_BY_ID,
+      variables: { id },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => result.data?.form!)
+    );
+  }
+
+  submitEvaluation(input: SubmitEvaluationInput): Observable<any> {
+    return this.apollo.mutate<{ submitEvaluation: any }>({
+      mutation: SUBMIT_EVALUATION,
+      variables: { input }
+    }).pipe(
+      map(result => {
+        console.log('Mutation result:', result);
+        if (result.error) {
+          throw result.error;
+        }
+        return result.data?.submitEvaluation;
       })
     );
   }

@@ -110,7 +110,7 @@ export class FeedbackStudentComponent implements OnInit {
     }
     this.selectedFormId = formId;
     this.selectedTeacherName =
-      this.forms.find((form) => form.id === formId)?.teacherName || '';
+      this.forms.find((form) => form.id === formId)?.teacher?.fullName || '';
     this.teacherIdOverride = '';
     this.loadFormDetails(formId);
   }
@@ -224,7 +224,7 @@ export class FeedbackStudentComponent implements OnInit {
         if (forms.length > 0) {
           const firstForm = forms[0];
           this.selectedFormId = firstForm.id;
-          this.selectedTeacherName = firstForm.teacherName || '';
+          this.selectedTeacherName = firstForm.teacher?.fullName || '';
           this.loadFormDetails(firstForm.id);
         }
       },

@@ -10,6 +10,8 @@ const GET_ME = gql`
     me {
       id
       fullName
+      email
+      emailVerified
       userType
     }
   }
@@ -83,6 +85,16 @@ const DELETE_USER = gql`
   }
 `;
 
+const RESEND_EMAIL_VERIFICATION = gql`
+  mutation ResendEmailVerification {
+    resendEmailVerification {
+      id
+      email
+      emailVerified
+    }
+  }
+`;
+
 // --- INTERFACES ---
 
 export interface CreateUserPayload {
@@ -95,6 +107,7 @@ export interface UserProfile {
   id: string;
   fullName: string;
   email?: string;
+  emailVerified?: boolean;
   userType: UserType;
   createdAt?: string;
 }
@@ -240,6 +253,25 @@ export class UserService {
       tap(() => console.log(`User ${id} deleted successfully`)),
       catchError(error => {
         console.error('Delete failed', error);
+        throw error;
+      })
+    );
+  }
+
+  resendEmailVerification() {
+    return this.apollo.mutate<{ resendEmailVerification: { id: string; email: string; emailVerified: boolean } }>({
+      mutation: RESEND_EMAIL_VERIFICATION,
+      fetchPolicy: 'no-cache'
+    }).pipe(
+      tap((result) => {
+        const data = result.data?.resendEmailVerification;
+        if (data) {
+          const current = this.currentUser();
+          this.currentUser.set(current ? { ...current, email: data.email, emailVerified: data.emailVerified } : current);
+        }
+      }),
+      catchError(error => {
+        console.error('Resend verification failed', error);
         throw error;
       })
     );

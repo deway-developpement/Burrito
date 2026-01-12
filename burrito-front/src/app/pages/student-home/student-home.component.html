@@ -5,6 +5,12 @@
     subtitle="Provide feedback on your courses. Your responses are anonymous.">
   </app-admin-page-header>
 
+  <!-- Success Message -->
+  <div class="success-banner" *ngIf="showSuccessMessage">
+    <span class="success-icon">✓</span>
+    <span class="success-text">Evaluation submitted successfully! Thank you for your feedback.</span>
+  </div>
+
   <section class="section-container">
     <h2 class="section-title">Waiting for your feedback</h2>
     
@@ -43,7 +49,12 @@
   <section class="section-container history-section">
     <h2 class="section-title">Submission History</h2>
     
-    <div class="history-container">
+    <div *ngIf="completedEvaluations.length === 0" class="empty-state">
+      <span class="icon">📋</span>
+      <p>No evaluations submitted yet.</p>
+    </div>
+
+    <div class="history-container" *ngIf="completedEvaluations.length > 0">
       <table class="history-table">
         <thead>
           <tr>
