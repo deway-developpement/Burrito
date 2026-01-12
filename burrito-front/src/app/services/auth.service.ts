@@ -48,8 +48,6 @@ export class AuthService {
 
     return this.http.get<AuthResponse>('/auth/refresh', { headers }).pipe(
       tap((response) => {
-        console.log('Session restored!');
-        
         this.token.set(response.access_token);
 
         if (response.refresh_token) {
@@ -57,7 +55,6 @@ export class AuthService {
         }
       }),
       catchError((err) => {
-        console.log('Refresh failed', err);
         this.logout(); 
         return of(null);
       })

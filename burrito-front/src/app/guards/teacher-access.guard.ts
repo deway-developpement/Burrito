@@ -19,9 +19,6 @@ export const teacherAccessGuard: CanActivateFn = (
   const teacherId = route.params['teacherId'];
   const user = authService.getCurrentUser();
 
-  console.log('[teacherAccessGuard] teacherId from route:', teacherId);
-  console.log('[teacherAccessGuard] current user:', user);
-
   if (!user) {
     router.navigate(['/sign-in']);
     return false;
@@ -29,18 +26,15 @@ export const teacherAccessGuard: CanActivateFn = (
 
   // Admin can view any teacher
   if (user.userType === 'ADMIN') {
-    console.log('[teacherAccessGuard] Admin access granted');
     return true;
   }
 
   // Teacher can only view their own results
   if (user.userType === 'TEACHER' && user.id === teacherId) {
-    console.log('[teacherAccessGuard] Teacher viewing own results - access granted');
     return true;
   }
 
   // Deny access
-  console.log('[teacherAccessGuard] Access denied - redirecting to home');
   router.navigate(['/']);
   return false;
 };

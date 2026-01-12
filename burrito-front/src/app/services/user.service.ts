@@ -226,7 +226,6 @@ export class UserService {
         }
       }
     }).pipe(
-      tap(() => console.log('User updated successfully')),
       catchError(error => {
         console.error('Update failed', error);
         throw error;
@@ -250,7 +249,6 @@ export class UserService {
         }
       }
     }).pipe(
-      tap(() => console.log(`User ${id} deleted successfully`)),
       catchError(error => {
         console.error('Delete failed', error);
         throw error;

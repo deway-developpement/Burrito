@@ -80,7 +80,6 @@ export const routes: Routes = [
     path: 'results/teacher/:teacherId',
     component: ResultsTeacherComponent,
     canActivate: [authGuard, teacherAccessGuard]
-    //TODO: Temporarily disabled guards for testing
   },
   {
     path: 'results/form/:formId',
