@@ -3,6 +3,7 @@ Sentiment Analysis Module using NLTK and keyword-based analysis
 """
 import os
 import re
+import threading
 import numpy as np
 from collections import Counter
 from typing import Tuple, List
@@ -115,13 +116,15 @@ class SentimentAnalyzer:
         )
         self._summarizer_model = os.getenv(
             'SUMMARIZER_MODEL',
-            'sshleifer/distilbart-cnn-12-6',
+            'Qwen/Qwen2.5-0.5B-Instruct',
         )
         self._hf_cache_dir = os.getenv(
             'HF_HOME',
             os.path.join(os.getcwd(), '.cache', 'huggingface'),
         )
         self._logger = logging.getLogger(__name__)
+        self._summarizer_lock = threading.Lock()
+        os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
     def analyze(self, text: str) -> Tuple[float, str]:
         """
@@ -316,7 +319,7 @@ class SentimentAnalyzer:
                 labels,
                 cluster_label,
             )
-            summary = self._summarize_cluster(cluster_text)
+            summary = self._summarize_cluster(cluster_text, question_text)
             phrases = self._extract_keybert_phrases_from_text(
                 cluster_text,
                 stop_words,
@@ -549,26 +552,37 @@ class SentimentAnalyzer:
             from transformers import pipeline
 
             self._summarizer = pipeline(
-                "text2text-generation",
+                "text-generation",
                 model=self._summarizer_model,
                 tokenizer=self._summarizer_model,
                 device=-1,
             )
+            tokenizer = getattr(self._summarizer, "tokenizer", None)
+            if tokenizer is not None and tokenizer.pad_token_id is None:
+                tokenizer.pad_token = tokenizer.eos_token
+            pipeline_config = getattr(
+                self._summarizer, "generation_config", None)
+            if pipeline_config is not None:
+                pipeline_config.max_new_tokens = None
+                pipeline_config.min_new_tokens = None
+                pipeline_config.max_length = None
+                pipeline_config.min_length = None
+                pipeline_config.do_sample = False
+                pipeline_config.temperature = None
+                pipeline_config.top_p = None
             generation_config = getattr(
                 self._summarizer.model, "generation_config", None)
             if generation_config is not None:
-                generation_config.min_length = 0
-                if generation_config.max_new_tokens is None:
-                    generation_config.max_new_tokens = 64
-                if generation_config.forced_bos_token_id is None:
-                    generation_config.forced_bos_token_id = 0
+                generation_config.max_new_tokens = None
+                generation_config.min_new_tokens = None
+                generation_config.max_length = None
+                generation_config.min_length = None
+                generation_config.do_sample = False
+                generation_config.temperature = None
+                generation_config.top_p = None
             model_config = getattr(self._summarizer.model, "config", None)
-            if model_config is not None:
-                model_config.min_length = 0
-                if getattr(model_config, "max_new_tokens", None) is None:
-                    model_config.max_new_tokens = 64
-                if getattr(model_config, "forced_bos_token_id", None) is None:
-                    model_config.forced_bos_token_id = 0
+            if model_config is not None and getattr(model_config, "pad_token_id", None) is None:
+                model_config.pad_token_id = self._summarizer.tokenizer.pad_token_id
         return self._summarizer
 
     def _ensure_model_cached(self, model_id: str):
@@ -640,41 +654,81 @@ class SentimentAnalyzer:
             parts.extend([text] * weight)
         return " ".join(parts)
 
-    def _summarize_cluster(self, cluster_text: str) -> str:
+    def _summarize_cluster(self, cluster_text: str, question_text: str) -> str:
         if not cluster_text or len(cluster_text.split()) < 8:
             return ''
         try:
             summarizer = self._get_summarizer()
-            from transformers import GenerationConfig
-
-            generation_config = GenerationConfig(
-                max_new_tokens=16,
-                min_new_tokens=4,
-            )
-            truncated = cluster_text[: 3000]
-            result = summarizer(
-                truncated,
-                do_sample=False,
-                truncation=True,
-                clean_up_tokenization_spaces=True,
-                generation_config=generation_config,
-            )
+            prompt = self._build_summary_prompt(cluster_text, question_text)
+            max_new_tokens = 14
+            min_new_tokens = 4
+            with self._summarizer_lock:
+                result = summarizer(
+                    prompt,
+                    truncation=True,
+                    clean_up_tokenization_spaces=True,
+                    max_new_tokens=max_new_tokens,
+                    min_new_tokens=min_new_tokens,
+                    do_sample=False,
+                    return_full_text=False,
+                )
             if not result:
                 return ''
-            summary = (
-                result[0].get('summary_text')
-                or result[0].get('generated_text')
-                or ''
-            ).strip()
+            summary = (result[0].get('generated_text') or '').strip()
             summary = re.sub(r"\s+", " ", summary)
-            sentences = re.split(r"(?<=[.!?])\s+", summary)
-            summary = sentences[0] if sentences else summary
-            if len(summary) > 120:
-                summary = summary[:119].rstrip() + "…"
+            summary = self._normalize_summary_sentence(summary)
+            if len(summary) > 100:
+                summary = summary[:99].rstrip() + "..."
+            if re.search(r"\bthe\s+most\b\.?$", summary, flags=re.I):
+                return ''
             return summary
         except Exception as exc:
             self._logger.warning("Cluster summarization failed: %s", exc)
             return ''
+
+    def _build_summary_prompt(self, cluster_text: str, question_text: str) -> str:
+        instruction = (
+            "Write one short summary of the list of feedbacks, active-voice sentence (6-12 words). "
+            "Avoid filler like \"the feedback indicates\" or \"the user\"."
+        )
+        content = (
+            f"Question: {question_text.strip() if question_text else ''}\n"
+            f"Feedback: {cluster_text[:2000]}"
+        )
+        tokenizer = getattr(self._get_summarizer(), "tokenizer", None)
+        if tokenizer and hasattr(tokenizer, "apply_chat_template"):
+            messages = [
+                {"role": "system", "content": instruction},
+                {"role": "user", "content": content},
+            ]
+            return tokenizer.apply_chat_template(
+                messages, tokenize=False, add_generation_prompt=True
+            )
+        return f"{instruction}\n{content}\nSummary:"
+
+    def _normalize_summary_sentence(self, summary: str) -> str:
+        summary = summary.strip()
+        if not summary:
+            return ''
+        summary = re.sub(
+            r"^(summary|assistant)[:\-]\s*", "", summary, flags=re.I)
+        summary = re.sub(r"^[\"'\-\s]+", "", summary)
+        summary = re.sub(
+            r"^(the\s+)?feedback\s+indicates\s+that\s+", "", summary, flags=re.I)
+        summary = re.sub(
+            r"^(the\s+)?user\s+(found|finds|felt|feels|thought|thinks|said|says|reported|mentions?)\s+", "", summary, flags=re.I)
+        summary = re.sub(r"^(there\s+(is|are)\s+)", "", summary, flags=re.I)
+        summary = re.sub(r"^(it\s+(is|was)\s+)", "", summary, flags=re.I)
+        summary = re.sub(
+            r"^(the\s+)?students?\s+(say|mention|report|note)\s+", "", summary, flags=re.I)
+        summary = re.split(r"(?<=[.!?])\s+", summary)[0]
+        if not summary.endswith((".", "!", "?")):
+            summary = f"{summary}."
+        if summary:
+            summary = summary[0].upper() + summary[1:]
+        if len(summary.split()) < 4:
+            return ''
+        return summary
 
     def save_model(self, model_path: str):
         """Save the current model (no-op for keyword-based analyzer)"""
