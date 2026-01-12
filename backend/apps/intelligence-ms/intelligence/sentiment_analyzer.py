@@ -549,11 +549,26 @@ class SentimentAnalyzer:
             from transformers import pipeline
 
             self._summarizer = pipeline(
-                "summarization",
+                "text2text-generation",
                 model=self._summarizer_model,
                 tokenizer=self._summarizer_model,
                 device=-1,
             )
+            generation_config = getattr(
+                self._summarizer.model, "generation_config", None)
+            if generation_config is not None:
+                generation_config.min_length = 0
+                if generation_config.max_new_tokens is None:
+                    generation_config.max_new_tokens = 64
+                if generation_config.forced_bos_token_id is None:
+                    generation_config.forced_bos_token_id = 0
+            model_config = getattr(self._summarizer.model, "config", None)
+            if model_config is not None:
+                model_config.min_length = 0
+                if getattr(model_config, "max_new_tokens", None) is None:
+                    model_config.max_new_tokens = 64
+                if getattr(model_config, "forced_bos_token_id", None) is None:
+                    model_config.forced_bos_token_id = 0
         return self._summarizer
 
     def _ensure_model_cached(self, model_id: str):
@@ -630,19 +645,32 @@ class SentimentAnalyzer:
             return ''
         try:
             summarizer = self._get_summarizer()
+            from transformers import GenerationConfig
+
+            generation_config = GenerationConfig(
+                max_new_tokens=16,
+                min_new_tokens=4,
+            )
             truncated = cluster_text[: 3000]
             result = summarizer(
                 truncated,
-                max_length=28,
-                min_length=6,
                 do_sample=False,
                 truncation=True,
                 clean_up_tokenization_spaces=True,
+                generation_config=generation_config,
             )
             if not result:
                 return ''
-            summary = result[0].get('summary_text', '').strip()
+            summary = (
+                result[0].get('summary_text')
+                or result[0].get('generated_text')
+                or ''
+            ).strip()
             summary = re.sub(r"\s+", " ", summary)
+            sentences = re.split(r"(?<=[.!?])\s+", summary)
+            summary = sentences[0] if sentences else summary
+            if len(summary) > 120:
+                summary = summary[:119].rstrip() + "…"
             return summary
         except Exception as exc:
             self._logger.warning("Cluster summarization failed: %s", exc)
