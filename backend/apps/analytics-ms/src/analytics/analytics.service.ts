@@ -196,9 +196,7 @@ export class AnalyticsService {
         this.formClient.send<FormRecord>({ cmd: 'form.getById' }, formId),
       );
     } catch (error) {
-      this.logger.error(
-        `Forms service error: ${this.describeError(error)}`,
-      );
+      this.logger.error(`Forms service error: ${this.describeError(error)}`);
       throw this.wrapUpstreamError('forms', error);
     }
 
@@ -339,7 +337,8 @@ export class AnalyticsService {
         }
 
         if (meta.type === 'TEXT') {
-          const text = typeof answer.text === 'string' ? answer.text.trim() : '';
+          const text =
+            typeof answer.text === 'string' ? answer.text.trim() : '';
           if (text) {
             accumulator.textAnswers.push(text);
             accumulator.answeredCount += 1;
@@ -595,7 +594,9 @@ export class AnalyticsService {
     return bucket;
   }
 
-  private normalizeWindow(window?: AnalyticsWindow): AnalyticsWindow | undefined {
+  private normalizeWindow(
+    window?: AnalyticsWindow,
+  ): AnalyticsWindow | undefined {
     if (!window) {
       return undefined;
     }
@@ -738,7 +739,11 @@ export class AnalyticsService {
 
   private buildTextEnrichment(response: IntelligenceResponse): {
     topIdeas: Array<{ idea: string; count: number }>;
-    sentiment?: { positivePct: number; neutralPct: number; negativePct: number };
+    sentiment?: {
+      positivePct: number;
+      neutralPct: number;
+      negativePct: number;
+    };
     analysisStatus?: TextAnalysisStatus;
     analysisError?: string;
   } {
@@ -840,7 +845,16 @@ export class AnalyticsService {
         defaults: true,
         oneofs: true,
       });
-      const analyticsProto:any = grpc.loadPackageDefinition(packageDefinition);
+      const analyticsProto = grpc.loadPackageDefinition(
+        packageDefinition,
+      ) as unknown as {
+        analytics: {
+          AnalyticsService: new (
+            address: string,
+            credentials: grpc.ChannelCredentials,
+          ) => unknown;
+        };
+      };
 
       const host = process.env.INTELLIGENCE_GRPC_HOST || 'localhost';
       const port = process.env.INTELLIGENCE_GRPC_PORT || '50051';
