@@ -27,6 +27,10 @@ const GET_FORMS = gql`
           status
           startDate
           endDate
+          groups {
+            id
+            name
+          }
           teacher {
             id
             fullName
@@ -48,6 +52,10 @@ interface FormListItem {
   status: FormStatus;
   startDate?: string;
   endDate?: string;
+  groups?: Array<{
+    id: string;
+    name: string;
+  }>;
   teacher?: {
     id: string;
     fullName: string;
@@ -91,6 +99,10 @@ export class AdminFormsComponent implements OnInit {
     private router: Router,
     private formService: FormService
   ) {}
+
+  goBack(): void {
+    this.router.navigate(['/']);
+  }
 
   ngOnInit(): void {
     this.loadForms();
@@ -156,6 +168,13 @@ export class AdminFormsComponent implements OnInit {
       day: 'numeric',
       year: 'numeric',
     });
+  }
+
+  formatGroups(groups?: FormListItem['groups']): string {
+    if (!groups || groups.length === 0) {
+      return 'No groups';
+    }
+    return groups.map((group) => group.name).join(', ');
   }
 
   getStatusClass(status: FormListItem['status']): string {
