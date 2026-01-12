@@ -54,18 +54,8 @@
               ></app-input>
             </label>
 
-            <!-- <label class="form-field">
-              <span class="form-label">Course tag</span>
-              <app-input
-                variant="outline"
-                placeholder="e.g. ENG-201"
-                [fullWidth]="true"
-                [(model)]="courseTag"
-              ></app-input>
-            </label> -->
-
             <label class="form-field">
-              <span class="form-label">Target teacher</span>
+              <span class="form-label">Target teacher <span class="required">*</span></span>
               <app-select
                 variant="outline"
                 placeholder="Select a teacher"
@@ -74,9 +64,9 @@
                 [disabled]="isLoadingTeachers"
                 [(value)]="targetTeacherId"
               ></app-select>
-              @if (teachersError) {
+              <!-- @if (teachersError) {
                 <span class="field-error">{{ teachersError }}</span>
-              }
+              } -->
             </label>
 
             <label class="form-field">
