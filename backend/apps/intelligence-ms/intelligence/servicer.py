@@ -44,16 +44,17 @@ class AnalyticsServicer:
                 answers = [request.answer_text]
 
             per_answer_results = []
-            aggregated_ideas = set()
             sentiment_scores = []
 
             for idx, ans in enumerate(answers):
                 combined_text = f"{request.question_text} {ans}"
                 score, label = self.sentiment_analyzer.analyze(combined_text)
-                ideas = self.sentiment_analyzer.extract_key_phrases(combined_text)
+                ideas = self.sentiment_analyzer.extract_answer_keywords(
+                    ans,
+                    request.question_text,
+                )
 
                 sentiment_scores.append(float(score))
-                aggregated_ideas.update(ideas)
 
                 per_answer_results.append({
                     'index': idx,
@@ -63,9 +64,15 @@ class AnalyticsServicer:
                     'extracted_ideas': ideas
                 })
 
-                # Update idea frequency and sentiment stats per answer
-                self.db_manager.update_idea_frequency(ideas)
+                # Update sentiment stats per answer
                 self.db_manager.update_sentiment_stats(label)
+
+            aggregated_ideas = self.sentiment_analyzer.extract_top_ideas_from_clusters(
+                answers,
+                request.question_text,
+            )
+            if aggregated_ideas:
+                self.db_manager.update_idea_frequency(aggregated_ideas)
 
             # Aggregate sentiment across answers (mean)
             if sentiment_scores:
@@ -87,7 +94,7 @@ class AnalyticsServicer:
                 'answers': per_answer_results,
                 'aggregate_sentiment_score': aggregate_score,
                 'aggregate_sentiment_label': aggregate_label,
-                'aggregated_extracted_ideas': list(sorted(aggregated_ideas))
+                'aggregated_extracted_ideas': aggregated_ideas
             }
 
             self.db_manager.save_analysis(analysis_data)
@@ -109,7 +116,7 @@ class AnalyticsServicer:
                 answers=answers_proto,
                 aggregate_sentiment_score=aggregate_score,
                 aggregate_sentiment_label=aggregate_label,
-                aggregated_extracted_ideas=list(sorted(aggregated_ideas)),
+                aggregated_extracted_ideas=aggregated_ideas,
                 success=True
             )
 

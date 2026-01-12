@@ -805,10 +805,19 @@ export class AnalyticsService {
         }
       : undefined;
 
-    if (ideaCounts.size === 0 && response.aggregated_extracted_ideas) {
-      for (const idea of response.aggregated_extracted_ideas) {
-        ideaCounts.set(idea, (ideaCounts.get(idea) || 0) + 1);
-      }
+    const aggregatedIdeas = (response.aggregated_extracted_ideas || []).filter(
+      (idea) => typeof idea === 'string' && idea.trim().length > 0,
+    );
+    if (aggregatedIdeas.length > 0) {
+      const topIdeas = aggregatedIdeas.slice(0, 10).map((idea) => ({
+        idea,
+        count: 1,
+      }));
+      return {
+        topIdeas,
+        sentiment,
+        analysisStatus: TEXT_ANALYSIS_STATUS.ready,
+      };
     }
 
     const topIdeas = Array.from(ideaCounts.entries())
