@@ -2,8 +2,6 @@
 
 .results-teacher-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, theme.$bg-light 0%, theme.$secondary-bg 100%);
-  padding: 2rem;
 }
 
 // Navigation Bar
@@ -12,6 +10,7 @@
   align-items: center;
   gap: 1.5rem;
   margin-bottom: 2rem;
+  margin-top: 2rem;
 
   .btn-back {
     padding: 0.6rem 1rem;
@@ -35,7 +34,7 @@
   .page-title {
     margin: 0;
     font-size: 1.8rem;
-    color: theme.$white;
+    color: theme.$gray-900;
     font-weight: 700;
   }
 }
