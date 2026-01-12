@@ -161,8 +161,8 @@
 }
 
 .group-chip {
-  background-color: theme.$orange-light;
-  color: theme.$orange;
+  background-color: theme.$primary-light;
+  color: theme.$primary-color;
   padding: 6px 12px;
   border-radius: 20px;
   font-size: 0.85rem;
@@ -170,12 +170,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid theme.$orange;
+  border: 1px solid theme.$primary-color;
 
   .remove-chip {
     background: none;
     border: none;
-    color: theme.$orange;
+    color: theme.$primary-color;
     font-size: 1.1rem;
     cursor: pointer;
     line-height: 1;
@@ -198,13 +198,13 @@
     font-family: theme.$font-family-base;
     cursor: pointer;
 
-    &:focus { outline: none; border-color: theme.$orange; }
+    &:focus { outline: none; border-color: theme.$primary-color; }
   }
 
   .btn-add-group {
     background: theme.$white;
-    border: 2px solid theme.$orange;
-    color: theme.$orange;
+    border: 2px solid theme.$primary-color;
+    color: theme.$primary-color;
     padding: 0 16px;
     border-radius: 12px;
     font-weight: 700;
@@ -212,7 +212,7 @@
     transition: all 0.2s;
 
     &:hover {
-      background: theme.$orange;
+      background: theme.$primary-color;
       color: theme.$white;
     }
   }
@@ -235,7 +235,7 @@
 .text-btn {
   background: none;
   border: none;
-  color: theme.$orange;
+  color: theme.$primary-color;
   font-weight: 700;
   font-size: 0.8rem;
   cursor: pointer;
@@ -253,7 +253,7 @@
 }
 
 .btn-primary-sm {
-  background: theme.$orange;
+  background: theme.$primary-color;
   color: theme.$white;
   border: none;
   padding: 0 16px;
