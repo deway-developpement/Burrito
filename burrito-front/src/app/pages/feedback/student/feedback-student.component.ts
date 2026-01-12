@@ -215,7 +215,7 @@ export class FeedbackStudentComponent implements OnInit {
     this.loadingForms = true;
     this.formsError = '';
 
-    this.evaluationService.getActiveForms().subscribe({
+    this.evaluationService.getActiveFormsForStudent().subscribe({
       next: (forms) => {
         this.forms = forms;
         this.loadingForms = false;

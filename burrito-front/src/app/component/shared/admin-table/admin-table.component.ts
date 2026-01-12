@@ -2,9 +2,9 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface TableColumn {
-  key: string;       // The property name in your data (e.g., 'email')
-  label: string;     // The header text (e.g., 'Contact')
-  type: 'text' | 'user' | 'badge' | 'actions'; 
+  key: string;      // This MUST match 'groups' or 'fullName' in your data
+  label: string;    // Header text
+  type: 'text' | 'user' | 'badge' | 'actions' | 'groups';
 }
 
 @Component({
@@ -18,6 +18,6 @@ export class AdminTableComponent {
   @Input() columns: TableColumn[] = [];
   @Input() data: any[] = [];
   
-  @Output() edit = new EventEmitter<number>();
-  @Output() delete = new EventEmitter<number>();
+  @Output() edit = new EventEmitter<string>();
+  @Output() delete = new EventEmitter<string>();
 }

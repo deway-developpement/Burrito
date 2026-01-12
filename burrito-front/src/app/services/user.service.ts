@@ -13,6 +13,10 @@ const GET_ME = gql`
       email
       emailVerified
       userType
+      groups {
+        id
+        name
+      }
     }
   }
 `;
@@ -31,6 +35,11 @@ const GET_TEACHERS = gql`
           email
           createdAt
           userType
+          # FETCHING GROUP DATA
+          groups {
+            id
+            name
+          }
         }
       }
     }
@@ -51,6 +60,11 @@ const GET_STUDENTS = gql`
           email
           createdAt
           userType
+          # FETCHING GROUP DATA
+          groups {
+            id
+            name
+          }
         }
       }
     }
@@ -110,18 +124,17 @@ export interface UserProfile {
   emailVerified?: boolean;
   userType: UserType;
   createdAt?: string;
+  // ADDED GROUPS INTERFACE HERE
+  groups?: {
+    id: string;
+    name: string;
+  }[];
 }
 
 export type UserType = 'STUDENT' | 'TEACHER' | 'ADMIN';
 
 interface MeResponse {
   me: UserProfile;
-}
-
-interface RegisterResponse {
-  createOneUser: {
-    id: string
-  };
 }
 
 @Injectable({
@@ -182,23 +195,9 @@ export class UserService {
       })
     );
   }
-  
-  register(payload: CreateUserPayload) {
-    return this.apollo.mutate<RegisterResponse>({
-      mutation: CREATE_ONE_USER,
-      variables: {
-        input: {
-          user: {
-            ...payload,
-            userType: 'STUDENT'
-          }
-        }
-      }
-    });
-  }
 
-  createUser(payload: CreateUserPayload, type: UserType) {
-    return this.apollo.mutate<RegisterResponse>({
+    createUser(payload: CreateUserPayload, type: UserType) {
+    return this.apollo.mutate({
       mutation: CREATE_ONE_USER,
       variables: {
         input: {
@@ -217,9 +216,8 @@ export class UserService {
       mutation: UPDATE_USER,
       variables: {
         input: {
-          id: id,        // 1. The ID identifies WHICH user to update
-          update: {      // 2. The update object contains only the NEW data
-            // id: id,   <-- REMOVED: This was causing the error
+          id: id,
+          update: {
             fullName: data.fullName,
             email: data.email
           }

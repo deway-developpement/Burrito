@@ -1,5 +1,31 @@
 @use 'burrito-theme' as theme;
 
+.nav-bar {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  .btn-back {
+    padding: 0.6rem 1rem;
+    background: theme.$white;
+    border: 1px solid theme.$border-color;
+    border-radius: theme.$radius-md;
+    color: theme.$text-dark;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      background: theme.$primary-color;
+      color: theme.$white;
+      border-color: theme.$primary-color;
+      transform: translateX(-4px);
+    }
+  }
+}
+
 .admin {
   &__main {
     flex: 1;
@@ -213,6 +239,68 @@
   }
 }
 
+.group-picker {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+.group-picker__select {
+  flex: 0 0 240px;
+  min-width: 200px;
+}
+
+.group-picker__selected {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border: 1px dashed rgba(theme.$text-dark, 0.12);
+  border-radius: 0.75rem;
+  background: rgba(theme.$primary-light, 0.2);
+  min-height: 2rem;
+}
+
+.group-picker__empty {
+  color: theme.$text-muted;
+  font-size: 0.85rem;
+}
+
+.group-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(theme.$primary-color, 0.35);
+  background: theme.$white;
+  color: theme.$text-dark;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.group-pill__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  background: rgba(theme.$primary-color, 0.2);
+  color: theme.$primary-color;
+  font-size: 0.7rem;
+  line-height: 1;
+}
+
 .form-textarea {
   width: 100%;
   border-radius: 0.85rem;
@@ -329,4 +417,16 @@
   color: theme.$danger-red;
   font-size: 0.85rem;
   margin: 0.15rem 0 0;
+}
+
+@media (max-width: 640px) {
+  .group-picker {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .group-picker__select {
+    flex: 1;
+    width: 100%;
+  }
 }

@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { SignInComponent } from './pages/sign-in/sign-in.component';
-import { RegisterComponent } from './pages/register/register.component';
 import { FeedbackStudentComponent } from './pages/feedback/student/feedback-student.component';
 import { FeedbackAdminComponent } from './pages/feedback/admin/feedback-admin.component';
 import { PrivacyPolicyComponent } from './pages/privacy/privacy-policy.component';
@@ -16,6 +15,7 @@ import { ResultsTeacherComponent } from './pages/results-teacher/results-teacher
 import { ResultsFormComponent } from './pages/results-form/results-form.component';
 import { GlobalReportsComponent } from './pages/global-reports/global-reports.component';
 import { authGuard } from './guards/auth.guard';
+import { guestGuard } from './guards/guest.guard';
 import { teacherAccessGuard } from './guards/teacher-access.guard';
 import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
 import { EvaluateFormComponent } from './pages/evaluate-form/evaluate-form.component';
@@ -28,11 +28,8 @@ export const routes: Routes = [
   },
   {
     path: 'sign-in',
-    component: SignInComponent
-  },
-  {
-    path: 'register',
-    component: RegisterComponent
+    component: SignInComponent,
+    canActivate: [guestGuard]
   },
   {
     path: 'legal/privacy',
@@ -56,11 +53,13 @@ export const routes: Routes = [
   },
   {
     path: 'admin/manage/teachers',
-    component: ManageTeachersComponent
+    component: ManageTeachersComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'admin/manage/students',
-    component: ManageStudentsComponent
+    component: ManageStudentsComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'admin/reports',
@@ -69,7 +68,8 @@ export const routes: Routes = [
   },
   {
     path: 'admin/forms',
-    component: AdminFormsComponent
+    component: AdminFormsComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'results/:id',
@@ -93,14 +93,17 @@ export const routes: Routes = [
   },
   {
     path: 'verify-email',
-    component: VerifyEmailComponent
+    component: VerifyEmailComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'feedback/student',
-    component: FeedbackStudentComponent
+    component: FeedbackStudentComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'feedback/admin',
-    component: FeedbackAdminComponent
+    component: FeedbackAdminComponent,
+    canActivate: [authGuard]
   }
 ];

@@ -15,12 +15,27 @@ const GET_FORMS_AND_TEACHERS = gql`
           title
           description
           endDate
+          groups {
+            id
+            name
+          }
           teacher {
             id
             fullName
           }
           userRespondedToForm
         }
+      }
+    }
+  }
+`;
+
+const GET_MY_GROUPS = gql`
+  query GetMyGroups {
+    me {
+      id
+      groups {
+        id
       }
     }
   }
@@ -152,6 +167,10 @@ export interface EvaluationForm {
   title: string;
   description?: string;
   endDate?: string;
+  groups?: Array<{
+    id: string;
+    name: string;
+  }>;
   teacher?: {
     id: string;
     fullName: string;
@@ -184,6 +203,15 @@ interface FormsResponse {
   forms: { edges: { node: EvaluationForm }[] };
 }
 
+interface MeGroupsResponse {
+  me?: {
+    id: string;
+    groups: Array<{
+      id: string;
+    }>;
+  } | null;
+}
+
 export interface DashboardMetrics {
   completionRate: number; // Ex: 85
   newFeedbackCount: number; // Ex: 128
@@ -207,6 +235,31 @@ export class EvaluationService {
           ...form,
           userResponded: form.userRespondedToForm || false
         }));
+      }),
+      catchError(() => of([]))
+    );
+  }
+
+  getActiveFormsForStudent(): Observable<EvaluationForm[]> {
+    const forms$ = this.getActiveForms();
+    const groups$ = this.apollo.query<MeGroupsResponse>({
+      query: GET_MY_GROUPS,
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => result.data?.me?.groups || []),
+      catchError(() => of([]))
+    );
+
+    return forkJoin([forms$, groups$]).pipe(
+      map(([forms, groups]) => {
+        const groupIds = new Set(groups.map(group => group.id));
+        if (groupIds.size === 0) {
+          return [];
+        }
+        return forms.filter(form => {
+          const formGroupIds = form.groups?.map(group => group.id) || [];
+          return formGroupIds.some(groupId => groupIds.has(groupId));
+        });
       }),
       catchError(() => of([]))
     );
