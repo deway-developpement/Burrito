@@ -2,7 +2,7 @@
 
 .results-teacher-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, theme.$primary-bg 0%, theme.$secondary-bg 100%);
+  background: linear-gradient(135deg, theme.$bg-light 0%, theme.$secondary-bg 100%);
   padding: 2rem;
 }
 
@@ -45,7 +45,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  background: linear-gradient(135deg, theme.$info-light 0%, theme.$info-lighter 100%);
   border-left: 4px solid theme.$primary-color;
   border-radius: 4px;
   padding: 1rem;
@@ -58,7 +58,7 @@
 
   .admin-text {
     flex: 1;
-    color: #1565c0;
+    color: theme.$info-blue;
 
     strong {
       font-weight: 600;
@@ -70,7 +70,7 @@
     border: none;
     font-size: 1.5rem;
     cursor: pointer;
-    color: #1565c0;
+    color: theme.$info-blue;
 
     &:hover {
       opacity: 0.7;
@@ -101,12 +101,12 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: #ffebee;
-  border-left: 4px solid #c62828;
+  background: theme.$error-light-red;
+  border-left: 4px solid theme.$error-red-dark;
   border-radius: 4px;
   padding: 1rem;
   margin-bottom: 2rem;
-  color: #c62828;
+  color: theme.$error-red-dark;
 
   .error-icon {
     font-size: 1.3rem;
@@ -115,15 +115,15 @@
   .btn-retry {
     margin-left: auto;
     padding: 0.5rem 1rem;
-    background: #c62828;
-    color: white;
+    background: theme.$error-red-dark;
+    color: theme.$white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
 
     &:hover {
-      background: #b71c1c;
+      background: theme.$error-dark-red-accent;
     }
   }
 }
@@ -136,7 +136,7 @@
 
 // Header Section
 .header-section {
-  background: white;
+  background: theme.$white;
   border-radius: 8px;
   padding: 2rem;
   margin-bottom: 2rem;
@@ -153,7 +153,7 @@
 
     .subtitle {
       margin: 0;
-      color: theme.$text-light;
+      color: theme.$text-muted;
       font-size: 0.95rem;
     }
   }
@@ -179,7 +179,7 @@
 
       &.active {
         background: theme.$primary-color;
-        color: white;
+        color: theme.$white;
         border-color: theme.$primary-color;
       }
     }
@@ -193,7 +193,7 @@
     .gauge-label {
       display: block;
       font-size: 0.9rem;
-      color: theme.$text-light;
+      color: theme.$text-muted;
       margin-bottom: 0.5rem;
     }
 
@@ -207,7 +207,7 @@
     .gauge-bar {
       width: 100%;
       height: 8px;
-      background: #e0e0e0;
+      background: theme.$border-light;
       border-radius: 4px;
       overflow: hidden;
 
@@ -228,7 +228,7 @@
   margin-bottom: 2rem;
 
   .metric-card {
-    background: white;
+    background: theme.$white;
     border-radius: 8px;
     padding: 1.5rem;
     text-align: center;
@@ -241,7 +241,7 @@
     }
 
     .metric-label {
-      color: theme.$text-light;
+      color: theme.$text-muted;
       font-size: 0.85rem;
       font-weight: 600;
       text-transform: uppercase;
@@ -254,32 +254,32 @@
       margin-bottom: 0.5rem;
 
       &.nps-green {
-        color: #4caf50;
+        color: theme.$success-green;
       }
 
       &.nps-yellow {
-        color: #ff9800;
+        color: theme.$warning;
       }
 
       &.nps-red {
-        color: #f44336;
+        color: theme.$alert-red;
       }
 
       &.promoters {
-        color: #4caf50;
+        color: theme.$success-green;
       }
 
       &.passives {
-        color: #ff9800;
+        color: theme.$warning;
       }
 
       &.detractors {
-        color: #f44336;
+        color: theme.$alert-red;
       }
     }
 
     .metric-subtext {
-      color: theme.$text-light;
+      color: theme.$text-muted;
       font-size: 0.85rem;
     }
   }
@@ -297,7 +297,7 @@
   }
 
   .form-card {
-    background: white;
+    background: theme.$white;
     border-radius: 8px;
     padding: 1.5rem;
     margin-bottom: 1rem;
@@ -332,14 +332,14 @@
 
         .stat-item {
           font-size: 0.9rem;
-          color: theme.$text-light;
+          color: theme.$text-muted;
           display: flex;
           align-items: center;
           gap: 0.3rem;
 
           .badge-success {
-            background: #e8f5e9;
-            color: #2e7d32;
+            background: theme.$success-light-bg;
+            color: theme.$error-green-dark;
             padding: 0.2rem 0.6rem;
             border-radius: 3px;
             font-weight: 500;
@@ -347,8 +347,8 @@
           }
 
           .badge-warning {
-            background: #fff3e0;
-            color: #e65100;
+            background: theme.$warning-light;
+            color: theme.$warning-dark;
             padding: 0.2rem 0.6rem;
             border-radius: 3px;
             font-weight: 500;
@@ -356,8 +356,8 @@
           }
 
           .badge-danger {
-            background: #ffebee;
-            color: #c62828;
+            background: theme.$error-light-red;
+            color: theme.$error-red-dark;
             padding: 0.2rem 0.6rem;
             border-radius: 3px;
             font-weight: 500;
@@ -371,7 +371,7 @@
 
 // Remarks Section
 .remarks-section {
-  background: white;
+  background: theme.$white;
   border-radius: 8px;
   padding: 1.5rem;
   margin-bottom: 2rem;
@@ -410,7 +410,7 @@
     .empty-state {
       text-align: center;
       padding: 2rem;
-      color: theme.$text-light;
+      color: theme.$text-muted;
     }
 
     .remark-card {
@@ -438,7 +438,7 @@
           flex-wrap: wrap;
           gap: 1rem;
           font-size: 0.85rem;
-          color: theme.$text-light;
+          color: theme.$text-muted;
 
           .remark-form {
             font-weight: 500;
@@ -446,14 +446,14 @@
           }
 
           .remark-date {
-            color: theme.$text-light;
+            color: theme.$text-muted;
           }
 
           .remark-rating {
-            background: #fff9c4;
+            background: theme.$light-yellow;
             padding: 0.2rem 0.6rem;
             border-radius: 3px;
-            color: #f57f17;
+            color: theme.$light-orange;
           }
         }
       }
@@ -468,7 +468,7 @@
     .btn-load-more {
       padding: 0.75rem 1.5rem;
       background: theme.$primary-color;
-      color: white;
+      color: theme.$white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
@@ -505,7 +505,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: white;
+  background: theme.$white;
   border-radius: 8px;
   padding: 1rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -514,13 +514,13 @@
 
   .refresh-timestamp {
     font-size: 0.85rem;
-    color: theme.$text-light;
+    color: theme.$text-muted;
   }
 
   .btn-refresh {
     padding: 0.5rem 1rem;
     background: theme.$primary-color;
-    color: white;
+    color: theme.$white;
     border: none;
     border-radius: 4px;
     cursor: pointer;

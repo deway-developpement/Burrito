@@ -1,8 +1,8 @@
 @use 'burrito-theme' as theme;
 
 .success-banner {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: white;
+  background: linear-gradient(135deg, theme.$success 0%, theme.$success-dark 100%);
+  color: theme.$white;
   padding: 1rem 1.5rem;
   border-radius: theme.$radius-lg;
   margin-bottom: 2rem;
@@ -15,8 +15,8 @@
   .success-icon {
     width: 28px;
     height: 28px;
-    background: white;
-    color: #10b981;
+    background: theme.$white;
+    color: theme.$success;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -52,7 +52,7 @@
   font-weight: 700;
   margin-bottom: 1.5rem;
   padding-left: 0.5rem;
-  border-left: 4px solid theme.$orange;
+  border-left: 4px solid theme.$primary-color;
 }
 
 // --- PENDING CARDS GRID ---
@@ -75,7 +75,7 @@
   &:hover {
     transform: translateY(-5px);
     box-shadow: 0 10px 20px rgba(0,0,0,0.08);
-    border-color: rgba(theme.$orange, 0.3);
+    border-color: rgba(theme.$primary-color, 0.3);
   }
 
   .card-header {
@@ -117,8 +117,8 @@
     .deadline-badge {
       display: inline-flex;
       gap: 0.5rem;
-      background-color: theme.$orange-light; // Light orange background
-      color: theme.$orange;
+      background-color: theme.$primary-light; // Light orange background
+      color: theme.$primary-color;
       padding: 0.4rem 0.8rem;
       border-radius: 8px;
       font-size: 0.85rem;
@@ -141,7 +141,7 @@
       transition: background 0.2s;
 
       &:hover {
-        background-color: theme.$orange;
+        background-color: theme.$primary-color;
       }
     }
   }
@@ -193,7 +193,7 @@
 }
 
 .status-done {
-  color: #27ae60; // Green
+  color: theme.$success-green; // Green
   font-weight: 600;
   font-size: 0.9rem;
   display: flex;
