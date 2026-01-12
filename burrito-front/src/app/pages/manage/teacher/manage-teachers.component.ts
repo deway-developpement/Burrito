@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BackgroundDivComponent } from '../../../component/shared/background-div/background-div.component';
+import { GoBackComponent } from '../../../component/shared/go-back/go-back.component';
 import { AdminPageHeaderComponent } from '../../../component/shared/admin-page-header/admin-page-header.component';
 import { AdminTableComponent, TableColumn } from '../../../component/shared/admin-table/admin-table.component';
 import { UserService, UserProfile } from '../../../services/user.service'; 
@@ -13,13 +14,15 @@ import { AddUserModalComponent } from '../../../component/shared/add-user-modal/
   standalone: true,
   imports: [
     CommonModule, 
-    BackgroundDivComponent, 
+    BackgroundDivComponent,
+    GoBackComponent,
     AdminPageHeaderComponent, 
     AdminTableComponent,
     EditUserModalComponent,
     AddUserModalComponent
   ],
   templateUrl: './manage-teachers.component.html',
+  styleUrls: ['./manage-teachers.component.scss']
 })
 export class ManageTeachersComponent {
 

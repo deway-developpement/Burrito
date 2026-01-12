@@ -1,49 +1,57 @@
 @use 'burrito-theme' as theme;
 
+.nav-bar {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
 .evaluate-container {
   max-width: 900px;
-  margin: 2rem auto;
+  margin: 0 auto;
   padding: 0 1rem;
 }
 
 .evaluate-card {
   background: theme.$white;
   border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 2.5rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 
 .form-header {
-  margin-bottom: 2rem;
-  padding-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
   border-bottom: 2px solid theme.$light-gray;
 
   h1 {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.75rem 0;
     color: theme.$text-dark;
-    font-size: 1.75rem;
+    font-size: 2rem;
+    font-weight: 600;
   }
 
   .form-description {
     color: theme.$gray-700;
-    margin: 0.5rem 0 1rem 0;
-    line-height: 1.6;
+    margin: 0.5rem 0 1.5rem 0;
+    line-height: 1.7;
+    font-size: 1.05rem;
   }
 
   .form-meta {
     display: flex;
     gap: 2rem;
     flex-wrap: wrap;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: theme.$text-muted;
 
     span {
       display: flex;
       align-items: center;
+      font-weight: 500;
     }
 
     .deadline {
-      font-weight: 500;
+      font-weight: 600;
       color: theme.$alert-red-light;
     }
   }
@@ -52,17 +60,23 @@
 .evaluation-form {
   .question-block {
     margin-bottom: 2rem;
-    padding: 1.5rem;
+    padding: 1.75rem;
     background: theme.$very-light-gray;
-    border-radius: 8px;
+    border-radius: 10px;
     border-left: 4px solid theme.$info-blue;
+    transition: all 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
 
     .question-label {
       display: block;
-      font-size: 1.1rem;
-      font-weight: 500;
+      font-size: 1.15rem;
+      font-weight: 600;
       color: theme.$text-dark;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
 
       .required {
         color: theme.$error-red;
@@ -125,20 +139,23 @@
   }
 }
 
-.text-container {
-  .text-input {
+.text-input-container {
+  textarea {
     width: 100%;
-    padding: 0.75rem;
+    min-height: 120px;
+    padding: 1rem;
     border: 2px solid theme.$border-gray;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 1rem;
     font-family: inherit;
     resize: vertical;
-    transition: border-color 0.2s ease;
+    transition: all 0.2s ease;
+    line-height: 1.6;
 
     &:focus {
       outline: none;
       border-color: theme.$info-blue;
+      box-shadow: 0 0 0 3px rgba(theme.$info-blue, 0.1);
     }
 
     &::placeholder {
@@ -165,18 +182,16 @@
 
 .form-actions {
   display: flex;
-  gap: 1rem;
-  justify-content: flex-end;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  gap: 1.5rem;
+  padding-top: 2rem;
   border-top: 2px solid theme.$light-gray;
 
   .btn {
-    padding: 0.75rem 2rem;
+    padding: 0.875rem 2.5rem;
     border: none;
-    border-radius: 6px;
-    font-size: 1rem;
-    font-weight: 500;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
 
@@ -188,9 +203,12 @@
     &.btn-primary {
       background: theme.$info-blue;
       color: theme.$white;
+      box-shadow: 0 2px 6px rgba(theme.$info-blue, 0.3);
 
       &:hover:not(:disabled) {
         background: theme.$info-blue-dark;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(theme.$info-blue, 0.4);
       }
     }
 

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
+import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 
 const GET_FORMS = gql`
   query GetForms($limit: Int, $after: ConnectionCursor) {
@@ -44,7 +45,7 @@ interface FormCardData extends Form {
 @Component({
   selector: 'app-global-reports',
   standalone: true,
-  imports: [CommonModule, BackgroundDivComponent],
+  imports: [CommonModule, BackgroundDivComponent, GoBackComponent],
   templateUrl: './global-reports.component.html',
   styleUrls: ['./global-reports.component.scss'],
 })
@@ -121,10 +122,6 @@ export class GlobalReportsComponent implements OnInit {
 
   navigateToFormResults(formId: string): void {
     this.router.navigate(['/results/form', formId]);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/admin/dashboard']);
   }
 
   formatDate(date: Date | string): string {
