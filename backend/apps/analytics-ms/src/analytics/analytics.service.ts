@@ -81,6 +81,10 @@ type IntelligenceResponse = {
     extracted_ideas?: string[];
   }>;
   aggregated_extracted_ideas?: string[];
+  cluster_summaries?: Array<{
+    summary?: string;
+    count?: number;
+  }>;
 };
 
 type IntelligenceAnalyzeRequest = {
@@ -804,6 +808,21 @@ export class AnalyticsService {
           negativePct: (sentimentCounts.negative / totalSentiments) * 100,
         }
       : undefined;
+
+    const clusterSummaries = (response.cluster_summaries || []).filter(
+      (item) => typeof item?.summary === 'string' && item.summary.trim().length > 0,
+    );
+    if (clusterSummaries.length > 0) {
+      const topIdeas = clusterSummaries.slice(0, 10).map((item) => ({
+        idea: item.summary || '',
+        count: Math.max(1, item.count || 0),
+      }));
+      return {
+        topIdeas,
+        sentiment,
+        analysisStatus: TEXT_ANALYSIS_STATUS.ready,
+      };
+    }
 
     const aggregatedIdeas = (response.aggregated_extracted_ideas || []).filter(
       (idea) => typeof idea === 'string' && idea.trim().length > 0,

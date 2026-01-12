@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class AnalyticsServicer:
     """Implementation of the Analytics gRPC service"""
     
-    def __init__(self, db_manager, sentiment_analyzer):
+    def __init__(self, db_manager, sentiment_analyzer, idea_summarizer):
         """
         Initialize the servicer
         
@@ -20,6 +20,7 @@ class AnalyticsServicer:
         """
         self.db_manager = db_manager
         self.sentiment_analyzer = sentiment_analyzer
+        self.idea_summarizer = idea_summarizer
     
     def AnalyzeQuestion(self, request, context):
         """
@@ -36,20 +37,19 @@ class AnalyticsServicer:
         
         try:
             # Support multiple answers: request.answer_text is now a repeated field
-            answers = list(request.answer_text) if hasattr(request, 'answer_text') else []
-
-            # Fallback: if the repeated field is empty but a single scalar exists
-            if not answers and getattr(request, 'answer_text', None):
-                # This covers older clients sending a single answer_text
-                answers = [request.answer_text]
+            answers = []
+            if hasattr(request, 'answer_text'):
+                if isinstance(request.answer_text, str):
+                    answers = [request.answer_text]
+                else:
+                    answers = list(request.answer_text)
 
             per_answer_results = []
             sentiment_scores = []
 
             for idx, ans in enumerate(answers):
-                combined_text = f"{request.question_text} {ans}"
-                score, label = self.sentiment_analyzer.analyze(combined_text)
-                ideas = self.sentiment_analyzer.extract_answer_keywords(
+                score, label = self.sentiment_analyzer.analyze(ans)
+                ideas = self.idea_summarizer.extract_answer_keywords(
                     ans,
                     request.question_text,
                 )
@@ -64,15 +64,14 @@ class AnalyticsServicer:
                     'extracted_ideas': ideas
                 })
 
-                # Update sentiment stats per answer
-                self.db_manager.update_sentiment_stats(label)
-
-            aggregated_ideas = self.sentiment_analyzer.extract_top_ideas_from_clusters(
+            cluster_summaries = self.idea_summarizer.summarize_clusters(
                 answers,
                 request.question_text,
             )
-            if aggregated_ideas:
-                self.db_manager.update_idea_frequency(aggregated_ideas)
+            aggregated_ideas = [
+                item['summary'] for item in cluster_summaries
+                if item.get('summary')
+            ]
 
             # Aggregate sentiment across answers (mean)
             if sentiment_scores:
@@ -111,12 +110,22 @@ class AnalyticsServicer:
                 for a in per_answer_results
             ]
 
+            cluster_summaries_proto = [
+                analytics_pb2.ClusterSummary(
+                    summary=item['summary'],
+                    count=int(item.get('count', 0)),
+                )
+                for item in cluster_summaries
+                if item.get('summary')
+            ]
+
             return analytics_pb2.AnalysisResponse(
                 question_id=request.question_id,
                 answers=answers_proto,
                 aggregate_sentiment_score=aggregate_score,
                 aggregate_sentiment_label=aggregate_label,
                 aggregated_extracted_ideas=aggregated_ideas,
+                cluster_summaries=cluster_summaries_proto,
                 success=True
             )
 
