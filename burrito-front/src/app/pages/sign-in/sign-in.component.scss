@@ -13,7 +13,7 @@
     border-radius: theme.$radius-lg;
     padding: 2rem 1.75rem;
     box-shadow: theme.$shadow-soft;
-    border: 1px solid rgba(theme.$orange, 0.16);
+    border: 1px solid rgba(theme.$primary-color, 0.16);
     max-width: 420px;
     width: 100%;
   }
@@ -54,12 +54,12 @@
     border: 1px solid rgba(15, 23, 42, 0.12);
     font-size: 0.9rem;
     outline: none;
-    background: #f9fafb;
+    background: theme.$light-bg;
 
     &:focus {
-      border-color: theme.$orange;
-      box-shadow: 0 0 0 1px rgba(theme.$orange, 0.4);
-      background: #ffffff;
+      border-color: theme.$primary-color;
+      box-shadow: 0 0 0 1px rgba(theme.$primary-color, 0.4);
+      background: theme.$white;
     }
   }
 

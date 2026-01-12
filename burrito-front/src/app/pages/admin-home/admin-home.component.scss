@@ -25,8 +25,8 @@
   }
 
   .date-badge {
-    background-color: theme.$orange-light;
-    color: theme.$orange;
+    background-color: theme.$primary-light;
+    color: theme.$primary-color;
     padding: 0.5rem 1rem;
     border-radius: 50px;
     font-weight: 600;
@@ -85,7 +85,7 @@
 
       .trend {
         font-size: 0.8rem;
-        color: theme.$orange;
+        color: theme.$primary-color;
         font-weight: 600;
       }
     }
@@ -100,7 +100,7 @@
     color: theme.$text-dark;
     margin-bottom: 1.5rem;
     padding-left: 0.5rem;
-    border-left: 4px solid theme.$orange;
+    border-left: 4px solid theme.$primary-color;
   }
 }
 
@@ -121,12 +121,12 @@
     border: 2px solid transparent;
 
     &:hover {
-      border-color: theme.$orange;
+      border-color: theme.$primary-color;
       transform: translateY(-5px);
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
       
       .card-footer {
-        background-color: theme.$orange;
+        background-color: theme.$primary-color;
         color: theme.$white;
       }
     }
@@ -159,7 +159,7 @@
       padding: 1rem 2rem;
       text-align: right;
       font-weight: 600;
-      color: theme.$orange;
+      color: theme.$primary-color;
       transition: all 0.3s ease;
       font-size: 0.9rem;
     }
