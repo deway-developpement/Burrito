@@ -153,5 +153,116 @@
   }
 }
 
+.selected-groups {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.group-chip {
+  background-color: theme.$orange-light;
+  color: theme.$orange;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid theme.$orange;
+
+  .remove-chip {
+    background: none;
+    border: none;
+    color: theme.$orange;
+    font-size: 1.1rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+    
+    &:hover { color: theme.$text-dark; }
+  }
+}
+
+.group-selector {
+  display: flex;
+  gap: 8px;
+
+  .group-dropdown {
+    flex: 1;
+    padding: 10px;
+    border-radius: 12px;
+    border: 2px solid theme.$bg-light;
+    background: theme.$bg-light;
+    font-family: theme.$font-family-base;
+    cursor: pointer;
+
+    &:focus { outline: none; border-color: theme.$orange; }
+  }
+
+  .btn-add-group {
+    background: theme.$white;
+    border: 2px solid theme.$orange;
+    color: theme.$orange;
+    padding: 0 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: theme.$orange;
+      color: theme.$white;
+    }
+  }
+}
+
+.info-text {
+  color: theme.$text-muted !important;
+  font-style: italic;
+}
+
+.label-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+
+  label { margin-bottom: 0; }
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: theme.$orange;
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0;
+  &:hover { text-decoration: underline; }
+}
+
+.group-input {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px solid theme.$bg-light;
+  background: theme.$white;
+  font-family: theme.$font-family-base;
+}
+
+.btn-primary-sm {
+  background: theme.$orange;
+  color: theme.$white;
+  border: none;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  
+  &:disabled { opacity: 0.6; }
+}
+
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
