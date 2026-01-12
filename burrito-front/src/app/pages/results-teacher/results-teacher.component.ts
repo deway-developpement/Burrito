@@ -6,6 +6,7 @@ import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { HeaderComponent } from '../../component/header/header.component';
 import { AuthService } from '../../services/auth.service';
+import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 
 interface AnalyticsWindow {
   from?: Date;
@@ -204,7 +205,7 @@ const GET_USER = gql`
 @Component({
   selector: 'app-results-teacher',
   standalone: true,
-  imports: [CommonModule, HeaderComponent],
+  imports: [CommonModule, HeaderComponent, BackgroundDivComponent],
   templateUrl: './results-teacher.component.html',
   styleUrls: ['./results-teacher.component.scss'],
 })
