@@ -19,7 +19,8 @@ message AnswerAnalysis {
   string answer_text = 2;
   float sentiment_score = 3;
   string sentiment_label = 4;
-  repeated string extracted_ideas = 5;
+  reserved 5;
+  reserved "extracted_ideas";
 }
 
 message AnalysisResponse {
@@ -27,10 +28,11 @@ message AnalysisResponse {
   repeated AnswerAnalysis answers = 2;
   float aggregate_sentiment_score = 3;
   string aggregate_sentiment_label = 4;
-  repeated string aggregated_extracted_ideas = 5;
   repeated ClusterSummary cluster_summaries = 8;
   bool success = 6;
   string error_message = 7;
+  reserved 5;
+  reserved "aggregated_extracted_ideas";
 }
 
 message ClusterSummary {

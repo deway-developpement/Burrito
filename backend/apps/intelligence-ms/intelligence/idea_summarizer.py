@@ -13,7 +13,6 @@ from typing import Dict, Iterable, List
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import AgglomerativeClustering
-from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from sklearn.metrics.pairwise import cosine_distances
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
 
@@ -29,51 +28,6 @@ class IdeaSummarizer:
         self._paraphraser = None
         self._paraphraser_lock = threading.Lock()
         os.environ.setdefault('TRANSFORMERS_OFFLINE', '1')
-
-        self._domain_stopwords = {
-            'course',
-            'class',
-            'question',
-            'answer',
-            'data',
-            'structure',
-            'structures',
-        }
-        self._filler_stopwords = {
-            'more',
-            'most',
-            'less',
-            'better',
-            'best',
-            'could',
-            'would',
-            'should',
-            'maybe',
-            'also',
-            'just',
-            'like',
-            'really',
-            'overall',
-            'nothing',
-            'anything',
-            'everything',
-            'improve',
-            'improved',
-            'improvement',
-        }
-        self._base_stopwords = (
-            set(ENGLISH_STOP_WORDS)
-            | self._domain_stopwords
-            | self._filler_stopwords
-        )
-        self._lead_in_patterns = [
-            r'^i\s+think\s+',
-            r'^i\s+feel\s+',
-            r'^in\s+my\s+opinion\s+',
-            r'^overall\s+',
-            r'^honestly\s+',
-            r'^personally\s+',
-        ]
 
     def summarize_clusters(
         self,
@@ -123,21 +77,6 @@ class IdeaSummarizer:
 
         summaries.sort(key=lambda item: item['count'], reverse=True)
         return summaries
-
-    def extract_answer_keywords(
-        self,
-        answer: str,
-        question_text: str,
-        top_n: int = 6,
-    ) -> List[str]:
-        """Simple per-answer keywords as a lightweight fallback."""
-        if not answer:
-            return []
-        stop_words = self._build_stopwords(question_text)
-        tokens = self._tokenize(answer)
-        tokens = [token for token in tokens if token not in stop_words and len(token) > 2]
-        counts = Counter(tokens)
-        return [word for word, _count in counts.most_common(top_n)]
 
     def _normalize_answers(self, answers: Iterable[str]) -> List[str]:
         return [
@@ -299,10 +238,7 @@ class IdeaSummarizer:
         if not sentence:
             return ''
         text = re.sub(r"\s+", " ", sentence).strip()
-        lowered = text.lower()
-        for pattern in self._lead_in_patterns:
-            lowered = re.sub(pattern, "", lowered)
-        text = lowered.strip()
+        text = text.strip()
         if text:
             text = text[0].upper() + text[1:]
         return text
@@ -337,14 +273,6 @@ class IdeaSummarizer:
         ):
             return False
         return True
-
-    def _tokenize(self, text: str) -> List[str]:
-        return re.findall(r"[a-z0-9]+", text.lower())
-
-    def _build_stopwords(self, question_text: str) -> set:
-        stop_words = set(self._base_stopwords)
-        stop_words.update(self._tokenize(question_text))
-        return stop_words
 
     def _truncate_text(self, text: str, max_len: int = 80) -> str:
         if len(text) <= max_len:

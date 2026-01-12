@@ -78,9 +78,7 @@ type IntelligenceResponse = {
   error_message?: string;
   answers?: Array<{
     sentiment_label?: string;
-    extracted_ideas?: string[];
   }>;
-  aggregated_extracted_ideas?: string[];
   cluster_summaries?: Array<{
     summary?: string;
     count?: number;
@@ -779,7 +777,6 @@ export class AnalyticsService {
     }
 
     const sentimentCounts = { positive: 0, neutral: 0, negative: 0 };
-    const ideaCounts = new Map<string, number>();
 
     for (const answer of response.answers || []) {
       const label = (answer.sentiment_label || '').toUpperCase();
@@ -789,10 +786,6 @@ export class AnalyticsService {
         sentimentCounts.negative += 1;
       } else if (label === 'NEUTRAL') {
         sentimentCounts.neutral += 1;
-      }
-
-      for (const idea of answer.extracted_ideas || []) {
-        ideaCounts.set(idea, (ideaCounts.get(idea) || 0) + 1);
       }
     }
 
@@ -812,37 +805,10 @@ export class AnalyticsService {
     const clusterSummaries = (response.cluster_summaries || []).filter(
       (item) => typeof item?.summary === 'string' && item.summary.trim().length > 0,
     );
-    if (clusterSummaries.length > 0) {
-      const topIdeas = clusterSummaries.slice(0, 10).map((item) => ({
-        idea: item.summary || '',
-        count: Math.max(1, item.count || 0),
-      }));
-      return {
-        topIdeas,
-        sentiment,
-        analysisStatus: TEXT_ANALYSIS_STATUS.ready,
-      };
-    }
-
-    const aggregatedIdeas = (response.aggregated_extracted_ideas || []).filter(
-      (idea) => typeof idea === 'string' && idea.trim().length > 0,
-    );
-    if (aggregatedIdeas.length > 0) {
-      const topIdeas = aggregatedIdeas.slice(0, 10).map((idea) => ({
-        idea,
-        count: 1,
-      }));
-      return {
-        topIdeas,
-        sentiment,
-        analysisStatus: TEXT_ANALYSIS_STATUS.ready,
-      };
-    }
-
-    const topIdeas = Array.from(ideaCounts.entries())
-      .map(([idea, count]) => ({ idea, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 10);
+    const topIdeas = clusterSummaries.slice(0, 10).map((item) => ({
+      idea: item.summary || '',
+      count: Math.max(1, item.count || 0),
+    }));
 
     return {
       topIdeas,

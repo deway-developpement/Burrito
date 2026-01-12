@@ -131,7 +131,6 @@ response = stub.AnalyzeQuestion(request)
 
 print(f\"Aggregate sentiment: {response.aggregate_sentiment_label}\")
 print(f\"Score: {response.aggregate_sentiment_score}\")
-print(f\"Summaries: {list(response.aggregated_extracted_ideas)}\")
 print(f\"Cluster summaries: {[(c.summary, c.count) for c in response.cluster_summaries]}\")
 ```
 
@@ -157,7 +156,6 @@ message AnswerAnalysis {
   string answer_text = 2;
   float sentiment_score = 3;
   string sentiment_label = 4;
-  repeated string extracted_ideas = 5;
 }
 
 message AnalysisResponse {
@@ -165,7 +163,6 @@ message AnalysisResponse {
   repeated AnswerAnalysis answers = 2;
   float aggregate_sentiment_score = 3;
   string aggregate_sentiment_label = 4;
-  repeated string aggregated_extracted_ideas = 5;
   repeated ClusterSummary cluster_summaries = 8;
   bool success = 6;
   string error_message = 7;
@@ -176,8 +173,6 @@ message ClusterSummary {
   int32 count = 2;
 }
 ```
-
-Note: `aggregated_extracted_ideas` now contains cluster summaries (for backward compatibility). Prefer `cluster_summaries` when available.
 
 #### 2. GetSentimentStats
 
@@ -243,7 +238,6 @@ client.analyzeQuestion({
   if (error) console.error(error);
   console.log('Aggregate sentiment:', response.aggregate_sentiment_label);
   console.log('Score:', response.aggregate_sentiment_score);
-  console.log('Summaries:', response.aggregated_extracted_ideas);
   console.log('Cluster summaries:', response.cluster_summaries);
 });
 ```
@@ -264,12 +258,16 @@ client.analyzeQuestion({
       answer_text: String,
       sentiment_score: Number,
       sentiment_label: String,
-      extracted_ideas: [String]
     }
   ],
   aggregate_sentiment_score: Number,
   aggregate_sentiment_label: String,
-  aggregated_extracted_ideas: [String],
+  cluster_summaries: [
+    {
+      summary: String,
+      count: Number
+    }
+  ],
   timestamp: Date
 }
 ```
@@ -284,17 +282,6 @@ client.analyzeQuestion({
 }
 ```
 Note: stats are now aggregated from `analyses`; this collection is legacy.
-
-#### ideas_frequency
-```javascript
-{
-  _id: ObjectId,
-  idea: String,
-  frequency: Number,
-  last_updated: Date
-}
-```
-Note: ideas are now aggregated from `analyses`; this collection is legacy.
 
 ## Project Structure
 
