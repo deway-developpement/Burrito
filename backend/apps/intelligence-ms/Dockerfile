@@ -25,11 +25,16 @@ ENV GRPC_PORT=50051
 ENV HF_HOME=/app/.cache/huggingface
 ENV TRANSFORMERS_CACHE=/app/.cache/huggingface
 ENV NLTK_DATA=/app/.cache/nltk
-ENV TRANSFORMERS_OFFLINE=1
 ENV HF_HUB_DISABLE_TELEMETRY=1
+ENV HF_HUB_OFFLINE=0
+ENV TRANSFORMERS_OFFLINE=0
 
 # Pre-cache models and NLTK data for offline runtime
 RUN python scripts/cache_models.py
+
+# Set offline mode for transformers after caching
+ENV HF_HUB_OFFLINE=1
+ENV TRANSFORMERS_OFFLINE=1
 
 # Run the service
 CMD ["python", "main.py"]

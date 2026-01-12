@@ -101,6 +101,21 @@ pipeline {
               --local dockerfile=apps/intelligence-ms \
               --opt filename=Dockerfile \
               --output type=image,\\"name=${REGISTRY_HOST}/burrito-intelligence-ms:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-intelligence-ms:latest\\",push=true
+
+            cd ..
+
+            echo "-------------------------------------------------"
+            echo "Building Service: frontend"
+            echo "-------------------------------------------------"
+
+            buildctl \
+              --addr "${BUILDKIT_HOST}" \
+              build \
+              --frontend dockerfile.v0 \
+              --local context=burrito-front \
+              --local dockerfile=burrito-front \
+              --opt filename=Dockerfile \
+              --output type=image,\\"name=${REGISTRY_HOST}/burrito-frontend:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-frontend:latest\\",push=true
           '''
         }
       }
@@ -146,6 +161,7 @@ pipeline {
 
             # Use in-cluster config (service account)
             kubectl apply -f backend/k8s/evaluation-system.yaml
+            kubectl apply -f backend/k8s/frontend.yaml
 
             kubectl set image deployment/api-gateway \
               api-gateway=${REGISTRY_HOST}/burrito-api-gateway:${BUILD_NUMBER} \
@@ -179,6 +195,10 @@ pipeline {
               intelligence-ms=${REGISTRY_HOST}/burrito-intelligence-ms:${BUILD_NUMBER} \
               -n "$K8S_NAMESPACE"
 
+            kubectl set image deployment/burrito-frontend \
+              burrito-frontend=${REGISTRY_HOST}/burrito-frontend:${BUILD_NUMBER} \
+              -n "$K8S_NAMESPACE"
+
             echo "Deployment updated successfully."
 
             kubectl rollout status deployment/api-gateway -n "$K8S_NAMESPACE"
@@ -189,6 +209,7 @@ pipeline {
             kubectl rollout status deployment/groups-ms -n "$K8S_NAMESPACE"
             kubectl rollout status deployment/notifications-ms -n "$K8S_NAMESPACE"
             kubectl rollout status deployment/intelligence-ms -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/burrito-frontend -n "$K8S_NAMESPACE"
           '''
         }
       }
