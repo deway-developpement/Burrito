@@ -117,6 +117,7 @@ pipeline {
             string(credentialsId: 'burrito-jwt-refresh-expires-in', variable: 'JWT_REFRESH_EXPIRES_IN'),
             string(credentialsId: 'burrito-smtp-user', variable: 'SMTP_USER'),
             string(credentialsId: 'burrito-smtp-pass', variable: 'SMTP_PASS'),
+            string(credentialsId: 'burrito-huggingface-hub-token', variable: 'HUGGINGFACE_HUB_TOKEN'),
           ]) {
             sh '''
               set -e
@@ -129,6 +130,7 @@ pipeline {
                 --from-literal=JWT_REFRESH_EXPIRES_IN="${JWT_REFRESH_EXPIRES_IN}" \
                 --from-literal=SMTP_USER="${SMTP_USER}" \
                 --from-literal=SMTP_PASS="${SMTP_PASS}" \
+                --from-literal=HUGGINGFACE_HUB_TOKEN="${HUGGINGFACE_HUB_TOKEN}" \
                 --dry-run=client -o yaml | kubectl apply -n "$K8S_NAMESPACE" -f -
             '''
           }

@@ -19,20 +19,25 @@ class MongoDBManager:
             db_name: Database name
         """
         if not connection_string:
-            # Build from environment variables
-            host = os.getenv('MONGODB_HOST', 'localhost')
+            # Build from environment variables (align with other services)
+            mode = os.getenv('MONGODB_MODE', '').lower()
+            host = os.getenv('MONGODB_CONTAINER_NAME', 'mongo') if mode == 'docker' else 'localhost'
+            host = os.getenv('MONGODB_HOST', host)
             port = os.getenv('MONGODB_PORT', '27017')
             username = os.getenv('DATABASE_USERNAME', '')
             password = os.getenv('DATABASE_PASSWORD', '')
+            db_name = os.getenv('DATABASE_NAME', db_name)
 
             # Try with credentials first, fall back to no credentials
             if username and password:
                 try:
-                    connection_string = f"mongodb://{username}:{password}@{host}:{port}/"
-                except:
-                    connection_string = f"mongodb://{host}:{port}/"
+                    connection_string = (
+                        f"mongodb://{username}:{password}@{host}:{port}/{db_name}?authSource=admin"
+                    )
+                except Exception:
+                    connection_string = f"mongodb://{host}:{port}/{db_name}"
             else:
-                connection_string = f"mongodb://{host}:{port}/"
+                connection_string = f"mongodb://{host}:{port}/{db_name}"
 
         try:
             self.client = MongoClient(

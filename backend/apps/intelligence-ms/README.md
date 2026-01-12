@@ -61,8 +61,11 @@ Runtime downloads are disabled; the service fails fast if caches are missing.
 Edit `.env` file to configure:
 
 - `GRPC_PORT`: Port for gRPC server (default: 50051)
-- `MONGODB_HOST`: MongoDB hostname (default: localhost)
+- `MONGODB_MODE`: Set to `docker` to use `MONGODB_CONTAINER_NAME` (default: empty)
+- `MONGODB_CONTAINER_NAME`: MongoDB container/service name (default: mongo)
+- `MONGODB_HOST`: Optional override for MongoDB hostname (default: localhost)
 - `MONGODB_PORT`: MongoDB port (default: 27017)
+- `DATABASE_NAME`: MongoDB database name (default: burrito)
 - `DATABASE_USERNAME`: MongoDB username
 - `DATABASE_PASSWORD`: MongoDB password
 - `EMBEDDING_MODEL`: Sentence-transformer model ID (default: sentence-transformers/all-MiniLM-L6-v2)
