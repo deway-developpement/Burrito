@@ -63,7 +63,7 @@
     letter-spacing: 0.12em;
     font-weight: 700;
     font-size: 0.75rem;
-    color: theme.$orange;
+    color: theme.$primary-color;
   }
 
   &__title {
@@ -89,7 +89,7 @@
     background: theme.$white;
     border-radius: theme.$radius-lg;
     padding: 1.5rem;
-    border: 1px solid rgba(theme.$orange, 0.14);
+    border: 1px solid rgba(theme.$primary-color, 0.14);
     box-shadow: theme.$shadow-soft;
   }
 
@@ -275,8 +275,8 @@
   font-size: 0.72rem;
   font-weight: 600;
   color: theme.$text-dark;
-  background: rgba(theme.$orange, 0.12);
-  border: 1px solid rgba(theme.$orange, 0.25);
+  background: rgba(theme.$primary-color, 0.12);
+  border: 1px solid rgba(theme.$primary-color, 0.25);
 }
 
 .meta-group-empty {

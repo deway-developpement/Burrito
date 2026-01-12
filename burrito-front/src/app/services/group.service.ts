@@ -57,6 +57,15 @@ const ADD_USER_TO_GROUP = gql`
   }
 `;
 
+const ADD_FORM_TO_GROUP = gql`
+  mutation AddFormToGroup($input: AddFormToGroupInput!) {
+    addFormToGroup(input: $input) {
+      id
+      name
+    }
+  }
+`;
+
 // --- NEW MUTATION ADDED HERE ---
 const REMOVE_USER_FROM_GROUP = gql`
   mutation RemoveUserFromGroup($input: RemoveUserFromGroupInput!) {
@@ -67,6 +76,15 @@ const REMOVE_USER_FROM_GROUP = gql`
         id
         fullName
       }
+    }
+  }
+`;
+
+const REMOVE_FORM_FROM_GROUP = gql`
+  mutation RemoveFormFromGroup($input: RemoveFormFromGroupInput!) {
+    removeFormFromGroup(input: $input) {
+      id
+      name
     }
   }
 `;
@@ -101,6 +119,14 @@ interface AddUserResponse {
 // Interface for the remove response
 interface RemoveUserResponse {
   removeUserFromGroup: GroupProfile;
+}
+
+interface AddFormResponse {
+  addFormToGroup: GroupProfile;
+}
+
+interface RemoveFormResponse {
+  removeFormFromGroup: GroupProfile;
 }
 
 @Injectable({
@@ -171,6 +197,24 @@ export class GroupService {
     );
   }
 
+  addFormToGroup(payload: { groupId: string; formId: string }): Observable<GroupProfile> {
+    return this.apollo.mutate<AddFormResponse>({
+      mutation: ADD_FORM_TO_GROUP,
+      variables: {
+        input: payload
+      }
+    }).pipe(
+      map(result => {
+        if (!result.data) throw new Error('No data returned');
+        return result.data.addFormToGroup;
+      }),
+      catchError(error => {
+        console.error('Failed to add form to group', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   // --- NEW METHOD ADDED HERE ---
   removeUserFromGroup(groupId: string, userId: string): Observable<GroupProfile> {
     return this.apollo.mutate<RemoveUserResponse>({
@@ -188,6 +232,24 @@ export class GroupService {
       }),
       catchError(error => {
         console.error('Failed to remove user from group', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  removeFormFromGroup(payload: { groupId: string; formId: string }): Observable<GroupProfile> {
+    return this.apollo.mutate<RemoveFormResponse>({
+      mutation: REMOVE_FORM_FROM_GROUP,
+      variables: {
+        input: payload
+      }
+    }).pipe(
+      map(result => {
+        if (!result.data) throw new Error('No data returned');
+        return result.data.removeFormFromGroup;
+      }),
+      catchError(error => {
+        console.error('Failed to remove form from group', error);
         return throwError(() => error);
       })
     );
