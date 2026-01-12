@@ -9,6 +9,7 @@ import { QuestionDto } from './question.dto';
 import { FilterableField, IDField } from '@nestjs-query/query-graphql';
 import { FormStatus, IForm } from '@app/common';
 import { UserDto } from '../../user/dto/user.dto';
+import { GroupDto } from '../../group/dto/group.dto';
 
 registerEnumType(FormStatus, { name: 'FormStatus' });
 
@@ -34,6 +35,9 @@ export class FormDto implements IForm {
 
   @Field(() => UserDto, { nullable: true })
   teacher?: UserDto;
+
+  @Field(() => [GroupDto], { nullable: true })
+  groups?: GroupDto[];
 
   @FilterableField(() => FormStatus)
   status: FormStatus;

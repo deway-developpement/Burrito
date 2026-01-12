@@ -55,7 +55,7 @@ export class StudentHomeComponent implements OnInit {
         }, 5000);
       }
     });
-    this.evaluationService.getActiveForms().subscribe({
+    this.evaluationService.getActiveFormsForStudent().subscribe({
       next: (forms) => {
         console.log('1. API Retourne :', forms);
 
