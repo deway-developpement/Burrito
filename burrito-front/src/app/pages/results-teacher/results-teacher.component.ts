@@ -205,7 +205,7 @@ const GET_USER = gql`
 @Component({
   selector: 'app-results-teacher',
   standalone: true,
-  imports: [CommonModule, HeaderComponent, BackgroundDivComponent],
+  imports: [CommonModule, BackgroundDivComponent],
   templateUrl: './results-teacher.component.html',
   styleUrls: ['./results-teacher.component.scss'],
 })
