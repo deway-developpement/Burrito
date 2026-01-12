@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '../shared/button/button.component';
 import { UserService } from '../../services/user.service'; 
 import { AuthService } from '../../services/auth.service'; 
@@ -15,6 +15,7 @@ export class HeaderComponent {
   // Inject the service to access state
   userService = inject(UserService);
   authService = inject(AuthService);
+  router = inject(Router);
 
   // UI state for resend action
   isResending = signal(false);
@@ -26,6 +27,7 @@ export class HeaderComponent {
     this.userService.clearUserData();
     this.authService.logout();
     console.log('Logout clicked');
+    this.router.navigate(['/']);
   }
 
   resendVerification() {
