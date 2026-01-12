@@ -1,3 +1,5 @@
+/.idea
+package-lock.json
 # Nestjs specific
 /dist
 /node_modules

@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
 } from '@nestjs/common';
+import { isValidObjectId } from 'mongoose';
 import { MICROSERVICE_TIMEOUT_MS } from '../constants';
 import { ClientProxy } from '@nestjs/microservices';
 import {
@@ -391,6 +392,14 @@ export class FormService {
     );
     if (normalized.length === 0) {
       return;
+    }
+    const invalidFormat = normalized.filter(
+      (teacherId) => !isValidObjectId(teacherId),
+    );
+    if (invalidFormat.length > 0) {
+      throw new BadRequestException(
+        'targetTeacherId must be a valid user id',
+      );
     }
     const users = await this.userService.findByIds(normalized);
     const teacherIdsSet = new Set(

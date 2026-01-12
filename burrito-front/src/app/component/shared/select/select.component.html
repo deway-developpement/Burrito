@@ -5,17 +5,21 @@
     fullWidth ? 'select--full' : ''
   ]"
   [disabled]="disabled"
+  [attr.required]="required ? true : null"
   [ngModel]="value"
   (ngModelChange)="onChange($event)"
 >
-  <option value="" disabled selected *ngIf="!value">
-    {{ placeholder }}
-  </option>
+  @if (!value) {
+    <option value="" disabled selected>
+      {{ placeholder }}
+    </option>
+  }
 
-  <option
-    *ngFor="let option of options"
-    [value]="option.value"
-  >
-    {{ option.label }}
-  </option>
+  @for (option of options; track option) {
+    <option
+      [value]="option.value"
+    >
+      {{ option.label }}
+    </option>
+  }
 </select>

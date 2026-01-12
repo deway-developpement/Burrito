@@ -6,8 +6,10 @@ import {
   IsDateString,
   ValidateNested,
   IsArray,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { FormStatus } from '@app/common';
 
 @InputType()
 export class CreateFormInput {
@@ -33,6 +35,11 @@ export class CreateFormInput {
 
   @Field({ nullable: true })
   @IsOptional()
+  @IsString()
+  targetCourseId?: string;
+
+  @Field({ nullable: true })
+  @IsOptional()
   @IsDateString()
   startDate?: string;
 
@@ -40,4 +47,9 @@ export class CreateFormInput {
   @IsOptional()
   @IsDateString()
   endDate?: string;
+
+  @Field(() => FormStatus, { nullable: true })
+  @IsOptional()
+  @IsEnum(FormStatus)
+  status?: FormStatus;
 }

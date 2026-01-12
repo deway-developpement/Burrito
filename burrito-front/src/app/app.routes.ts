@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { SignInComponent } from './pages/sign-in/sign-in.component';
 import { RegisterComponent } from './pages/register/register.component';
+import { FeedbackStudentComponent } from './pages/feedback/student/feedback-student.component';
+import { FeedbackAdminComponent } from './pages/feedback/admin/feedback-admin.component';
 import { PrivacyPolicyComponent } from './pages/privacy/privacy-policy.component';
 import { TermsOfServiceComponent } from './pages/terms/terms-of-service.component';
 import { LegalMentionsComponent } from './pages/legal/legal-mentions.component';
@@ -17,6 +19,7 @@ import { authGuard } from './guards/auth.guard';
 import { teacherAccessGuard } from './guards/teacher-access.guard';
 import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
 import { EvaluateFormComponent } from './pages/evaluate-form/evaluate-form.component';
+import { AdminFormsComponent } from './pages/admin-forms/admin-forms.component';
 
 export const routes: Routes = [
   {
@@ -65,6 +68,10 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'admin/forms',
+    component: AdminFormsComponent
+  },
+  {
     path: 'results/:id',
     component: ResultsComponent,
     canActivate: [authGuard]
@@ -73,7 +80,6 @@ export const routes: Routes = [
     path: 'results/teacher/:teacherId',
     component: ResultsTeacherComponent,
     canActivate: [authGuard, teacherAccessGuard]
-    //TODO: Temporarily disabled guards for testing
   },
   {
     path: 'results/form/:formId',
@@ -88,5 +94,13 @@ export const routes: Routes = [
   {
     path: 'verify-email',
     component: VerifyEmailComponent
+  },
+  {
+    path: 'feedback/student',
+    component: FeedbackStudentComponent
+  },
+  {
+    path: 'feedback/admin',
+    component: FeedbackAdminComponent
   }
 ];

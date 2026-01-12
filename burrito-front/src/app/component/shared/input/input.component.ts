@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -19,12 +19,16 @@ export class InputComponent {
   /** disabled */
   @Input() disabled = false;
 
+  /** required flag */
+  @Input() required = false;
+
   /** input type */
   @Input() type:
     | 'text'
     | 'email'
     | 'password'
     | 'number'
+    | 'date'
     | 'search'
     | 'tel'
     | 'url' = 'text';
@@ -37,4 +41,12 @@ export class InputComponent {
 
   /** ngModel value binding */
   @Input() model: any;
+
+  /** emit changes to support two-way binding on `model` */
+  @Output() modelChange = new EventEmitter<any>();
+
+  onModelChange(value: any) {
+    this.model = value;
+    this.modelChange.emit(value);
+  }
 }

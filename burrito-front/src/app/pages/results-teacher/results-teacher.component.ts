@@ -191,6 +191,15 @@ const GET_EVALUATIONS = gql`
   }
 `;
 
+const GET_USER = gql`
+  query GetUser($id: ID!) {
+    user(id: $id) {
+      id
+      fullName
+    }
+  }
+`;
+
 
 @Component({
   selector: 'app-results-teacher',
@@ -220,7 +229,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
 
   private allRemarks: EvaluationRemark[] = [];
   private destroy$ = new Subject<void>();
-  private debounceTimer: any = null;
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -339,7 +348,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       }
 
       // Step 3: Aggregate analytics
-      const aggregated = this.aggregateAnalytics(forms, analyticsResults);
+      const aggregated = await this.aggregateAnalytics(forms, analyticsResults);
       this.analytics.set(aggregated);
       this.error.set(null);
     } catch (err) {
@@ -397,10 +406,10 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     });
   }
 
-  private aggregateAnalytics(
+  private async aggregateAnalytics(
     forms: Form[],
     analyticsResults: (AnalyticsSnapshot | null)[]
-  ): TeacherAnalyticsSnapshot {
+  ): Promise<TeacherAnalyticsSnapshot> {
     let totalResponses = 0;
     let totalPromoters = 0;
     let totalPassives = 0;
@@ -448,9 +457,26 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     const generalSatisfactionRating =
       totalRatingCount > 0 ? totalRatingSum / totalRatingCount : 0;
 
+    // Fetch teacher name
+    let teacherName = 'Unknown Teacher';
+    try {
+      const userResponse = await firstValueFrom(
+        this.apollo.query<{ user: { id: string; fullName: string } | null }>({
+          query: GET_USER,
+          variables: { id: this.teacherId() },
+          fetchPolicy: 'cache-first'
+        })
+      );
+      if (userResponse.data?.user?.fullName) {
+        teacherName = userResponse.data.user.fullName;
+      }
+    } catch {
+      // Fallback to 'Unknown Teacher' on error
+    }
+
     return {
       teacherId: this.teacherId(),
-      teacherName: 'Teacher', // TODO: Fetch teacher name
+      teacherName,
       generatedAt: new Date(),
       staleAt: new Date(),
       totalResponsesAcrossAllForms: totalResponses,

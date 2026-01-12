@@ -199,7 +199,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   currentQuestionId = signal<string | null>(null);
 
   private destroy$ = new Subject<void>();
-  private debounceTimer: any = null;
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private route: ActivatedRoute,

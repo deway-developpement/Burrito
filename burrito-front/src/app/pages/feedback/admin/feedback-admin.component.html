@@ -1,0 +1,230 @@
+<app-background-div class="admin">
+  <main class="admin__main">
+    <section class="admin__hero">
+      <div class="admin__heading">
+        <p class="admin__eyebrow">Admin</p>
+        <h1 class="admin__title">
+          {{ isEditing ? 'Edit a feedback form' : 'Create a feedback form' }}
+        </h1>
+        <p class="admin__lead">
+          {{
+            isEditing
+              ? 'Update questions, schedule, and publishing status for this evaluation.'
+              : 'Design the form students will fill to review their teachers. Keep it concise and focused on the key learning outcomes.'
+          }}
+        </p>
+        <div class="admin__badges">
+          <span class="pill pill--accent">Live forms</span>
+          <span class="pill">Templates ready</span>
+          <span class="pill pill--soft">Auto-published</span>
+        </div>
+      </div>
+
+      <div class="admin__card admin__card--side">
+        <div class="side-stat">
+          <p class="side-stat__label">Active templates</p>
+          <p class="side-stat__value">3</p>
+          <p class="side-stat__hint">Update anytime, students always see the latest version.</p>
+        </div>
+        <div class="side-stat">
+          <p class="side-stat__label">Suggested length</p>
+          <p class="side-stat__value">6-8 questions</p>
+          <p class="side-stat__hint">Mix ratings and short text for actionable feedback.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="admin__card">
+      <form class="builder" (ngSubmit)="onPublish()">
+        <div class="builder__section">
+          <div class="section-header">
+            <h2>Form metadata</h2>
+            <p>Students will see this at the top of the form.</p>
+          </div>
+
+          <div class="builder__grid">
+            <label class="form-field">
+              <span class="form-label">Form title <span class="required">*</span></span>
+              <app-input
+                variant="primary"
+                placeholder="e.g. Semester feedback"
+                [fullWidth]="true"
+                [(model)]="formTitle"
+                [required]="true"
+              ></app-input>
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">Target teacher <span class="required">*</span></span>
+              <app-select
+                variant="outline"
+                placeholder="Select a teacher"
+                [fullWidth]="true"
+                [options]="teacherOptions"
+                [disabled]="isLoadingTeachers"
+                [(value)]="targetTeacherId"
+              ></app-select>
+              <!-- @if (teachersError) {
+                <span class="field-error">{{ teachersError }}</span>
+              } -->
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">
+                Start date
+                @if (requiresSchedule) {
+                  <span class="required">*</span>
+                }
+              </span>
+              <app-input
+                type="date"
+                variant="outline"
+                [fullWidth]="true"
+                [(model)]="startDate"
+              ></app-input>
+              @if (publishAttempted && requiresSchedule && !startDate) {
+                <span class="field-error">Start date is required.</span>
+              }
+            </label>
+
+            <label class="form-field">
+              <span class="form-label">
+                End date
+                @if (requiresSchedule) {
+                  <span class="required">*</span>
+                }
+              </span>
+              <app-input
+                type="date"
+                variant="outline"
+                [fullWidth]="true"
+                [(model)]="endDate"
+              ></app-input>
+              @if (publishAttempted && requiresSchedule && !endDate) {
+                <span class="field-error">End date is required.</span>
+              }
+            </label>
+          </div>
+
+          <label class="form-field form-field--full">
+            <span class="form-label">Intro text <span class="required">*</span></span>
+            <textarea
+              class="form-textarea"
+              rows="3"
+              placeholder="Explain what you expect from students"
+              [(ngModel)]="formDescription"
+              name="formDescription"
+              required
+            ></textarea>
+            @if (publishAttempted && !formDescription.trim()) {
+              <span class="field-error">Description is required.</span>
+            }
+          </label>
+        </div>
+
+        <div class="builder__section">
+          <div class="section-header">
+            <h3>Questions *</h3>
+            <p>Combine ratings and short answers to keep it actionable.</p>
+          </div>
+
+          <div class="questions">
+            @for (question of questions; track question.id) {
+              <div class="question-card">
+                <div class="question-card__header">
+                  <span class="pill pill--ghost question-card__type-pill">{{ question.type }} card</span>
+                  <div class="question-card__actions">
+                    <label class="checkbox">
+                      <input
+                        type="checkbox"
+                        [(ngModel)]="question.required"
+                        [ngModelOptions]="{ standalone: true }"
+                      />
+                      <span>Required</span>
+                    </label>
+                    <button type="button" class="link-button" (click)="removeQuestion(question.id)">Remove</button>
+                  </div>
+                </div>
+
+                <label class="form-field">
+                  <span class="form-label">Question text <span class="required">*</span></span>
+                  <app-input
+                    variant="primary"
+                    placeholder="e.g. How clear were the explanations?"
+                    [fullWidth]="true"
+                    [(model)]="question.label"
+                    [required]="true"
+                  ></app-input>
+                  @if (publishAttempted && !question.label.trim()) {
+                    <span class="field-error">Question text is required.</span>
+                  }
+                </label>
+
+                @if (question.type === 'text') {
+                  <label class="form-field">
+                    <span class="form-label">Placeholder</span>
+                    <app-input
+                      variant="outline"
+                      placeholder="e.g. Add a quick note"
+                      [fullWidth]="true"
+                      [(model)]="question.placeholder"
+                    ></app-input>
+                  </label>
+                }
+
+                @if (question.type === 'rating') {
+                  <p class="hint">Students will select a 1-5 star rating.</p>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="add-question">
+            <div class="add-question__label">Add a question card</div>
+            <div class="add-question__actions">
+              <app-button variant="outline" type="button" (click)="addQuestion('rating')">Rating</app-button>
+              <app-button variant="outline" type="button" (click)="addQuestion('text')">Text</app-button>
+            </div>
+          </div>
+        </div>
+
+          <div class="builder__footer">
+          @if (formLoadError) {
+            <p class="builder__error">{{ formLoadError }}</p>
+          }
+          @if (isLoadingForm) {
+            <p class="builder__error">Loading form details...</p>
+          }
+          @if (publishAttempted && formInvalid) {
+            <p class="builder__error">Please complete required fields before saving.</p>
+          }
+          @if (saveError) {
+            <p class="builder__error">{{ saveError }}</p>
+          }
+          @if (savedMessage) {
+            <p class="builder__success">{{ savedMessage }}</p>
+          }
+          <div class="builder__actions">
+            <label class="form-field">
+              <span class="form-label">Status <span class="required">*</span></span>
+              <app-select
+                variant="outline"
+                [fullWidth]="true"
+                [options]="statusOptions"
+                [required]="true"
+                [(value)]="status"
+              ></app-select>
+            </label>
+            <app-button variant="primary" type="submit" [disabled]="formInvalid || isSaving || isLoadingForm">
+              {{
+                isSaving
+                  ? (isEditing ? 'Updating...' : 'Saving...')
+                  : (isEditing ? 'Update form' : 'Save form')
+              }}
+            </app-button>
+          </div>
+        </div>
+      </form>
+    </section>
+  </main>
+</app-background-div>

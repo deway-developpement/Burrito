@@ -6,7 +6,9 @@
     fullWidth ? 'input--full' : ''
   ]"
   [disabled]="disabled"
+  [attr.required]="required ? true : null"
   [placeholder]="placeholder"
   [name]="name"
-  [(ngModel)]="model"
+  [ngModel]="model"
+  (ngModelChange)="onModelChange($event)"
 />

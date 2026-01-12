@@ -8,7 +8,7 @@ export class ToastService {
   message = signal('');
   type = signal<ToastType>('success');
   
-  private timeoutId: any;
+  private timeoutId: ReturnType<typeof setTimeout> | null = null;
 
   show(message: string, type: ToastType = 'success') {
     this.message.set(message);
@@ -16,7 +16,9 @@ export class ToastService {
     this.isVisible.set(true);
 
     // Clear previous timer if a new toast pops up
-    if (this.timeoutId) clearTimeout(this.timeoutId);
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+    }
 
     // Auto-hide after 3 seconds
     this.timeoutId = setTimeout(() => {

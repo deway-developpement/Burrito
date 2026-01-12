@@ -1,0 +1,12 @@
+<div class="star-rating" (mouseleave)="resetHover()">
+  @for (star of stars; track star) {
+    <span
+      class="star"
+      [class.star-filled]="isFilled(star)"
+      (click)="rate(star)"
+      (mouseenter)="setHover(star)"
+    >
+      ★
+    </span>
+  }
+</div>

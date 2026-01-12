@@ -30,6 +30,8 @@ export interface IForm {
 
   readonly targetTeacherId?: string;
 
+  readonly targetCourseId?: string;
+
   readonly status: FormStatus;
 
   readonly startDate?: Date;

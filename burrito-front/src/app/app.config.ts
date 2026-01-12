@@ -20,7 +20,7 @@ function apolloOptionsFactory() {
     const authLink = new ApolloLink((operation, forward) => {
         const token = authService.token();
         if (token) {
-            operation.setContext(({ headers }: any = {}) => ({
+            operation.setContext(({ headers = {} }: { headers?: Record<string, string> }) => ({
                 headers: new HttpHeaders(headers).set('Authorization', `Bearer ${token}`)
             }));
         }

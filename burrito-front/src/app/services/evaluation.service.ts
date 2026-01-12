@@ -280,7 +280,10 @@ export class EvaluationService {
 
   private isDateOlderThanToday(date: Date): boolean {
     const today = new Date();
-    return date.setHours(0,0,0,0) > date.getTime(); 
+    today.setHours(0, 0, 0, 0);
+    const compareDate = new Date(date);
+    compareDate.setHours(0, 0, 0, 0);
+    return compareDate.getTime() < today.getTime();
   }
 
   getDashboardMetrics(): Observable<DashboardMetrics> {
@@ -324,7 +327,6 @@ export class EvaluationService {
       variables: { input }
     }).pipe(
       map(result => {
-        console.log('Mutation result:', result);
         if (result.error) {
           throw result.error;
         }
