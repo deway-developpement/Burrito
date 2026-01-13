@@ -16,52 +16,8 @@
     </a>
   </section>
 
-  <section class="section-container">
-    <div class="section-header">
-      <h2 class="section-title">New Feedback</h2>
-      <span class="badge-count" *ngIf="unreadEvaluations.length > 0">
-        {{ unreadEvaluations.length }} new
-      </span>
-    </div>
-    
-    <div *ngIf="unreadEvaluations.length === 0" class="empty-state">
-      <span class="icon">👍</span>
-      <p>You're all caught up! No new feedback to review.</p>
-    </div>
-
-    <div class="eval-grid" *ngIf="unreadEvaluations.length > 0">
-      <div class="eval-card unread-card" *ngFor="let eval of unreadEvaluations">
-        <div class="card-header">
-          <div class="avatar-anon">?</div>
-          <div class="meta">
-            <h3>{{ eval.courseName }}</h3>
-            <span class="date-sub">Received: {{ eval.submittedDate | date:'MMM d' }}</span>
-          </div>
-          <div class="status-badge new">NEW</div>
-        </div>
-        
-        <div class="card-body">
-          <div class="rating-display">
-            <span class="label">Overall Rating:</span>
-            <div class="stars">
-              <span *ngFor="let star of [1,2,3,4,5]" 
-                    [class.filled]="star <= eval.rating">★</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="card-footer">
-          <button class="btn-action" (click)="viewEvaluation(eval.id)">
-            Read Feedback &rarr;
-          </button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
   <section class="section-container history-section">
-    <h2 class="section-title">Read History</h2>
+    <h2 class="section-title">Feedback History</h2>
     
     <div class="history-container">
       <table class="history-table">
@@ -82,16 +38,19 @@
             </td>
             <td class="text-right">
               <button class="btn-text" (click)="viewEvaluation(eval.id)">
-                View again
+                View details
               </button>
             </td>
           </tr>
         </tbody>
       </table>
+
+      <div *ngIf="readEvaluations.length === 0" class="empty-state" style="border: none;">
+        <p>No feedback available yet.</p>
+      </div>
     </div>
   </section>
 
-  <!-- Feedback Modal -->
   @if (feedbackModalOpen()) {
     <div class="modal-overlay" (click)="closeFeedbackModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
