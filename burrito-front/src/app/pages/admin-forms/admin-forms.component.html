@@ -22,7 +22,7 @@
         (valueChange)="onStatusFilterChange($event)"
         ></app-select>
       </div>
-      <app-button variant="primary" type="button" (click)="createForm()">
+      <app-button variant="primary" type="button" (click)="createForm()" (keydown.enter)="createForm()">
         Create new form
       </app-button>
     </div>
