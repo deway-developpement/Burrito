@@ -9,7 +9,7 @@ import { Location } from '@angular/common';
   styleUrl: './go-back.component.scss'
 })
 export class GoBackComponent {
-  private location = inject(Location);
+  private readonly location = inject(Location);
 
   goBack() {
     this.location.back();

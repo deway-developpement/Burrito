@@ -1,7 +1,7 @@
 <div class="alert-backdrop" *ngIf="open" (click)="onCancelClick()" (keydown.escape)="onCancelClick()">
-  <div
+  <dialog
     class="alert-container"
-    role="dialog"
+    [open]="open"
     aria-modal="true"
     (click)="$event.stopPropagation()"
     (keydown)="$event.stopPropagation()"
@@ -35,5 +35,5 @@
         {{ confirmLabel }}
       </button>
     </div>
-  </div>
+  </dialog>
 </div>

@@ -11,8 +11,8 @@ import { GoBackComponent } from '../../component/shared/go-back/go-back.componen
   styleUrls: ['./contact.component.scss']
 })
 export class ContactComponent {
-  private router = inject(Router);
-  private toast = inject(ToastService);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
 
   onSubmit(event: Event): void {
     event.preventDefault(); // Empêche le rechargement natif de la page
