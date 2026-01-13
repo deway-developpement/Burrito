@@ -61,35 +61,29 @@
             </div>
             <div class="stat-label">NPS Score</div>
           </div>
-        </div>
-      </div>
 
-      <!-- Overall Satisfaction -->
-      <div class="satisfaction-card">
-        <div class="satisfaction-content">
-          <div class="nps-metric">
-            <span class="metric-label">Overall NPS</span>
-            <div class="metric-value-large" [class]="'nps-' + getNpsColor(analytics()!.nps.score)">
-              {{ analytics()!.nps.score.toFixed(0) }}
+          <div class="stat satisfaction-breakdown-stat">
+            <div class="stat-label">Satisfaction Breakdown</div>
+            <div class="satisfaction-breakdown">
+              <div class="breakdown-item promoters">
+                <span class="breakdown-label">Promoters</span>
+                <span class="breakdown-value">{{ analytics()!.nps.promotersPct.toFixed(1) }}% ({{ analytics()!.nps.promotersCount }})</span>
+              </div>
+              <div class="breakdown-item passives">
+                <span class="breakdown-label">Passives</span>
+                <span class="breakdown-value">{{ analytics()!.nps.passivesPct.toFixed(1) }}% ({{ analytics()!.nps.passivesCount }})</span>
+              </div>
+              <div class="breakdown-item detractors">
+                <span class="breakdown-label">Detractors</span>
+                <span class="breakdown-value">{{ analytics()!.nps.detractorsPct.toFixed(1) }}% ({{ analytics()!.nps.detractorsCount }})</span>
+              </div>
             </div>
           </div>
 
-          <div class="satisfaction-breakdown">
-            <div class="breakdown-item promoters">
-              <span class="breakdown-label">Promoters</span>
-              <span class="breakdown-value">{{ analytics()!.nps.promotersPct.toFixed(1) }}% ({{ analytics()!.nps.promotersCount }})</span>
-            </div>
-            <div class="breakdown-item passives">
-              <span class="breakdown-label">Passives</span>
-              <span class="breakdown-value">{{ analytics()!.nps.passivesPct.toFixed(1) }}% ({{ analytics()!.nps.passivesCount }})</span>
-            </div>
-            <div class="breakdown-item detractors">
-              <span class="breakdown-label">Detractors</span>
-              <span class="breakdown-value">{{ analytics()!.nps.detractorsPct.toFixed(1) }}% ({{ analytics()!.nps.detractorsCount }})</span>
-            </div>
-          </div>
         </div>
       </div>
+
+      
 
       <!-- Teachers Breakdown (Admin Only) -->
       @if (isAdmin()) {
