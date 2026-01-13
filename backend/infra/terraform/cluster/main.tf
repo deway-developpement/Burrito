@@ -74,6 +74,39 @@ resource "kubernetes_cluster_role_binding" "jenkins_monitoring_deployer" {
   }
 }
 
+# Allow Jenkins default SA to exec into the registry pod (jenkins namespace only).
+resource "kubernetes_role" "jenkins_registry_exec" {
+  metadata {
+    name      = "jenkins-registry-exec"
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
+  }
+
+  rule {
+    api_groups = [""]
+    resources  = ["pods/exec"]
+    verbs      = ["create"]
+  }
+}
+
+resource "kubernetes_role_binding" "jenkins_registry_exec" {
+  metadata {
+    name      = "jenkins-registry-exec"
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
+  }
+
+  role_ref {
+    api_group = "rbac.authorization.k8s.io"
+    kind      = "Role"
+    name      = kubernetes_role.jenkins_registry_exec.metadata[0].name
+  }
+
+  subject {
+    kind      = "ServiceAccount"
+    name      = "default"
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
+  }
+}
+
 resource "kubernetes_manifest" "letsencrypt_issuer" {
   manifest = {
     apiVersion = "cert-manager.io/v1"

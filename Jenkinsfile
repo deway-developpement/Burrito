@@ -190,7 +190,7 @@ pipeline {
                     --local dockerfile=backend \
                     --opt filename=Dockerfile \
                     --opt "build-arg:SERVICE_NAME=${serviceName}" \
-                    --output type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-${serviceName}:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-${serviceName}:latest",push=true,registry.insecure=true
+                    --output type=image,name=\\\"${env.REGISTRY_PUSH_HOST}/burrito-${serviceName}:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-${serviceName}:latest\\\",push=true,registry.insecure=true
                 """
               }
             }
@@ -207,7 +207,7 @@ pipeline {
                     --local context=backend/apps/intelligence-ms \
                     --local dockerfile=backend/apps/intelligence-ms \
                     --opt filename=Dockerfile \
-                    --output type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-intelligence-ms:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-intelligence-ms:latest",push=true,registry.insecure=true
+                    --output type=image,name=\\\"${env.REGISTRY_PUSH_HOST}/burrito-intelligence-ms:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-intelligence-ms:latest\\\",push=true,registry.insecure=true
                 """
               }
             }
@@ -224,7 +224,7 @@ pipeline {
                     --local context=burrito-front \
                     --local dockerfile=burrito-front \
                     --opt filename=Dockerfile \
-                    --output type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-frontend:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-frontend:latest",push=true,registry.insecure=true
+                    --output type=image,name=\\\"${env.REGISTRY_PUSH_HOST}/burrito-frontend:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-frontend:latest\\\",push=true,registry.insecure=true
                 """
               }
             }
