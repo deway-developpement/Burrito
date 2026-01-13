@@ -88,3 +88,13 @@ resource "jenkins_job" "burrito_seed_analytics" {
 
   depends_on = [jenkins_credential_secret_text.kubeconfig]
 }
+
+resource "jenkins_job" "burrito_cleanup_registry" {
+  name = "burrito-cleanup-registry"
+
+  template = templatefile("${path.module}/jenkins-pipeline-cleanup.xml", {
+    repo_url         = var.burrito_repo_url
+    branch           = var.burrito_repo_branch
+    jenkinsfile_path = "Jenkinsfile.cleanup-registry"
+  })
+}

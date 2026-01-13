@@ -1,0 +1,155 @@
+pipeline {
+  agent {
+    kubernetes {
+      yaml """
+        apiVersion: v1
+        kind: Pod
+        spec:
+          containers:
+          - name: builder
+            image: node:18-bullseye
+            tty: true
+            command: ["cat"]
+        """
+    }
+  }
+
+  options {
+    timeout(time: 30, unit: 'MINUTES')
+  }
+
+  parameters {
+    string(name: 'REGISTRY_SCHEME', defaultValue: 'http', description: 'Registry scheme (http or https).')
+    string(name: 'REGISTRY_HOST', defaultValue: 'registry.jenkins.svc.cluster.local:5000', description: 'Registry host (no scheme).')
+    string(name: 'REGISTRY_NAMESPACE', defaultValue: 'jenkins', description: 'Kubernetes namespace for the registry pod (for optional GC).')
+    string(name: 'REPOSITORIES', defaultValue: 'burrito-api-gateway burrito-users-ms burrito-forms-ms burrito-evaluations-ms burrito-analytics-ms burrito-groups-ms burrito-notifications-ms burrito-intelligence-ms burrito-frontend burrito-seed-analytics', description: 'Space-separated list of repositories to clean.')
+    string(name: 'KEEP_LAST', defaultValue: '10', description: 'Number of numeric tags to keep per repository.')
+    string(name: 'PROTECTED_TAGS', defaultValue: 'latest', description: 'Comma-separated tags to keep.')
+    booleanParam(name: 'DRY_RUN', defaultValue: true, description: 'Only print deletions without calling the registry delete API.')
+    booleanParam(name: 'RUN_GC', defaultValue: false, description: 'Run registry garbage-collect after deletions.')
+  }
+
+  environment {
+    KUBECTL_VERSION = 'v1.34.1'
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
+      }
+    }
+
+    stage('Cleanup Registry Tags') {
+      steps {
+        container('builder') {
+          sh '''
+            set -e
+
+            if ! printf '%s' "$KEEP_LAST" | grep -Eq '^[0-9]+$'; then
+              echo "KEEP_LAST must be numeric."
+              exit 1
+            fi
+
+            REGISTRY_URL="${REGISTRY_SCHEME}://${REGISTRY_HOST}"
+            PROTECTED_TAGS_LIST=$(echo "$PROTECTED_TAGS" | tr ',' ' ')
+
+            echo "Registry: ${REGISTRY_URL}"
+            echo "Repositories: ${REPOSITORIES}"
+            echo "Keep last: ${KEEP_LAST}"
+            echo "Protected tags: ${PROTECTED_TAGS_LIST}"
+            echo "Dry run: ${DRY_RUN}"
+
+            for repo in $REPOSITORIES; do
+              echo "-------------------------------------------------"
+              echo "Repository: ${repo}"
+              echo "-------------------------------------------------"
+
+              tags_json=$(curl -s "${REGISTRY_URL}/v2/${repo}/tags/list" || true)
+              if [ -z "$tags_json" ]; then
+                echo "No tags response for ${repo}."
+                continue
+              fi
+
+              tags=$(printf '%s' "$tags_json" | node -e 'const fs=require("fs"); let data=null; try { data=JSON.parse(fs.readFileSync(0,"utf8")); } catch (err) { process.exit(0); } if (Array.isArray(data.tags)) console.log(data.tags.join(" "));')
+              if [ -z "$tags" ]; then
+                echo "No tags found for ${repo}."
+                continue
+              fi
+
+              numeric_tags=$(printf '%s\n' $tags | grep -E '^[0-9]+$' | sort -n || true)
+              if [ -z "$numeric_tags" ]; then
+                echo "No numeric tags to evaluate for ${repo}."
+                continue
+              fi
+
+              count=$(printf '%s\n' "$numeric_tags" | awk 'NF' | wc -l | tr -d ' ')
+              if [ "$count" -le "$KEEP_LAST" ]; then
+                echo "Nothing to delete for ${repo}."
+                continue
+              fi
+
+              delete_count=$((count - KEEP_LAST))
+              delete_tags=$(printf '%s\n' "$numeric_tags" | head -n "$delete_count")
+
+              for tag in $delete_tags; do
+                case " $PROTECTED_TAGS_LIST " in
+                  *" $tag "*)
+                    echo "Skipping protected tag ${repo}:${tag}"
+                    continue
+                    ;;
+                esac
+
+                echo "Deleting ${repo}:${tag}"
+                if [ "$DRY_RUN" = "true" ]; then
+                  continue
+                fi
+
+                digest=$(curl -sI -H "Accept: application/vnd.docker.distribution.manifest.v2+json" "${REGISTRY_URL}/v2/${repo}/manifests/${tag}" \
+                  | awk -F': ' '/Docker-Content-Digest/ {print $2}' \
+                  | tr -d '\\r')
+
+                if [ -z "$digest" ]; then
+                  echo "No digest found for ${repo}:${tag}."
+                  continue
+                fi
+
+                status=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE "${REGISTRY_URL}/v2/${repo}/manifests/${digest}")
+                echo "Delete status for ${repo}:${tag} -> ${status}"
+              done
+            done
+          '''
+        }
+      }
+    }
+
+    stage('Registry Garbage Collect') {
+      when {
+        expression { return params.RUN_GC && !params.DRY_RUN }
+      }
+      steps {
+        container('builder') {
+          sh '''
+            set -e
+
+            if ! command -v kubectl >/dev/null 2>&1; then
+              echo "Installing kubectl..."
+              curl -LO "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+              install -m 0755 kubectl /usr/local/bin/kubectl
+              rm kubectl
+            fi
+
+            REGISTRY_POD=$(kubectl -n "${REGISTRY_NAMESPACE}" get pods -l app=registry -o jsonpath='{.items[0].metadata.name}')
+            if [ -z "$REGISTRY_POD" ]; then
+              echo "No registry pod found in namespace ${REGISTRY_NAMESPACE}."
+              exit 1
+            fi
+
+            echo "Running garbage-collect on pod ${REGISTRY_POD}..."
+            kubectl -n "${REGISTRY_NAMESPACE}" exec "${REGISTRY_POD}" -- registry garbage-collect /etc/docker/registry/config.yml
+          '''
+        }
+      }
+    }
+  }
+}
