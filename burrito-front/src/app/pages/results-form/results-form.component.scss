@@ -464,6 +464,7 @@
       background: theme.$light-bg;
       cursor: pointer;
       display: flex;
+      width: auto;
       justify-content: space-between;
       align-items: center;
       transition: background 0.2s;
