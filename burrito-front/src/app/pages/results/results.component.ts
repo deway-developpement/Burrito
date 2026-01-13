@@ -2,7 +2,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Apollo, gql } from 'apollo-angular';
-import { AuthService } from '../../services/auth.service';
 import { HeaderComponent } from '../../component/header/header.component';
 import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 
@@ -75,9 +74,8 @@ const GET_FORM = gql`
   styleUrls: ['./results.component.scss']
 })
 export class ResultsComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private apollo = inject(Apollo);
-  private authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly apollo = inject(Apollo);
 
 
   evaluationId = signal<string | null>(null);
@@ -156,7 +154,7 @@ export class ResultsComponent implements OnInit {
 
   displayAnswer(answer: EvaluationAnswer): string {
     if (answer.rating !== undefined && answer.rating !== null) {
-      return `${answer.rating}/5`;
+      return `${answer.rating}/10`;
     }
     return (
       answer.text ||

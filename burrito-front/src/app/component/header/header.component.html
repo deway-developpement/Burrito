@@ -29,6 +29,7 @@
       <app-button 
         variant="outline" 
         (click)="logout()"
+        (keydown.enter)="logout()"
       >
         <span i18n="@@header.logout">Logout</span>
       </app-button>
@@ -46,7 +47,7 @@
   </div>
 </header>
 @if (userService.currentUser(); as user) {
-  @if (!user.emailVerified) {
+  @if (!user.emailVerified && !bannerDismissed()) {
     <div class="verify-banner" role="alert">
       <span i18n="@@header.verifyEmail">Please verify your email to access all features.</span>
       <app-button
@@ -54,6 +55,7 @@
         size="small"
         [disabled]="isResending()"
         (click)="resendVerification()"
+        (keydown.enter)="resendVerification()"
       >
         @if (isResending()) {
           <span i18n="@@header.sending">Sending...</span>
@@ -61,17 +63,21 @@
           <span i18n="@@header.resendVerificationButton">Resend verification email</span>
         }
       </app-button>
-      @if (resendStatus() === 'success') {
-        <span class="verify-banner__status success" i18n="@@header.resendSuccess">
-          Email sent. Check your inbox.
-        </span>
-      }
-      @if (resendStatus() === 'error') {
-        <span class="verify-banner__status error" i18n="@@header.resendError">
-          Failed to send. Try again.
-        </span>
-      }
+      <button class="verify-banner__close" (click)="dismissBanner()" aria-label="Dismiss banner">
+        ✕
+      </button>
     </div>
   }
 }
 
+@if (showSuccessModal()) {
+  <div class="modal-overlay" (click)="closeModal()" (keydown.escape)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+      <button class="modal__close" (click)="closeModal()" (keydown.enter)="closeModal()" aria-label="Close modal">✕</button>
+      <div class="modal__icon">✓</div>
+      <h2 class="modal__title">Email sent!</h2>
+      <p class="modal__message">We've sent a verification link to your email. Please check your inbox and spam folder.</p>
+      <app-button variant="primary" (click)="closeModal()" (keydown.enter)="closeModal()">Got it</app-button>
+    </div>
+  </div>
+}

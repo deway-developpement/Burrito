@@ -87,6 +87,10 @@
 }
 
 .rating-container {
+  border: none;
+  padding: 0;
+  margin: 0;
+
   .rating-options {
     display: flex;
     gap: 1rem;
@@ -143,6 +147,32 @@
   textarea {
     width: 100%;
     min-height: 120px;
+    padding: 1rem;
+    border: 2px solid theme.$border-gray;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: all 0.2s ease;
+    line-height: 1.6;
+
+    &:focus {
+      outline: none;
+      border-color: theme.$info-blue;
+      box-shadow: 0 0 0 3px rgba(theme.$info-blue, 0.1);
+    }
+
+    &::placeholder {
+      color: theme.$text-lighter;
+    }
+  }
+}
+
+.text-container {
+  .text-input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 140px;
     padding: 1rem;
     border: 2px solid theme.$border-gray;
     border-radius: 8px;

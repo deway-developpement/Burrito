@@ -16,6 +16,7 @@
   color: theme.$text-dark;
   font-weight: 700;
   margin: 0;
+  margin-bottom: 2rem;
   padding-left: 0.5rem;
   border-left: 4px solid theme.$primary-color;
 }
@@ -31,7 +32,7 @@
 
 .view-results-btn {
   display: inline-block;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   padding: 1.2rem 2rem;
   font-size: 1.1rem;
   font-weight: 700;
@@ -231,19 +232,15 @@
   tr:last-child td {
     border-bottom: none;
   }
+
+  .text-right { text-align: right; }
 }
 
 .history-row {
-  cursor: pointer;
   transition: background-color 0.2s ease;
 
   &:hover {
     background-color: theme.$bg-light;
-  }
-
-  &:focus {
-    outline: 2px solid rgba(theme.$primary-color, 0.35);
-    outline-offset: -2px;
   }
 }
 
@@ -394,6 +391,8 @@
   .label {
     font-weight: 600;
     color: theme.$text-dark;
+    white-space: nowrap;
+
   }
 
   .stars {

@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { map, forkJoin, Observable, catchError, switchMap } from 'rxjs';
-import { of } from 'rxjs';
+import { map, forkJoin, Observable, catchError, switchMap, of } from 'rxjs';
 
 const GET_FORMS_AND_TEACHERS = gql`
   query GetFormsAndTeachers {
@@ -269,7 +268,7 @@ export interface DashboardMetrics {
   providedIn: 'root'
 })
 export class EvaluationService {
-  private apollo = inject(Apollo);
+  private readonly apollo = inject(Apollo);
 
   getActiveForms(): Observable<EvaluationForm[]> {
     return this.apollo.query<FormsResponse>({
@@ -440,7 +439,6 @@ export class EvaluationService {
       fetchPolicy: 'network-only'
     }).pipe(
       map(result => {
-        const students = result.data?.students?.edges || [];
         const evaluations = result.data?.evaluations?.edges.map((e: any) => e.node) || [];
 
         const oneWeekAgo = new Date();
@@ -450,9 +448,7 @@ export class EvaluationService {
           new Date(ev.createdAt) >= oneWeekAgo
         ).length;
 
-        const totalStudents = students.length || 1;
-        let completionRate = Math.round((evaluations.length / totalStudents) * 100);
-        if (completionRate > 100) completionRate = 100;
+        let completionRate = evaluations.length; 
 
         return { completionRate, newFeedbackCount };
       })

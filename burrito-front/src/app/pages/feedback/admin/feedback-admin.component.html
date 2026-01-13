@@ -24,11 +24,12 @@
           </div>
 
           <div class="builder__grid">
-            <label class="form-field">
-              <span class="form-label" i18n="@@feedbackAdmin.formTitleLabel">
+            <div class="form-field">
+              <label for="formTitle" class="form-label" i18n="@@feedbackAdmin.formTitleLabel">
                 Form title <span class="required">*</span>
-              </span>
+              </label>
               <app-input
+                id="formTitle"
                 variant="primary"
                 i18n-placeholder="@@feedbackAdmin.formTitlePlaceholder"
                 placeholder="e.g. Semester feedback"
@@ -36,13 +37,14 @@
                 [(model)]="formTitle"
                 [required]="true"
               ></app-input>
-            </label>
+            </div>
 
-            <label class="form-field">
-              <span class="form-label" i18n="@@feedbackAdmin.targetTeacherLabel">
+            <div class="form-field">
+              <label for="targetTeacher" class="form-label" i18n="@@feedbackAdmin.targetTeacherLabel">
                 Target teacher <span class="required">*</span>
-              </span>
+              </label>
               <app-select
+                id="targetTeacher"
                 variant="outline"
                 i18n-placeholder="@@feedbackAdmin.targetTeacherPlaceholder"
                 placeholder="Select a teacher"
@@ -51,15 +53,16 @@
                 [disabled]="isLoadingTeachers"
                 [(value)]="targetTeacherId"
               ></app-select>
-            </label>
+            </div>
 
             <div class="form-field form-field--full">
-              <span class="form-label" i18n="@@feedbackAdmin.groupsLabel">
+              <label for="groupPicker" class="form-label" i18n="@@feedbackAdmin.groupsLabel">
                 Groups <span class="required">*</span>
-              </span>
+              </label>
               <div class="group-picker">
                 <div class="group-picker__select">
                   <app-select
+                    id="groupPicker"
                     variant="outline"
                     i18n-placeholder="@@feedbackAdmin.groupsPlaceholder"
                     placeholder="select a group"
@@ -95,14 +98,15 @@
               }
             </div>
 
-            <label class="form-field">
-              <span class="form-label">
+            <div class="form-field">
+              <label for="startDate" class="form-label">
                 <span i18n="@@feedbackAdmin.startDateLabel">Start date</span>
                 @if (requiresSchedule) {
                   <span class="required">*</span>
                 }
-              </span>
+              </label>
               <app-input
+                id="startDate"
                 type="date"
                 variant="outline"
                 [fullWidth]="true"
@@ -113,16 +117,17 @@
                   Start date is required.
                 </span>
               }
-            </label>
+            </div>
 
-            <label class="form-field">
-              <span class="form-label">
+            <div class="form-field">
+              <label for="endDate" class="form-label">
                 <span i18n="@@feedbackAdmin.endDateLabel">End date</span>
                 @if (requiresSchedule) {
                   <span class="required">*</span>
                 }
-              </span>
+              </label>
               <app-input
+                id="endDate"
                 type="date"
                 variant="outline"
                 [fullWidth]="true"
@@ -133,14 +138,15 @@
                   End date is required.
                 </span>
               }
-            </label>
+            </div>
           </div>
 
-          <label class="form-field form-field--full">
-            <span class="form-label" i18n="@@feedbackAdmin.introTextLabel">
+          <div class="form-field form-field--full">
+            <label for="formDescription" class="form-label" i18n="@@feedbackAdmin.introTextLabel">
               Intro text <span class="required">*</span>
-            </span>
+            </label>
             <textarea
+              id="formDescription"
               class="form-textarea"
               rows="3"
               i18n-placeholder="@@feedbackAdmin.introTextPlaceholder"
@@ -154,7 +160,7 @@
                 Description is required.
               </span>
             }
-          </label>
+          </div>
         </div>
 
         <div class="builder__section">
@@ -187,11 +193,12 @@
                   </div>
                 </div>
 
-                <label class="form-field">
-                  <span class="form-label" i18n="@@feedbackAdmin.questionTextLabel">
+                <div class="form-field">
+                  <label [for]="'question-label-' + question.id" class="form-label" i18n="@@feedbackAdmin.questionTextLabel">
                     Question text <span class="required">*</span>
-                  </span>
+                  </label>
                   <app-input
+                    [id]="'question-label-' + question.id"
                     variant="primary"
                     i18n-placeholder="@@feedbackAdmin.questionTextPlaceholder"
                     placeholder="e.g. How clear were the explanations?"
@@ -204,19 +211,20 @@
                       Question text is required.
                     </span>
                   }
-                </label>
+                </div>
 
                 @if (question.type === 'text') {
-                  <label class="form-field">
-                    <span class="form-label" i18n="@@feedbackAdmin.placeholderLabel">Placeholder</span>
+                  <div class="form-field">
+                    <label [for]="'question-placeholder-' + question.id" class="form-label" i18n="@@feedbackAdmin.placeholderLabel">Placeholder</label>
                     <app-input
+                      [id]="'question-placeholder-' + question.id"
                       variant="outline"
                       i18n-placeholder="@@feedbackAdmin.placeholderText"
                       placeholder="e.g. Add a quick note"
                       [fullWidth]="true"
                       [(model)]="question.placeholder"
                     ></app-input>
-                  </label>
+                  </div>
                 }
 
                 @if (question.type === 'rating') {
@@ -233,10 +241,10 @@
               Add a question card
             </div>
             <div class="add-question__actions">
-              <app-button variant="outline" type="button" (click)="addQuestion('rating')">
+              <app-button variant="outline" type="button" (click)="addQuestion('rating')" (keydown.enter)="addQuestion('rating')">
                 <span i18n="@@feedbackAdmin.addRating">Rating</span>
               </app-button>
-              <app-button variant="outline" type="button" (click)="addQuestion('text')">
+              <app-button variant="outline" type="button" (click)="addQuestion('text')" (keydown.enter)="addQuestion('text')">
                 <span i18n="@@feedbackAdmin.addText">Text</span>
               </app-button>
             </div>

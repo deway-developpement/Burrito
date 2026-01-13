@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core'; // 1. Importe ChangeDetectorRef
 import { CommonModule, DatePipe } from '@angular/common';
-import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 import { AdminPageHeaderComponent } from '../../component/shared/admin-page-header/admin-page-header.component';
@@ -29,10 +29,10 @@ interface UiEvaluation {
 })
 export class StudentHomeComponent implements OnInit {
 
-  private evaluationService = inject(EvaluationService);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private cdr = inject(ChangeDetectorRef); // 2. Injection du détecteur de changement
+  private readonly evaluationService = inject(EvaluationService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly cdr = inject(ChangeDetectorRef); // 2. Injection du détecteur de changement
 
   pendingEvaluations: UiEvaluation[] = [];
   completedEvaluations: UiEvaluation[] = [];

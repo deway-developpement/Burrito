@@ -77,8 +77,8 @@ const SUBMIT_EVALUATION = gql`
   styleUrls: ['./feedback-student.component.scss'],
 })
 export class FeedbackStudentComponent implements OnInit {
-  private evaluationService = inject(EvaluationService);
-  private apollo = inject(Apollo);
+  private readonly evaluationService = inject(EvaluationService);
+  private readonly apollo = inject(Apollo);
   private localeId = inject(LOCALE_ID);
 
   forms: EvaluationForm[] = [];

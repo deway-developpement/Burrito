@@ -18,6 +18,10 @@ pipeline {
     timeout(time: 30, unit: 'MINUTES')
   }
 
+  parameters {
+    booleanParam(name: 'FORCE_BUILD_ALL', defaultValue: false, description: 'Build all images regardless of detected changes.')
+  }
+
   environment {
     // Versions to install
     BUILDKIT_VERSION = '0.26.2'
@@ -27,12 +31,158 @@ pipeline {
     BUILDKIT_HOST = 'tcp://buildkit:1234'
     REGISTRY_HOST = 'registry.burrito.deway.fr'
     REGISTRY_PUSH_HOST = 'registry.jenkins.svc.cluster.local:5000'
+    BACKEND_SERVICES = 'api-gateway users-ms forms-ms evaluations-ms analytics-ms groups-ms notifications-ms'
   }
 
   stages {
     stage('Checkout') {
       steps {
         checkout scm
+      }
+    }
+
+    stage('Compute Build Targets') {
+      steps {
+        container('builder') {
+          script {
+            def output = sh(
+              returnStdout: true,
+              script: '''
+                set -e
+
+                BUILD_ALL=false
+                BUILD_BACKEND_ALL=false
+                BUILD_SERVICES=""
+                BUILD_INTELLIGENCE=false
+                BUILD_FRONTEND=false
+
+                BASE_COMMIT=""
+                ensure_commit() {
+                  local commit="$1"
+                  if [ -z "$commit" ]; then
+                    return 1
+                  fi
+                  if git cat-file -e "${commit}^{commit}" 2>/dev/null; then
+                    return 0
+                  fi
+                  local origin_url=""
+                  origin_url=$(git remote get-url origin 2>/dev/null || true)
+                  if [ -z "$origin_url" ] && [ -n "$GIT_URL" ]; then
+                    origin_url="$GIT_URL"
+                  fi
+                  if [ -z "$origin_url" ] && [ -n "$GIT_URL_1" ]; then
+                    origin_url="$GIT_URL_1"
+                  fi
+                  if [ -n "$origin_url" ]; then
+                    git remote add origin "$origin_url" >/dev/null 2>&1 || git remote set-url origin "$origin_url" >/dev/null 2>&1 || true
+                  fi
+
+                  if [ "$(git rev-parse --is-shallow-repository 2>/dev/null || echo false)" = "true" ]; then
+                    for depth in 10 25 50 100 200; do
+                      echo "Fetching additional history (depth ${depth}) to find ${commit}..."
+                      if [ -n "$origin_url" ]; then
+                        git fetch --deepen="${depth}" origin >/dev/null 2>&1 || git fetch --deepen="${depth}" "$origin_url" >/dev/null 2>&1 || true
+                      else
+                        git fetch --deepen="${depth}" origin >/dev/null 2>&1 || true
+                      fi
+                      if git cat-file -e "${commit}^{commit}" 2>/dev/null; then
+                        return 0
+                      fi
+                    done
+                  fi
+
+                  if [ -n "$origin_url" ]; then
+                    git fetch origin "${commit}" >/dev/null 2>&1 || git fetch "$origin_url" "${commit}" >/dev/null 2>&1 || true
+                  else
+                    git fetch origin "${commit}" >/dev/null 2>&1 || true
+                  fi
+                  git cat-file -e "${commit}^{commit}" 2>/dev/null
+                }
+                if [ "$FORCE_BUILD_ALL" = "true" ]; then
+                  BUILD_ALL=true
+                else
+                  if [ -n "$GIT_PREVIOUS_SUCCESSFUL_COMMIT" ] && ensure_commit "$GIT_PREVIOUS_SUCCESSFUL_COMMIT"; then
+                    BASE_COMMIT="$GIT_PREVIOUS_SUCCESSFUL_COMMIT"
+                  elif [ -n "$GIT_PREVIOUS_COMMIT" ] && ensure_commit "$GIT_PREVIOUS_COMMIT"; then
+                    BASE_COMMIT="$GIT_PREVIOUS_COMMIT"
+                  fi
+
+                  if [ -z "$BASE_COMMIT" ]; then
+                    BUILD_ALL=true
+                  else
+                    CHANGED_FILES=$(git diff --name-only "$BASE_COMMIT"...HEAD)
+                    if [ -n "$CHANGED_FILES" ]; then
+                      printf '%s\n' "$CHANGED_FILES" > .changed_files
+                      while IFS= read -r file; do
+                        case "$file" in
+                          backend/apps/intelligence-ms/proto/*)
+                            BUILD_INTELLIGENCE=true
+                            BUILD_BACKEND_ALL=true
+                            ;;
+                          backend/apps/intelligence-ms/*)
+                            BUILD_INTELLIGENCE=true
+                            ;;
+                          backend/apps/*)
+                            svc=$(echo "$file" | cut -d/ -f3)
+                            case " $BACKEND_SERVICES " in
+                              *" $svc "*) BUILD_SERVICES="$BUILD_SERVICES $svc";;
+                            esac
+                            ;;
+                          backend/libs/*|backend/package.json|backend/package-lock.json|backend/tsconfig*.json|backend/nest-cli.json|backend/Dockerfile|backend/wait-for-it.sh|backend/eslint.config.mjs|backend/schema.gql|backend/infra/*|backend/scripts/*)
+                            BUILD_BACKEND_ALL=true
+                            ;;
+                          burrito-front/*)
+                            BUILD_FRONTEND=true
+                            ;;
+                        esac
+                      done < .changed_files
+                      rm -f .changed_files
+                    fi
+                  fi
+                fi
+
+                if [ "$BUILD_ALL" = "true" ]; then
+                  BUILD_SERVICES="$BACKEND_SERVICES"
+                  BUILD_INTELLIGENCE=true
+                  BUILD_FRONTEND=true
+                fi
+
+                if [ "$BUILD_BACKEND_ALL" = "true" ]; then
+                  BUILD_SERVICES="$BACKEND_SERVICES"
+                fi
+
+                BUILD_SERVICES=$(echo "$BUILD_SERVICES" | tr ' ' '\n' | awk 'NF' | sort -u | tr '\n' ' ' | sed 's/ $//')
+
+                printf 'BASE_COMMIT=%s\n' "$BASE_COMMIT"
+                printf 'BUILD_ALL=%s\n' "$BUILD_ALL"
+                printf 'BUILD_SERVICES=%s\n' "$BUILD_SERVICES"
+                printf 'BUILD_INTELLIGENCE=%s\n' "$BUILD_INTELLIGENCE"
+                printf 'BUILD_FRONTEND=%s\n' "$BUILD_FRONTEND"
+              '''
+            ).trim()
+
+            def props = [:]
+            if (output) {
+              output.split('\n').each { line ->
+                def idx = line.indexOf('=')
+                if (idx > 0) {
+                  props[line.substring(0, idx)] = line.substring(idx + 1)
+                }
+              }
+            }
+
+            env.BASE_COMMIT = props.BASE_COMMIT ?: ''
+            env.BUILD_ALL = props.BUILD_ALL ?: 'false'
+            env.BUILD_SERVICES = props.BUILD_SERVICES ?: ''
+            env.BUILD_INTELLIGENCE = props.BUILD_INTELLIGENCE ?: 'false'
+            env.BUILD_FRONTEND = props.BUILD_FRONTEND ?: 'false'
+
+            echo "Base commit: ${env.BASE_COMMIT}"
+            echo "Build services: ${env.BUILD_SERVICES}"
+            echo "Build intelligence: ${env.BUILD_INTELLIGENCE}"
+            echo "Build frontend: ${env.BUILD_FRONTEND}"
+          }
+        }
       }
     }
 
@@ -63,61 +213,72 @@ pipeline {
     stage('Build Local Images') {
       steps {
         container('builder') {
-          sh '''
-            set -e
+          script {
+            def tasks = [:]
+            def services = (env.BUILD_SERVICES ?: '').tokenize(' ')
 
-            echo "Using BuildKit at: ${BUILDKIT_HOST}"
+            services.each { svc ->
+              def serviceName = svc
+              tasks["build-${serviceName}"] = {
+                sh """
+                  set -e
+                  echo "Building Service: ${serviceName}"
+                  buildctl \
+                    --addr "${env.BUILDKIT_HOST}" \
+                    build \
+                    --no-cache \
+                    --frontend dockerfile.v0 \
+                    --local context=backend \
+                    --local dockerfile=backend \
+                    --opt filename=Dockerfile \
+                    --opt "build-arg:SERVICE_NAME=${serviceName}" \
+                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-${serviceName}:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-${serviceName}:latest",push=true,registry.insecure=true'
+                """
+              }
+            }
 
-            cd backend
+            if (env.BUILD_INTELLIGENCE == 'true') {
+              tasks['build-intelligence-ms'] = {
+                sh """
+                  set -e
+                  echo "Building Service: intelligence-ms"
+                  buildctl \
+                    --addr "${env.BUILDKIT_HOST}" \
+                    build \
+                    --no-cache \
+                    --frontend dockerfile.v0 \
+                    --local context=backend/apps/intelligence-ms \
+                    --local dockerfile=backend/apps/intelligence-ms \
+                    --opt filename=Dockerfile \
+                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-intelligence-ms:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-intelligence-ms:latest",push=true,registry.insecure=true'
+                """
+              }
+            }
 
-            # Define your services list here
-            SERVICES="api-gateway users-ms forms-ms evaluations-ms analytics-ms groups-ms notifications-ms"
+            if (env.BUILD_FRONTEND == 'true') {
+              tasks['build-frontend'] = {
+                sh """
+                  set -e
+                  echo "Building Service: frontend"
+                  buildctl \
+                    --addr "${env.BUILDKIT_HOST}" \
+                    build \
+                    --no-cache \
+                    --frontend dockerfile.v0 \
+                    --local context=burrito-front \
+                    --local dockerfile=burrito-front \
+                    --opt filename=Dockerfile \
+                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-frontend:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-frontend:latest",push=true,registry.insecure=true'
+                """
+              }
+            }
 
-            for svc in $SERVICES; do
-              echo "-------------------------------------------------"
-              echo "Building Service: $svc"
-              echo "-------------------------------------------------"
-
-              # Use buildctl directly to talk to the remote BuildKit daemon
-              buildctl \
-                --addr "${BUILDKIT_HOST}" \
-                build \
-                --frontend dockerfile.v0 \
-                --local context=. \
-                --local dockerfile=. \
-                --opt filename=Dockerfile \
-                --opt "build-arg:SERVICE_NAME=${svc}" \
-                --output type=image,\\"name=${REGISTRY_PUSH_HOST}/burrito-${svc}:${BUILD_NUMBER},${REGISTRY_PUSH_HOST}/burrito-${svc}:latest\\",push=true,registry.insecure=true
-            done
-
-            echo "-------------------------------------------------"
-            echo "Building Service: intelligence-ms"
-            echo "-------------------------------------------------"
-
-            buildctl \
-              --addr "${BUILDKIT_HOST}" \
-              build \
-              --frontend dockerfile.v0 \
-              --local context=apps/intelligence-ms \
-              --local dockerfile=apps/intelligence-ms \
-              --opt filename=Dockerfile \
-              --output type=image,\\"name=${REGISTRY_PUSH_HOST}/burrito-intelligence-ms:${BUILD_NUMBER},${REGISTRY_PUSH_HOST}/burrito-intelligence-ms:latest\\",push=true,registry.insecure=true
-
-            cd ..
-
-            echo "-------------------------------------------------"
-            echo "Building Service: frontend"
-            echo "-------------------------------------------------"
-
-            buildctl \
-              --addr "${BUILDKIT_HOST}" \
-              build \
-              --frontend dockerfile.v0 \
-              --local context=burrito-front \
-              --local dockerfile=burrito-front \
-              --opt filename=Dockerfile \
-              --output type=image,\\"name=${REGISTRY_PUSH_HOST}/burrito-frontend:${BUILD_NUMBER},${REGISTRY_PUSH_HOST}/burrito-frontend:latest\\",push=true,registry.insecure=true
-          '''
+            if (tasks.isEmpty()) {
+              echo 'No images to build.'
+            } else {
+              parallel tasks
+            }
+          }
         }
       }
     }
@@ -163,55 +324,92 @@ pipeline {
             # Use in-cluster config (service account)
             kubectl apply -f backend/k8s/evaluation-system.yaml
             kubectl apply -f backend/k8s/frontend.yaml
-
-            kubectl set image deployment/api-gateway \
-              api-gateway=${REGISTRY_HOST}/burrito-api-gateway:${BUILD_NUMBER} \
-              -n "$K8S_NAMESPACE"
-
-            kubectl set image deployment/users-ms \
-              users-ms=${REGISTRY_HOST}/burrito-users-ms:${BUILD_NUMBER} \
-              -n "$K8S_NAMESPACE"
-
-            kubectl set image deployment/forms-ms \
-              forms-ms=${REGISTRY_HOST}/burrito-forms-ms:${BUILD_NUMBER} \
-              -n "$K8S_NAMESPACE"
-
-            kubectl set image deployment/evaluations-ms \
-              evaluations-ms=${REGISTRY_HOST}/burrito-evaluations-ms:${BUILD_NUMBER} \
-              -n "$K8S_NAMESPACE"
-
-            kubectl set image deployment/analytics-ms \
-              analytics-ms=${REGISTRY_HOST}/burrito-analytics-ms:${BUILD_NUMBER} \
-              -n "$K8S_NAMESPACE"
-
-            kubectl set image deployment/groups-ms \
-              groups-ms=${REGISTRY_HOST}/burrito-groups-ms:${BUILD_NUMBER} \
-              -n "$K8S_NAMESPACE"
-
-            kubectl set image deployment/notifications-ms \
-              notifications-ms=${REGISTRY_HOST}/burrito-notifications-ms:${BUILD_NUMBER} \
-              -n "$K8S_NAMESPACE"
-
-            kubectl set image deployment/intelligence-ms \
-              intelligence-ms=${REGISTRY_HOST}/burrito-intelligence-ms:${BUILD_NUMBER} \
-              -n "$K8S_NAMESPACE"
-
-            kubectl set image deployment/burrito-frontend \
-              burrito-frontend=${REGISTRY_HOST}/burrito-frontend:${BUILD_NUMBER} \
-              -n "$K8S_NAMESPACE"
-
-            echo "Deployment updated successfully."
-
-            kubectl rollout status deployment/api-gateway -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/users-ms -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/forms-ms -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/evaluations-ms -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/analytics-ms -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/groups-ms -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/notifications-ms -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/intelligence-ms -n "$K8S_NAMESPACE"
-            kubectl rollout status deployment/burrito-frontend -n "$K8S_NAMESPACE"
           '''
+          script {
+            def services = (env.BUILD_SERVICES ?: '').tokenize(' ') as Set
+            def updateImage = { String deployment, String image ->
+              sh """
+                kubectl set image deployment/${deployment} \
+                  ${deployment}=${env.REGISTRY_HOST}/${image}:${env.BUILD_NUMBER} \
+                  -n "\$K8S_NAMESPACE"
+              """
+            }
+            def restart = { String deployment ->
+              sh """
+                kubectl rollout restart deployment/${deployment} -n "\$K8S_NAMESPACE"
+              """
+            }
+            def rollout = { String deployment ->
+              sh """
+                kubectl rollout status deployment/${deployment} -n "\$K8S_NAMESPACE" --timeout=5m
+              """
+            }
+
+            if (services.contains('api-gateway')) {
+              updateImage('api-gateway', 'burrito-api-gateway')
+              restart('api-gateway')
+            }
+            if (services.contains('users-ms')) {
+              updateImage('users-ms', 'burrito-users-ms')
+              restart('users-ms')
+            }
+            if (services.contains('forms-ms')) {
+              updateImage('forms-ms', 'burrito-forms-ms')
+              restart('forms-ms')
+            }
+            if (services.contains('evaluations-ms')) {
+              updateImage('evaluations-ms', 'burrito-evaluations-ms')
+              restart('evaluations-ms')
+            }
+            if (services.contains('analytics-ms')) {
+              updateImage('analytics-ms', 'burrito-analytics-ms')
+              restart('analytics-ms')
+            }
+            if (services.contains('groups-ms')) {
+              updateImage('groups-ms', 'burrito-groups-ms')
+              restart('groups-ms')
+            }
+            if (services.contains('notifications-ms')) {
+              updateImage('notifications-ms', 'burrito-notifications-ms')
+              restart('notifications-ms')
+            }
+            if (env.BUILD_INTELLIGENCE == 'true') {
+              updateImage('intelligence-ms', 'burrito-intelligence-ms')
+              restart('intelligence-ms')
+            }
+            if (env.BUILD_FRONTEND == 'true') {
+              updateImage('burrito-frontend', 'burrito-frontend')
+              restart('burrito-frontend')
+            }
+
+            if (services.contains('api-gateway')) {
+              rollout('api-gateway')
+            }
+            if (services.contains('users-ms')) {
+              rollout('users-ms')
+            }
+            if (services.contains('forms-ms')) {
+              rollout('forms-ms')
+            }
+            if (services.contains('evaluations-ms')) {
+              rollout('evaluations-ms')
+            }
+            if (services.contains('analytics-ms')) {
+              rollout('analytics-ms')
+            }
+            if (services.contains('groups-ms')) {
+              rollout('groups-ms')
+            }
+            if (services.contains('notifications-ms')) {
+              rollout('notifications-ms')
+            }
+            if (env.BUILD_INTELLIGENCE == 'true') {
+              rollout('intelligence-ms')
+            }
+            if (env.BUILD_FRONTEND == 'true') {
+              rollout('burrito-frontend')
+            }
+          }
         }
       }
     }

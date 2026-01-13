@@ -295,6 +295,16 @@
 .forms-breakdown {
   margin-bottom: 2rem;
 
+  button.form-card {
+    border: none;
+    text-align: left;
+    font-family: inherit;
+    font-size: inherit;
+    color: inherit;
+    width: 100%;
+    cursor: pointer;
+  }
+
   .section-title {
     font-size: 1.3rem;
     font-weight: 600;

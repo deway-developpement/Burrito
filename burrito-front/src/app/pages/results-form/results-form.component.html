@@ -106,6 +106,26 @@
             </div>
           </div>
 
+          @if (!isTeacherView()) {
+            <div class="stat nps-stat">
+              <div 
+                class="stat-value" 
+                [style.background]="getNpsGradient(analytics()!.nps.score)"
+                [style.-webkit-background-clip]="'text'"
+                [style.background-clip]="'text'"
+                [style.-webkit-text-fill-color]="'transparent'"
+              >
+                {{ analytics()!.nps.score.toFixed(0) }}
+              </div>
+              <div class="stat-label">NPS Score</div>
+            </div>
+          }
+
+          <div class="stat">
+            <div class="stat-value">{{ analytics()!.totalResponses }}</div>
+            <div class="stat-label">Total Responses</div>
+          </div>
+
         </div>
       </div>
 
@@ -128,7 +148,7 @@
               </thead>
               <tbody>
                 @for (teacher of analytics()!.teachersBreakdown; track teacher.teacherId) {
-                  <tr class="teacher-row" (click)="navigateToTeacherResults(teacher.teacherId)">
+                  <tr class="teacher-row">
                     <td class="teacher-name">{{ teacher.teacherName }}</td>
                     <td>{{ teacher.totalResponses }}</td>
                     <td>
@@ -136,9 +156,9 @@
                         {{ teacher.nps.score.toFixed(0) }}
                       </span>
                     </td>
-                    <td>{{ teacher.averageRating.toFixed(1) }}/5</td>
+                    <td>{{ teacher.averageRating.toFixed(1) }}/10</td>
                     <td class="action-cell">
-                      <button class="btn-view" (click)="navigateToTeacherResults(teacher.teacherId)">
+                      <button class="btn-view" (click)="navigateToTeacherResults(teacher.teacherId)" (keydown.enter)="navigateToTeacherResults(teacher.teacherId)">
                         <span i18n="@@resultsForm.viewResults">View Results</span> →
                       </button>
                     </td>
@@ -156,9 +176,12 @@
 
         @for (question of analytics()!.questions; track question.questionId) {
           <div class="question-card">
-            <div
+            <button
+              type="button"
               class="question-header"
               (click)="toggleQuestionExpanded(question.questionId)"
+              (keydown.enter)="toggleQuestionExpanded(question.questionId)"
+              (keydown.space)="toggleQuestionExpanded(question.questionId)"
             >
               <div class="question-title">
                 <span class="expand-icon">
@@ -169,7 +192,7 @@
               <div class="question-meta">
                 <span class="answered-count" i18n="@@resultsForm.answeredCount">{{ question.answeredCount }} answered</span>
               </div>
-            </div>
+            </button>
 
             @if (isQuestionExpanded(question.questionId)) {
               <div class="question-content">
@@ -179,7 +202,7 @@
                     <div class="rating-stats">
                       <div class="stat-box">
                         <span class="stat-label" i18n="@@resultsForm.average">Average</span>
-                        <span class="stat-value">{{ question.rating.avg.toFixed(2) }}/5</span>
+                        <span class="stat-value">{{ question.rating.avg.toFixed(2) }}/10</span>
                       </div>
                     </div>
 
@@ -302,11 +325,11 @@
   }
 
   @if (textModalOpen()) {
-    <div class="modal-overlay" (click)="closeTextResponses()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="closeTextResponses()" (keydown.escape)="closeTextResponses()">
+      <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>{{ currentQuestionId() ? getQuestionLabel(currentQuestionId()!) : textResponsesTitle }}</h3>
-          <button class="close-btn" (click)="closeTextResponses()" i18n-aria-label="@@resultsForm.closeLabel" aria-label="Close">✕</button>
+          <button class="close-btn" (click)="closeTextResponses()" (keydown.enter)="closeTextResponses()" i18n-aria-label="@@resultsForm.closeLabel" aria-label="Close">✕</button>
         </div>
 
         @if (textLoading()) {
@@ -314,7 +337,7 @@
         } @else if (textError()) {
           <div class="modal-error">{{ textError() }}</div>
         } @else if (textResponses().length > 0) {
-          <div class="text-responses">
+          <div class="text-responses" (scroll)="onTextModalScroll($event)">
             @for (resp of textResponses(); track resp.id) {
               <div class="text-response">
                 <div class="tr-meta">
@@ -322,6 +345,13 @@
                   <span class="muted">{{ formatDate(resp.createdAt) }}</span>
                 </div>
                 <p class="tr-text">{{ resp.text }}</p>
+              </div>
+            }
+            
+            @if (textLoadingMore()) {
+              <div class="modal-loading-more">
+                <div class="spinner-small"></div>
+                <span>Loading more...</span>
               </div>
             }
           </div>

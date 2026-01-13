@@ -133,7 +133,7 @@ interface RemoveFormResponse {
   providedIn: 'root'
 })
 export class GroupService {
-  private apollo = inject(Apollo);
+  private readonly apollo = inject(Apollo);
 
   getGroups(limit: number = 50, cursor?: string): Observable<GroupProfile[]> {
     return this.apollo.watchQuery<any>({

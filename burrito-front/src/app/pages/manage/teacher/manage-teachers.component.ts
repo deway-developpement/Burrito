@@ -58,7 +58,7 @@ interface TeacherRow {
   styleUrls: ['./manage-teachers.component.scss'],
 })
 export class ManageTeachersComponent implements OnInit, AfterViewInit, OnDestroy {
-  private userService = inject(UserService);
+  private readonly userService = inject(UserService);
 
   tableColumns: TableColumn[] = [
     { key: 'name', label: $localize`:@@manageTeachers.name:Name`, type: 'user' },

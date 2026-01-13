@@ -151,7 +151,7 @@ interface ChangeFormStatusResponse {
   providedIn: 'root',
 })
 export class FormService {
-  private apollo = inject(Apollo);
+  private readonly apollo = inject(Apollo);
 
   createForm(payload: CreateFormPayload) {
     return this.apollo

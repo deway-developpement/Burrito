@@ -135,11 +135,12 @@
             }
 
             @if (!selectedForm.targetTeacherId) {
-              <label class="form-field">
+              <label class="form-field" for="teacherId">
                 <span class="form-label" i18n="@@feedbackStudent.teacherIdLabel">
                   Teacher ID <span class="required">*</span>
                 </span>
                 <app-input
+                  id="teacherId"
                   variant="outline"
                   i18n-placeholder="@@feedbackStudent.teacherIdPlaceholder"
                   placeholder="Enter the teacher ID"
@@ -177,7 +178,7 @@
                         [(rating)]="responses[question.id].rating"
                         [readOnly]="formLocked"
                       ></app-star-rating>
-                      <span class="rating-value">{{ responses[question.id].rating || 0 }}/5</span>
+                      <span class="rating-value">{{ responses[question.id].rating || 0 }}/10</span>
                     </div>
                   }
 

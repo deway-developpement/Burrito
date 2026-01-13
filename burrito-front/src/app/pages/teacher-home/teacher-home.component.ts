@@ -21,12 +21,12 @@ import { UserService } from '../../services/user.service';
 })
 export class TeacherHomeComponent implements OnInit {
 
-  private router = inject(Router);
-  private evaluationService = inject(EvaluationService);
-  private userService = inject(UserService);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+  private readonly evaluationService = inject(EvaluationService);
+  private readonly userService = inject(UserService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  unreadEvaluations: TeacherEvaluationUI[] = [];
+  unreadEvaluations: TeacherEvaluationUI[] = []; // Gardé pour ne pas casser le typage si besoin
   readEvaluations: TeacherEvaluationUI[] = [];
   
   feedbackModalOpen = signal(false);
@@ -35,12 +35,10 @@ export class TeacherHomeComponent implements OnInit {
   feedbackError = signal('');
 
   ngOnInit() {
-    // 1. Récupérer l'utilisateur courant pour avoir son ID
-    const currentUser = this.userService.currentUser();
+    const currentUserId = this.userService.currentUser()?.id;
 
-    if (currentUser && currentUser.id) {
-      console.log('Fetching evaluations for teacher ID:', currentUser.id);
-      this.loadEvaluations(currentUser.id);
+    if (currentUserId) {
+      this.loadEvaluations(currentUserId);
     } else {
       console.error('No teacher ID found. Are you logged in?');
     }
@@ -49,26 +47,23 @@ export class TeacherHomeComponent implements OnInit {
   loadEvaluations(teacherId: string) {
     this.evaluationService.getEvaluationsForTeacher(teacherId).subscribe({
       next: (evals) => {
-        console.log('All evaluations loaded:', evals);
-
-        // 2. On sépare les "lus" des "non lus"
-        // Note : Comme l'API ne gère pas ça, notre service a simulé le booléen isRead
-        this.unreadEvaluations = evals.filter(e => !e.isRead);
-        this.readEvaluations = evals.filter(e => e.isRead);
-
-        this.cdr.detectChanges(); // Force le rafraîchissement si besoin
+        // On met TOUT dans readEvaluations pour que ça s'affiche dans le tableau
+        this.readEvaluations = evals.sort((a, b) => 
+          new Date(b.submittedDate).getTime() - new Date(a.submittedDate).getTime()
+        );
+        this.unreadEvaluations = []; // On vide les unread puisqu'on n'affiche plus les cards
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error loading evaluations:', err)
     });
   }
 
   viewEvaluation(id: string) {
-    console.log(`Viewing evaluation detail #${id}`);
     this.feedbackLoading.set(true);
     this.feedbackError.set('');
     
-    // Find the evaluation in the lists
-    const evaluation = [...this.unreadEvaluations, ...this.readEvaluations].find(e => e.id === id);
+    // On cherche dans la liste du tableau
+    const evaluation = this.readEvaluations.find(e => e.id === id);
     
     if (evaluation) {
       this.selectedEvaluation = evaluation;

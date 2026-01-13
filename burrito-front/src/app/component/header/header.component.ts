@@ -14,9 +14,9 @@ import { AuthService } from '../../services/auth.service';
 })
 export class HeaderComponent {
   // Inject the service to access state
-  userService = inject(UserService);
-  authService = inject(AuthService);
-  router = inject(Router);
+  readonly userService = inject(UserService);
+  readonly authService = inject(AuthService);
+  readonly router = inject(Router);
   private document = inject(DOCUMENT);
   private platformId = inject(PLATFORM_ID);
   private localeId = inject(LOCALE_ID);
@@ -24,6 +24,8 @@ export class HeaderComponent {
   // UI state for resend action
   isResending = signal(false);
   resendStatus = signal<'idle' | 'success' | 'error'>('idle');
+  bannerDismissed = signal(false);
+  showSuccessModal = signal(false);
 
   locales = ['en', 'fr', 'de', 'es'];
 
@@ -41,14 +43,23 @@ export class HeaderComponent {
     this.resendStatus.set('idle');
     this.userService.resendEmailVerification().subscribe({
       next: () => {
-        this.resendStatus.set('success');
         this.isResending.set(false);
+        this.bannerDismissed.set(true);
+        this.showSuccessModal.set(true);
       },
       error: () => {
-        this.resendStatus.set('error');
         this.isResending.set(false);
+        this.resendStatus.set('error');
       },
     });
+  }
+
+  dismissBanner() {
+    this.bannerDismissed.set(true);
+  }
+
+  closeModal() {
+    this.showSuccessModal.set(false);
   }
 
   get activeLocale(): string {

@@ -13,13 +13,13 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class AddUserModalComponent {
   
-  private fb = inject(FormBuilder);
-  private userService = inject(UserService);
-  private toast = inject(ToastService);
+  private readonly fb = inject(FormBuilder);
+  private readonly userService = inject(UserService);
+  private readonly toast = inject(ToastService);
 
   @Input() userType: UserType = 'STUDENT'; 
   
-  @Output() close = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
   addForm: FormGroup;
@@ -36,7 +36,7 @@ export class AddUserModalComponent {
 
   onCancel() {
     this.addForm.reset();
-    this.close.emit();
+    this.closed.emit();
   }
 
   onSubmit() {
@@ -56,7 +56,7 @@ export class AddUserModalComponent {
         this.isSubmitting = false;
         this.addForm.reset();
         this.saved.emit(); 
-        this.close.emit(); 
+        this.closed.emit(); 
       },
       error: (err) => {
         // Fix for NG0100: Defer the state updates

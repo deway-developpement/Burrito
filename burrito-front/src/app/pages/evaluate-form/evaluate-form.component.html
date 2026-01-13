@@ -20,32 +20,37 @@
 
       <form [formGroup]="evaluationForm" (ngSubmit)="onSubmit()" class="evaluation-form">
         <div class="question-block" *ngFor="let question of formData.questions; let i = index">
-          <label class="question-label">
-            {{ i + 1 }}. {{ question.label }}
-            <span class="required" *ngIf="question.required">*</span>
-          </label>
-
           <!-- Rating Question -->
-          <div *ngIf="question.type === 'RATING'" class="rating-container">
-            <div class="rating-options">
-              <label *ngFor="let rating of getRatingArray()" class="rating-option">
-                <input
-                  type="radio"
-                  [formControlName]="question.id"
-                  [value]="rating"
-                  [id]="'rating-' + question.id + '-' + rating"
-                />
-                <span class="rating-label">{{ rating }}</span>
-              </label>
-            </div>
-            <div class="rating-scale-labels">
-              <span i18n="@@evaluateForm.poorLabel">Poor</span>
-              <span i18n="@@evaluateForm.excellentLabel">Excellent</span>
-            </div>
+          <div *ngIf="question.type === 'RATING'">
+            <fieldset class="rating-container">
+              <legend class="question-label">
+                {{ i + 1 }}. {{ question.label }}
+                <span class="required" *ngIf="question.required">*</span>
+              </legend>
+              <div class="rating-options">
+                <label *ngFor="let rating of getRatingArray()" class="rating-option">
+                  <input
+                    type="radio"
+                    [formControlName]="question.id"
+                    [value]="rating"
+                    [id]="'rating-' + question.id + '-' + rating"
+                  />
+                  <span class="rating-label">{{ rating }}</span>
+                </label>
+              </div>
+              <div class="rating-scale-labels">
+                <span i18n="@@evaluateForm.poorLabel">Poor</span>
+                <span i18n="@@evaluateForm.excellentLabel">Excellent</span>
+              </div>
+            </fieldset>
           </div>
 
           <!-- Text Question -->
           <div *ngIf="question.type === 'TEXT'" class="text-container">
+            <label class="question-label" [for]="'text-' + question.id">
+              {{ i + 1 }}. {{ question.label }}
+              <span class="required" *ngIf="question.required">*</span>
+            </label>
             <textarea
               [formControlName]="question.id"
               [id]="'text-' + question.id"

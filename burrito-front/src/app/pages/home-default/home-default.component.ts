@@ -12,7 +12,7 @@ import { BackgroundDivComponent } from '../../component/shared/background-div/ba
 })
 export class HomeDefaultComponent {
   // 2. Inject the Router
-  private router = inject(Router);
+  private readonly router = inject(Router);
 
   // 3. Create the redirect method
   onGetStarted() {

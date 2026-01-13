@@ -88,6 +88,7 @@
                 variant="primary"
                 type="button"
                 (click)="publishForm(form.id)"
+                (keydown.enter)="publishForm(form.id)"
               >
                 <span i18n="@@adminForms.publish">Post</span>
               </app-button>
@@ -96,6 +97,7 @@
                 variant="primary"
                 type="button"
                 (click)="closeForm(form.id)"
+                (keydown.enter)="closeForm(form.id)"
               >
                 <span i18n="@@adminForms.close">Close</span>
               </app-button>
@@ -106,6 +108,7 @@
                 variant="outline"
                 type="button"
                 (click)="editForm(form.id)"
+                (keydown.enter)="editForm(form.id)"
               >
                 <span i18n="@@adminForms.edit">Edit</span>
               </app-button>
@@ -134,6 +137,7 @@
         type="button"
         [disabled]="loadMoreDisabled()"
         (click)="loadMoreForms()"
+        (keydown.enter)="loadMoreForms()"
       >
         @if (loadMoreDisabled()) {
           <span i18n="@@adminForms.loadingMore">Loading...</span>
@@ -156,6 +160,6 @@
     [showCancel]="alertDialogShowCancel"
     [intent]="alertDialogIntent"
     (confirm)="confirmAlertDialog()"
-    (cancel)="closeAlertDialog()"
+    (cancelClick)="closeAlertDialog()"
   ></app-alert-dialog>
 </app-background-div>

@@ -88,11 +88,11 @@
         <!-- General Satisfaction Gauge -->
         <div class="satisfaction-gauge">
           <span class="gauge-label" i18n="@@resultsTeacher.generalSatisfaction">General Satisfaction</span>
-          <div class="gauge-value">{{ analytics()!.generalSatisfactionRating.toFixed(1) }}/5</div>
+          <div class="gauge-value">{{ analytics()!.generalSatisfactionRating.toFixed(1) }}/10</div>
           <div class="gauge-bar">
             <div
               class="gauge-fill"
-              [style.width.%]="(analytics()!.generalSatisfactionRating / 5) * 100"
+              [style.width.%]="(analytics()!.generalSatisfactionRating / 10) * 100"
             ></div>
           </div>
         </div>
@@ -124,7 +124,11 @@
         <h2 class="section-title" i18n="@@resultsTeacher.formsBreakdown">Forms Breakdown</h2>
         
         @for (form of analytics()!.formsBreakdown; track form.formId) {
-          <div class="form-card">
+          <button
+            type="button"
+            class="form-card"
+            (click)="navigateToFormResults(form.formId)"
+          >
             <div class="form-card-header">
               <div class="form-title">
                 <h3>{{ form.title }}</h3>
@@ -132,10 +136,10 @@
               <div class="form-stats">
                 <span class="stat-item" i18n="@@resultsTeacher.responsesCount">{{ form.totalResponses }} responses</span>
                 <span class="stat-item" i18n="@@resultsTeacher.npsLabel">NPS: <span [class]="getFormBadgeClass(form.nps.score)">{{ form.nps.score.toFixed(0) }}</span></span>
-                <span class="stat-item">⭐ {{ form.averageRating.toFixed(1) }}/5</span>
+                <span class="stat-item">⭐ {{ form.averageRating.toFixed(1) }}/10</span>
               </div>
             </div>
-          </div>
+          </button>
         }
       </div>
 
@@ -179,7 +183,7 @@
                   </span>
                   <span class="remark-date">{{ formatDate(remark.createdAt) }}</span>
                   @if (remark.rating) {
-                    <span class="remark-rating">⭐ {{ remark.rating }}/5</span>
+                    <span class="remark-rating">⭐ {{ remark.rating }}/10</span>
                   }
                 </div>
               </div>
@@ -216,7 +220,7 @@
           @if (loading()) {
             <span class="spinner-small"></span>
           } @else {
-            �Y"" <span i18n="@@resultsTeacher.refresh">Refresh</span>
+            �Y"" <span i18n="@@resultsTeacher.refresh">Refresh</span>
           }
         </button>
       </div>

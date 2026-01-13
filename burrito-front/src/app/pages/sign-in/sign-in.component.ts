@@ -17,10 +17,10 @@ import { UserService } from './../../services/user.service'; // Ton nouveau serv
 })
 export class SignInComponent {
   // Dependencies
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private toast = inject(ToastService);
-  private userService = inject(UserService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
+  private readonly userService = inject(UserService);
 
   // Form Data
   email = '';

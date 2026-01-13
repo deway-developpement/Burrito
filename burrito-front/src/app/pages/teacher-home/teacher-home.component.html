@@ -79,30 +79,28 @@
           <tr
             *ngFor="let eval of readEvaluations"
             class="history-row"
-            role="button"
-            tabindex="0"
-            (click)="viewEvaluation(eval.id)"
-            (keydown.enter)="viewEvaluation(eval.id)"
-            (keydown.space)="viewEvaluation(eval.id)"
           >
             <td class="course-col">{{ eval.courseName }}</td>
             <td class="text-muted">{{ eval.submittedDate | date:'mediumDate' }}</td>
             <td>
-              <span class="mini-rating">★ {{ eval.rating }}/5</span>
+              <span class="mini-rating">★ {{ eval.rating }}/10</span>
             </td>
           </tr>
         </tbody>
       </table>
+
+      <div *ngIf="readEvaluations.length === 0" class="empty-state" style="border: none;">
+        <p>No feedback available yet.</p>
+      </div>
     </div>
   </section>
 
-  <!-- Feedback Modal -->
   @if (feedbackModalOpen()) {
-    <div class="modal-overlay" (click)="closeFeedbackModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="closeFeedbackModal()" (keydown.escape)="closeFeedbackModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="modal-header">
           <h2 i18n="@@teacherHome.detailsTitle">Evaluation Details</h2>
-          <button class="btn-close" (click)="closeFeedbackModal()" i18n-aria-label="@@teacherHome.closeLabel" aria-label="Close">×</button>
+          <button class="btn-close" (click)="closeFeedbackModal()" i18n-aria-label="@@teacherHome.closeLabel" (keydown.enter)="closeFeedbackModal()" aria-label="Close">×</button>
         </div>
         
         @if (feedbackLoading()) {
@@ -123,16 +121,16 @@
             <div class="feedback-rating">
               <span class="label" i18n="@@teacherHome.overallRating">Overall Rating:</span>
               <div class="stars">
-                <span *ngFor="let star of [1,2,3,4,5]" 
+                <span *ngFor="let star of [1,2,3,4,5,6,7,8,9,10]" 
                       [class.filled]="star <= selectedEvaluation.rating">★</span>
               </div>
-              <span class="rating-text">{{ selectedEvaluation.rating }}/5</span>
+              <span class="rating-text">{{ selectedEvaluation.rating }}/10</span>
             </div>
           </div>
         }
 
         <div class="modal-footer">
-          <button class="btn-primary" (click)="closeFeedbackModal()"><span i18n="@@teacherHome.close">Close</span></button>
+          <button class="btn-primary" (click)="closeFeedbackModal()" (keydown.enter)="closeFeedbackModal()"><span i18n="@@teacherHome.close">Close</span></button>
         </div>
       </div>
     </div>

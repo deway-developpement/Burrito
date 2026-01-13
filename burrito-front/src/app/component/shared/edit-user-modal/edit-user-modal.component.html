@@ -14,23 +14,23 @@
         </div>
 
         <div class="form-group">
-          <label>Full Name</label>
-          <input type="text" formControlName="fullName" placeholder="Ex: John Doe">
+          <label for="edit-user-fullName">Full Name</label>
+          <input id="edit-user-fullName" type="text" formControlName="fullName" placeholder="Ex: John Doe">
           <small *ngIf="editForm.get('fullName')?.touched && editForm.get('fullName')?.invalid">
             Name is required.
           </small>
         </div>
 
         <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" formControlName="email" placeholder="Ex: john@uni.edu">
+          <label for="edit-user-email">Email Address</label>
+          <input id="edit-user-email" type="email" formControlName="email" placeholder="Ex: john@uni.edu">
           <small *ngIf="editForm.get('email')?.touched && editForm.get('email')?.invalid">
             Valid email is required.
           </small>
         </div>
         <div class="form-group">
           <div class="label-header">
-            <label>Assigned Groups</label>
+            <span id="assigned-groups-label">Assigned Groups</span>
             <button type="button" class="text-btn" (click)="isCreatingGroup = !isCreatingGroup">
               {{ isCreatingGroup ? 'Show List' : '+ Create New' }}
             </button>
@@ -44,7 +44,7 @@
           </div>
 
           <div class="group-selector" *ngIf="!isCreatingGroup">
-            <select #groupSelect class="group-dropdown">
+            <select #groupSelect class="group-dropdown" aria-labelledby="assigned-groups-label">
               <option value="" disabled selected>Choose a group...</option>
               <option *ngFor="let g of availableGroups" [value]="g.id">
                 {{ g.name }}
@@ -56,7 +56,7 @@
           </div>
 
           <div class="group-selector" *ngIf="isCreatingGroup">
-            <input #newGroupName type="text" class="group-input" placeholder="New group name...">
+            <input #newGroupName type="text" class="group-input" placeholder="New group name..." aria-labelledby="assigned-groups-label">
             <button type="button" class="btn-primary-sm" 
                     [disabled]="isCreatingGroupLoading"
                     (click)="createNewGroup(newGroupName.value); newGroupName.value = ''">

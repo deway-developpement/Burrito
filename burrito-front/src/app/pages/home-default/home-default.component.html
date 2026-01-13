@@ -14,7 +14,8 @@
         <div class="hero__actions">
           <app-button
             variant="primary"
-            (click)="onGetStarted()" 
+            (click)="onGetStarted()"
+            (keydown.enter)="onGetStarted()"
           >
             <span i18n="@@homeDefault.getStarted">Get started</span>
           </app-button>

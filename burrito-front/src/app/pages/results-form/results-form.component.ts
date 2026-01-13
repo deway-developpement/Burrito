@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { HeaderComponent } from '../../component/header/header.component';
+
 import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 import { AuthService } from '../../services/auth.service';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
@@ -145,8 +145,8 @@ const GET_FORM_TITLE = gql`
 `;
 
 const GET_EVALUATIONS = gql`
-  query Evaluations($filter: EvaluationFilter) {
-    evaluations(filter: $filter) {
+  query Evaluations($filter: EvaluationFilter, $paging: CursorPaging) {
+    evaluations(filter: $filter, paging: $paging) {
       edges {
         node {
           id
@@ -159,6 +159,10 @@ const GET_EVALUATIONS = gql`
             text
           }
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -191,6 +195,8 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
   isAdmin = signal<boolean>(false);
+  isTeacherView = signal<boolean>(false);
+  viewingTeacherId = signal<string | null>(null);
 
   expandedQuestions = signal<Set<string>>(new Set());
 
@@ -200,25 +206,39 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   textError = signal<string | null>(null);
   currentQuestionId = signal<string | null>(null);
   textResponsesTitle = $localize`:@@resultsForm.textResponsesTitle:Text responses`;
+  
+  // Pagination state for text responses
+  textPageCursor = signal<string | null>(null);
+  textHasNextPage = signal<boolean>(false);
+  textLoadingMore = signal<boolean>(false);
 
   // Time window options for template
   readonly timeWindowOptions: TimeWindow[] = ['all', '30d', '7d', 'custom'];
 
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apollo: Apollo,
-    private authService: AuthService,
-    @Inject(PLATFORM_ID) private platformId: Object,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly apollo: Apollo,
+    private readonly authService: AuthService,
+    @Inject(PLATFORM_ID) private readonly platformId: Object,
     @Inject(LOCALE_ID) private localeId: string,
   ) {}
 
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
     this.isAdmin.set(user?.userType === 'ADMIN');
+
+    // If user is a teacher (not admin), they're viewing their own results
+    if (user && user.userType !== 'ADMIN') {
+      this.isTeacherView.set(true);
+      this.viewingTeacherId.set(user.id);
+    } else {
+      this.isTeacherView.set(false);
+      this.viewingTeacherId.set(null);
+    }
 
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       this.formId.set(params['formId']);
@@ -293,9 +313,9 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // Step 2: If admin, calculate teacher breakdown
+      // Step 2: If admin (and not teacher view), calculate teacher breakdown
       let teachersBreakdown: TeacherBreakdown[] = [];
-      if (this.isAdmin()) {
+      if (this.isAdmin() && !this.isTeacherView()) {
         teachersBreakdown = await this.calculateTeacherBreakdown(window);
       }
 
@@ -371,7 +391,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   ): Promise<TeacherBreakdown[]> {
     try {
       // Fetch all evaluations for this form
-      const evaluations = await this.fetchEvaluationsForForm(window);
+      const { evaluations } = await this.fetchEvaluationsForForm(window);
 
       // Group evaluations by teacher
       const teacherMap = new Map<string, Evaluation[]>();
@@ -412,15 +432,33 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  private fetchEvaluationsForForm(window?: AnalyticsWindow): Promise<Evaluation[]> {
+  private fetchEvaluationsForForm(
+    window?: AnalyticsWindow,
+    after?: string | null
+  ): Promise<{ evaluations: Evaluation[]; pageInfo: { endCursor: string | null; hasNextPage: boolean } }> {
     const filter: any = {
       formId: { eq: this.formId() },
     };
 
+    // If teacher view, filter by teacherId
+    if (this.isTeacherView() && this.viewingTeacherId()) {
+      filter.teacherId = { eq: this.viewingTeacherId() };
+    }
+
+    const paging: any = { first: 100 };
+    if (after) {
+      paging.after = after;
+    }
+
     return firstValueFrom(
-      this.apollo.query<{ evaluations: { edges: Array<{ node: Evaluation }> } }>({
+      this.apollo.query<{ 
+        evaluations: { 
+          edges: Array<{ node: Evaluation }>;
+          pageInfo: { endCursor: string; hasNextPage: boolean };
+        } 
+      }>({
         query: GET_EVALUATIONS,
-        variables: { filter },
+        variables: { filter, paging },
         fetchPolicy: 'network-only'
       })
     ).then((response) => {
@@ -442,9 +480,12 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
           });
         }
         
-        return evaluations;
+        return {
+          evaluations,
+          pageInfo: response.data.evaluations.pageInfo || { endCursor: null, hasNextPage: false }
+        };
       }
-      return [];
+      return { evaluations: [], pageInfo: { endCursor: null, hasNextPage: false } };
     });
   }
 
@@ -574,6 +615,41 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     return 'red';
   }
 
+  getNpsGradient(score: number): string {
+    // NPS ranges from -100 to 100
+    // We'll create a gradient from red (-100) through yellow (0) to green (100)
+    
+    if (score >= 50) {
+      // Excellent: 50 to 100 - gradient from light green to dark green
+      const intensity = (score - 50) / 50; // 0 to 1
+      const r = Math.round(76 - 76 * intensity); // 76 to 0
+      const g = Math.round(175 + 55 * intensity); // 175 to 230
+      const b = Math.round(80 - 30 * intensity); // 80 to 50
+      return `linear-gradient(135deg, rgb(${r + 20}, ${g - 20}, ${b + 10}), rgb(${r}, ${g}, ${b}))`;
+    } else if (score >= 0) {
+      // Good: 0 to 50 - gradient from yellow to light green
+      const intensity = score / 50; // 0 to 1
+      const r = Math.round(255 - 179 * intensity); // 255 to 76
+      const g = Math.round(193 - 18 * intensity); // 193 to 175
+      const b = Math.round(7 + 73 * intensity); // 7 to 80
+      return `linear-gradient(135deg, rgb(${r + 20}, ${g - 10}, ${b}), rgb(${r}, ${g}, ${b}))`;
+    } else if (score >= -50) {
+      // Poor: -50 to 0 - gradient from orange to yellow
+      const intensity = (score + 50) / 50; // 0 to 1
+      const r = Math.round(255);
+      const g = Math.round(140 + 53 * intensity); // 140 to 193
+      const b = Math.round(0 + 7 * intensity); // 0 to 7
+      return `linear-gradient(135deg, rgb(${r}, ${g - 10}, ${b}), rgb(${r}, ${g}, ${b}))`;
+    } else {
+      // Very Poor: -100 to -50 - gradient from dark red to orange
+      const intensity = (score + 100) / 50; // 0 to 1
+      const r = Math.round(220 + 35 * intensity); // 220 to 255
+      const g = Math.round(53 + 87 * intensity); // 53 to 140
+      const b = Math.round(53 - 53 * intensity); // 53 to 0
+      return `linear-gradient(135deg, rgb(${r - 20}, ${g - 10}, ${b + 10}), rgb(${r}, ${g}, ${b}))`;
+    }
+  }
+
   getTeacherBadgeClass(npsScore: number): string {
     if (npsScore >= 50) return 'badge-success';
     if (npsScore >= 0) return 'badge-warning';
@@ -598,6 +674,8 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     this.textLoading.set(true);
     this.textError.set(null);
     this.textResponses.set([]);
+    this.textPageCursor.set(null);
+    this.textHasNextPage.set(false);
 
     // Prevent body scroll
     if (isPlatformBrowser(this.platformId)) {
@@ -606,7 +684,10 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
 
     try {
       const window = this.getAnalyticsWindow();
-      const evaluations = await this.fetchEvaluationsForForm(window);
+      const { evaluations, pageInfo } = await this.fetchEvaluationsForForm(window);
+
+      this.textPageCursor.set(pageInfo.endCursor);
+      this.textHasNextPage.set(pageInfo.hasNextPage);
 
       const responses: TextResponse[] = [];
       evaluations.forEach((evaluation) => {
@@ -647,6 +728,68 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     // Restore body scroll
     if (isPlatformBrowser(this.platformId)) {
       document.body.style.overflow = '';
+    }
+  }
+
+  async loadMoreTextResponses(): Promise<void> {
+    if (!this.textHasNextPage() || this.textLoadingMore() || !this.currentQuestionId()) {
+      return;
+    }
+
+    this.textLoadingMore.set(true);
+
+    try {
+      const window = this.getAnalyticsWindow();
+      const { evaluations, pageInfo } = await this.fetchEvaluationsForForm(
+        window,
+        this.textPageCursor()
+      );
+
+      this.textPageCursor.set(pageInfo.endCursor);
+      this.textHasNextPage.set(pageInfo.hasNextPage);
+
+      const questionId = this.currentQuestionId()!;
+      const newResponses: TextResponse[] = [];
+      
+      evaluations.forEach((evaluation) => {
+        evaluation.answers.forEach((answer, idx) => {
+          if (answer.questionId !== questionId) {
+            return;
+          }
+          const text = (answer.text ?? '').trim();
+          if (text.length === 0) {
+            return;
+          }
+          newResponses.push({
+            id: `${evaluation.id}-${answer.questionId}-${idx}`,
+            questionId: answer.questionId,
+            questionLabel: this.getQuestionLabel(answer.questionId),
+            text,
+            createdAt: evaluation.createdAt ?? new Date().toISOString(),
+            teacherId: evaluation.teacherId,
+          });
+        });
+      });
+
+      // Append and re-sort
+      const allResponses = [...this.textResponses(), ...newResponses];
+      allResponses.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      this.textResponses.set(allResponses);
+    } catch (err) {
+      console.error('Failed to load more text responses', err);
+    } finally {
+      this.textLoadingMore.set(false);
+    }
+  }
+
+  onTextModalScroll(event: Event): void {
+    const element = event.target as HTMLElement;
+    const scrollPosition = element.scrollTop + element.clientHeight;
+    const scrollHeight = element.scrollHeight;
+    
+    // Trigger load more when user is 200px from bottom
+    if (scrollHeight - scrollPosition < 200 && this.textHasNextPage() && !this.textLoadingMore()) {
+      this.loadMoreTextResponses();
     }
   }
 

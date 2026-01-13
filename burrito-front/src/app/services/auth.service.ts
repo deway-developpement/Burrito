@@ -17,8 +17,8 @@ interface User {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private http = inject(HttpClient);
-  private apiBaseUrl = getApiBaseUrl();
+  private readonly http = inject(HttpClient);
+  private readonly apiBaseUrl = getApiBaseUrl();
   
   // Signal for the short-lived Access Token
   token = signal<string | null>(null);

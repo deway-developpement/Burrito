@@ -1,7 +1,6 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const serverRoutes: ServerRoute[] = [
-  // TODO: Revisit prerendering for parameterized routes once getPrerenderParams is defined.
   {
     path: 'results/:id',
     renderMode: RenderMode.Server
@@ -16,6 +15,10 @@ export const serverRoutes: ServerRoute[] = [
   },
   {
     path: 'student/evaluate/:id',
+    renderMode: RenderMode.Server
+  },
+  {
+    path: 'verify-email',
     renderMode: RenderMode.Server
   },
   {

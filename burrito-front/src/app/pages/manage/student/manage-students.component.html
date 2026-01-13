@@ -35,21 +35,19 @@
 
     <div #loadMoreTrigger class="load-more-trigger" aria-hidden="true"></div>
 
-    <app-edit-user-modal
-      [user]="selectedUser"
-      (close)="closeEditModal()"
-      (saved)="refreshData()"
-    >
-    </app-edit-user-modal>
+  <app-edit-user-modal
+    [user]="selectedUser"
+    (closed)="closeEditModal()"
+    (saved)="refreshData()">
+  </app-edit-user-modal>
 
-    @if (showAddModal) {
-      <app-add-user-modal
-        userType="STUDENT"
-        (close)="closeAddModal()"
-        (saved)="refreshData()"
-      >
-      </app-add-user-modal>
-    }
+  @if (showAddModal) {
+    <app-add-user-modal 
+      userType="STUDENT"
+      (closed)="closeAddModal()" 
+      (saved)="refreshData()">
+    </app-add-user-modal>
+  }
   </div>
 
   <app-alert-dialog
@@ -61,6 +59,6 @@
     [showCancel]="alertDialogShowCancel"
     [intent]="alertDialogIntent"
     (confirm)="confirmAlertDialog()"
-    (cancel)="closeAlertDialog()"
+    (cancelClick)="closeAlertDialog()"
   ></app-alert-dialog>
 </app-background-div>

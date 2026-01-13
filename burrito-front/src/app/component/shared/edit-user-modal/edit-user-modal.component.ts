@@ -15,14 +15,14 @@ import { firstValueFrom } from 'rxjs';
 })
 export class EditUserModalComponent implements OnChanges, OnInit {
   
-  private fb = inject(FormBuilder);
-  private userService = inject(UserService);
-  private groupService = inject(GroupService);
-  private toast = inject(ToastService);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly fb = inject(FormBuilder);
+  private readonly userService = inject(UserService);
+  private readonly groupService = inject(GroupService);
+  private readonly toast = inject(ToastService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @Input() user: UserProfile | null = null;
-  @Output() close = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
   editForm: FormGroup;
@@ -76,7 +76,7 @@ export class EditUserModalComponent implements OnChanges, OnInit {
 
   get availableGroups(): GroupProfile[] {
     return this.allGroups.filter(
-      allG => !this.selectedGroups.find(selG => selG.id === allG.id)
+      allG => !this.selectedGroups.some(selG => selG.id === allG.id)
     );
   }
 
@@ -141,7 +141,7 @@ export class EditUserModalComponent implements OnChanges, OnInit {
   }
 
   onCancel() {
-    this.close.emit();
+    this.closed.emit();
   }
 
   // --- Submission Logic ---
@@ -194,7 +194,7 @@ async onSubmit() {
         this.cdr.detectChanges();
         
         this.saved.emit();
-        this.close.emit();
+        this.closed.emit();
       } catch (err) {
         console.error('Group sync error:', err);
         this.toast.show(

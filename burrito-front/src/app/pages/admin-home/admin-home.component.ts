@@ -1,11 +1,11 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';   
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 import { DashboardService } from '../../services/dashboard.service';
 import { Observable, of, combineLatest, map } from 'rxjs';
 import { Apollo, gql } from 'apollo-angular';
-import { EvaluationService, DashboardMetrics } from '../../services/evaluation.service';
+import { EvaluationService } from '../../services/evaluation.service';
 
 @Component({
   selector: 'app-admin-home',
@@ -25,9 +25,9 @@ export class AdminHomeComponent implements OnInit {
   forms$: Observable<Array<{ id: string; title: string }>> = of([]);
 
   constructor(
-    private dashboardService: DashboardService, 
-    private evaluationService: EvaluationService,
-    private apollo: Apollo
+    private readonly dashboardService: DashboardService, 
+    private readonly evaluationService: EvaluationService,
+    private readonly apollo: Apollo
   ) {
     this.stats$ = combineLatest([
       this.dashboardService.getStats(),

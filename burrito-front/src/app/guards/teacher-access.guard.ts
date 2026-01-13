@@ -5,8 +5,6 @@ import {
   ActivatedRouteSnapshot,
   RouterStateSnapshot,
 } from '@angular/router';
-import { map, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 export const teacherAccessGuard: CanActivateFn = (
