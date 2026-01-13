@@ -49,10 +49,6 @@ class AnalyticsServicer:
 
             for idx, ans in enumerate(answers):
                 score, label = self.sentiment_analyzer.analyze(ans)
-                ideas = self.idea_summarizer.extract_answer_keywords(
-                    ans,
-                    request.question_text,
-                )
 
                 sentiment_scores.append(float(score))
 
@@ -61,17 +57,12 @@ class AnalyticsServicer:
                     'answer_text': ans,
                     'sentiment_score': float(score),
                     'sentiment_label': label,
-                    'extracted_ideas': ideas
                 })
 
             cluster_summaries = self.idea_summarizer.summarize_clusters(
                 answers,
                 request.question_text,
             )
-            aggregated_ideas = [
-                item['summary'] for item in cluster_summaries
-                if item.get('summary')
-            ]
 
             # Aggregate sentiment across answers (mean)
             if sentiment_scores:
@@ -93,7 +84,7 @@ class AnalyticsServicer:
                 'answers': per_answer_results,
                 'aggregate_sentiment_score': aggregate_score,
                 'aggregate_sentiment_label': aggregate_label,
-                'aggregated_extracted_ideas': aggregated_ideas
+                'cluster_summaries': cluster_summaries,
             }
 
             self.db_manager.save_analysis(analysis_data)
@@ -105,7 +96,6 @@ class AnalyticsServicer:
                     answer_text=a['answer_text'],
                     sentiment_score=a['sentiment_score'],
                     sentiment_label=a['sentiment_label'],
-                    extracted_ideas=a['extracted_ideas']
                 )
                 for a in per_answer_results
             ]
@@ -124,7 +114,6 @@ class AnalyticsServicer:
                 answers=answers_proto,
                 aggregate_sentiment_score=aggregate_score,
                 aggregate_sentiment_label=aggregate_label,
-                aggregated_extracted_ideas=aggregated_ideas,
                 cluster_summaries=cluster_summaries_proto,
                 success=True
             )

@@ -9,8 +9,6 @@ class MockDB:
         print('MockDB.save_analysis called')
         self.storage[analysis_data.get('question_id','')] = analysis_data
         return analysis_data.get('question_id','')
-    def update_idea_frequency(self, ideas):
-        print('MockDB.update_idea_frequency:', ideas)
     def update_sentiment_stats(self, label):
         print('MockDB.update_sentiment_stats:', label)
 

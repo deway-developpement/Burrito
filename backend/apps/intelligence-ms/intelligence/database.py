@@ -1,7 +1,7 @@
 """
 MongoDB Database Module for Analytics
 """
-from typing import Dict, Any, List
+from typing import Dict, Any
 from pymongo import MongoClient
 import os
 from datetime import datetime
@@ -19,20 +19,25 @@ class MongoDBManager:
             db_name: Database name
         """
         if not connection_string:
-            # Build from environment variables
-            host = os.getenv('MONGODB_HOST', 'localhost')
+            # Build from environment variables (align with other services)
+            mode = os.getenv('MONGODB_MODE', '').lower()
+            host = os.getenv('MONGODB_CONTAINER_NAME', 'mongo') if mode == 'docker' else 'localhost'
+            host = os.getenv('MONGODB_HOST', host)
             port = os.getenv('MONGODB_PORT', '27017')
             username = os.getenv('DATABASE_USERNAME', '')
             password = os.getenv('DATABASE_PASSWORD', '')
+            db_name = os.getenv('DATABASE_NAME', db_name)
 
             # Try with credentials first, fall back to no credentials
             if username and password:
                 try:
-                    connection_string = f"mongodb://{username}:{password}@{host}:{port}/"
-                except:
-                    connection_string = f"mongodb://{host}:{port}/"
+                    connection_string = (
+                        f"mongodb://{username}:{password}@{host}:{port}/{db_name}?authSource=admin"
+                    )
+                except Exception:
+                    connection_string = f"mongodb://{host}:{port}/{db_name}"
             else:
-                connection_string = f"mongodb://{host}:{port}/"
+                connection_string = f"mongodb://{host}:{port}/{db_name}"
 
         try:
             self.client = MongoClient(
@@ -61,7 +66,6 @@ class MongoDBManager:
         collections = [
             'analyses',
             'sentiment_stats',
-            'ideas_frequency'
         ]
 
         for collection in collections:
@@ -71,7 +75,6 @@ class MongoDBManager:
         # Create indexes
         self.db['analyses'].create_index('question_id', unique=True)
         self.db['analyses'].create_index('timestamp')
-        self.db['ideas_frequency'].create_index('idea', unique=True)
 
     def save_analysis(self, analysis_data: Dict[str, Any]) -> str:
         """
@@ -94,26 +97,6 @@ class MongoDBManager:
             return str(result.upserted_id or analysis_data['question_id'])
         except Exception as e:
             raise Exception(f"Failed to save analysis: {str(e)}")
-
-    def update_idea_frequency(self, ideas: List[str]):
-        """
-        Update idea frequency in database
-
-        Args:
-            ideas: List of extracted ideas
-        """
-        try:
-            for idea in ideas:
-                self.db['ideas_frequency'].update_one(
-                    {'idea': idea},
-                    {
-                        '$inc': {'frequency': 1},
-                        '$set': {'last_updated': datetime.utcnow()}
-                    },
-                    upsert=True
-                )
-        except Exception as e:
-            raise Exception(f"Failed to update idea frequency: {str(e)}")
 
     def update_sentiment_stats(self, sentiment_label: str):
         """
@@ -199,11 +182,21 @@ class MongoDBManager:
         """
         try:
             pipeline = [
-                {'$unwind': '$aggregated_extracted_ideas'},
+                {'$unwind': '$cluster_summaries'},
+                {
+                    '$match': {
+                        'cluster_summaries.summary': {
+                            '$exists': True,
+                            '$ne': '',
+                        }
+                    }
+                },
                 {
                     '$group': {
-                        '_id': '$aggregated_extracted_ideas',
-                        'frequency': {'$sum': 1},
+                        '_id': '$cluster_summaries.summary',
+                        'frequency': {
+                            '$sum': {'$ifNull': ['$cluster_summaries.count', 1]},
+                        },
                     }
                 },
                 {'$sort': {'frequency': -1}},
@@ -215,8 +208,25 @@ class MongoDBManager:
             total_frequency_result = list(
                 self.db['analyses'].aggregate(
                     [
-                        {'$unwind': '$aggregated_extracted_ideas'},
-                        {'$group': {'_id': None, 'total': {'$sum': 1}}},
+                        {'$unwind': '$cluster_summaries'},
+                        {
+                            '$match': {
+                                'cluster_summaries.summary': {
+                                    '$exists': True,
+                                    '$ne': '',
+                                }
+                            }
+                        },
+                        {
+                            '$group': {
+                                '_id': None,
+                                'total': {
+                                    '$sum': {
+                                        '$ifNull': ['$cluster_summaries.count', 1]
+                                    }
+                                },
+                            }
+                        },
                     ]
                 )
             )
@@ -226,8 +236,16 @@ class MongoDBManager:
             total_ideas_result = list(
                 self.db['analyses'].aggregate(
                     [
-                        {'$unwind': '$aggregated_extracted_ideas'},
-                        {'$group': {'_id': '$aggregated_extracted_ideas'}},
+                        {'$unwind': '$cluster_summaries'},
+                        {
+                            '$match': {
+                                'cluster_summaries.summary': {
+                                    '$exists': True,
+                                    '$ne': '',
+                                }
+                            }
+                        },
+                        {'$group': {'_id': '$cluster_summaries.summary'}},
                         {'$count': 'total'},
                     ]
                 )

@@ -12,11 +12,16 @@ import { firstValueFrom, of, timeout, catchError, switchMap } from 'rxjs';
 import { routes } from './app.routes';
 import { AuthService } from './services/auth.service';
 import { UserService } from './services/user.service';
+import { getApiBaseUrl } from './config/runtime-config';
 
 function apolloOptionsFactory() {
     const httpLink = inject(HttpLink);
     const authService = inject(AuthService);
-    const http = httpLink.create({ uri: '/graphQL', withCredentials: true });
+    const apiBaseUrl = getApiBaseUrl();
+    const http = httpLink.create({
+        uri: `${apiBaseUrl}/graphQL`,
+        withCredentials: true
+    });
     const authLink = new ApolloLink((operation, forward) => {
         const token = authService.token();
         if (token) {

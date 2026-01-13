@@ -1,6 +1,7 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { tap, catchError, of } from 'rxjs';
+import { getApiBaseUrl } from '../config/runtime-config';
 
 interface AuthResponse {
   access_token: string;
@@ -17,6 +18,7 @@ interface User {
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
+  private apiBaseUrl = getApiBaseUrl();
   
   // Signal for the short-lived Access Token
   token = signal<string | null>(null);
@@ -25,7 +27,11 @@ export class AuthService {
   currentUser = signal<User | null>(null);
 
   login(credentials: { email: string; password: string }) {
-    return this.http.post<AuthResponse>('/auth/login', credentials).pipe(
+    return this.http
+      .post<AuthResponse>(`${this.apiBaseUrl}/auth/login`, credentials, {
+        withCredentials: true,
+      })
+      .pipe(
       tap((response) => {
         // 1. Update Access Token
         this.token.set(response.access_token);
@@ -46,19 +52,24 @@ export class AuthService {
 
     const headers = new HttpHeaders().set('refresh_token', refreshToken);
 
-    return this.http.get<AuthResponse>('/auth/refresh', { headers }).pipe(
-      tap((response) => {
-        this.token.set(response.access_token);
-
-        if (response.refresh_token) {
-          localStorage.setItem('refresh_token', response.refresh_token);
-        }
-      }),
-      catchError((err) => {
-        this.logout(); 
-        return of(null);
+    return this.http
+      .get<AuthResponse>(`${this.apiBaseUrl}/auth/refresh`, {
+        headers,
+        withCredentials: true,
       })
-    );
+      .pipe(
+        tap((response) => {
+          this.token.set(response.access_token);
+
+          if (response.refresh_token) {
+            localStorage.setItem('refresh_token', response.refresh_token);
+          }
+        }),
+        catchError((err) => {
+          this.logout(); 
+          return of(null);
+        })
+      );
   }
 
   getCurrentUser(): User | null {

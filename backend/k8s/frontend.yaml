@@ -1,0 +1,125 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: burrito-frontend-config
+  namespace: evaluation-system
+data:
+  API_BASE_URL: "https://api.burrito.deway.fr"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: burrito-frontend
+  namespace: evaluation-system
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: burrito-frontend
+  template:
+    metadata:
+      labels:
+        app: burrito-frontend
+    spec:
+      containers:
+        - name: burrito-frontend
+          image: registry.burrito.deway.fr/burrito-frontend:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 4000
+          env:
+            - name: PORT
+              value: "4000"
+          envFrom:
+            - configMapRef:
+                name: burrito-frontend-config
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: burrito-frontend
+  namespace: evaluation-system
+spec:
+  selector:
+    app: burrito-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 4000
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: https-redirect
+  namespace: evaluation-system
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: burrito-frontend
+  namespace: evaluation-system
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.middlewares: evaluation-system-https-redirect@kubernetescrd
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: burrito.deway.fr
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: burrito-frontend
+                port:
+                  number: 80
+  tls:
+    - hosts:
+        - burrito.deway.fr
+      secretName: burrito-frontend-tls
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: burrito-frontend
+  namespace: evaluation-system
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: burrito-frontend
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
