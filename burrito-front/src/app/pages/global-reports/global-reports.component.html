@@ -17,6 +17,7 @@
         <div class="form-card" 
              *ngFor="let form of forms()" 
              (click)="navigateToFormResults(form.id)"
+             (keydown.enter)="navigateToFormResults(form.id)"
              [class.inactive]="form.status !== 'PUBLISHED'">
           
           <div class="card-header">

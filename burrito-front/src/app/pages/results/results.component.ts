@@ -75,9 +75,8 @@ const GET_FORM = gql`
   styleUrls: ['./results.component.scss']
 })
 export class ResultsComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private apollo = inject(Apollo);
-  private authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly apollo = inject(Apollo);
 
 
   evaluationId = signal<string | null>(null);

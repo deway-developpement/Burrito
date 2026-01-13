@@ -55,11 +55,11 @@
   </section>
 
   @if (feedbackModalOpen()) {
-    <div class="modal-overlay" (click)="closeFeedbackModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="closeFeedbackModal()" (keydown.escape)="closeFeedbackModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="modal-header">
           <h2>Evaluation Details</h2>
-          <button class="btn-close" (click)="closeFeedbackModal()" aria-label="Close">×</button>
+          <button class="btn-close" (click)="closeFeedbackModal()" (keydown.enter)="closeFeedbackModal()" aria-label="Close">×</button>
         </div>
         
         @if (feedbackLoading()) {
@@ -89,7 +89,7 @@
         }
 
         <div class="modal-footer">
-          <button class="btn-primary" (click)="closeFeedbackModal()">Close</button>
+          <button class="btn-primary" (click)="closeFeedbackModal()" (keydown.enter)="closeFeedbackModal()">Close</button>
         </div>
       </div>
     </div>
