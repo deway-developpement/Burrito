@@ -213,20 +213,6 @@
                   }
                 </div>
 
-                @if (question.type === 'text') {
-                  <div class="form-field">
-                    <label [for]="'question-placeholder-' + question.id" class="form-label" i18n="@@feedbackAdmin.placeholderLabel">Placeholder</label>
-                    <app-input
-                      [id]="'question-placeholder-' + question.id"
-                      variant="outline"
-                      i18n-placeholder="@@feedbackAdmin.placeholderText"
-                      placeholder="e.g. Add a quick note"
-                      [fullWidth]="true"
-                      [(model)]="question.placeholder"
-                    ></app-input>
-                  </div>
-                }
-
                 @if (question.type === 'rating') {
                   <p class="hint" i18n="@@feedbackAdmin.ratingHint">
                     Students will select a 1-5 star rating.

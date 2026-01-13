@@ -29,7 +29,6 @@ interface FormQuestion {
   label: string;
   type: QuestionType;
   required: boolean;
-  placeholder?: string;
 }
 
 @Component({
@@ -128,7 +127,6 @@ export class FeedbackAdminComponent implements OnInit {
       label: '',
       type,
       required: false,
-      placeholder: '',
     };
     this.questions = [...this.questions, base];
   }
@@ -276,7 +274,6 @@ export class FeedbackAdminComponent implements OnInit {
       label: question.label,
       type: question.type === 'RATING' ? 'rating' : 'text',
       required: question.required,
-      placeholder: '',
     }));
     this.publishAttempted = false;
     this.savedMessage = '';
