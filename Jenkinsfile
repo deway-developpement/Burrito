@@ -226,7 +226,6 @@ pipeline {
                   buildctl \
                     --addr "${env.BUILDKIT_HOST}" \
                     build \
-                    --no-cache \
                     --frontend dockerfile.v0 \
                     --local context=backend \
                     --local dockerfile=backend \
@@ -245,7 +244,6 @@ pipeline {
                   buildctl \
                     --addr "${env.BUILDKIT_HOST}" \
                     build \
-                    --no-cache \
                     --frontend dockerfile.v0 \
                     --local context=backend/apps/intelligence-ms \
                     --local dockerfile=backend/apps/intelligence-ms \
@@ -263,7 +261,6 @@ pipeline {
                   buildctl \
                     --addr "${env.BUILDKIT_HOST}" \
                     build \
-                    --no-cache \
                     --frontend dockerfile.v0 \
                     --local context=burrito-front \
                     --local dockerfile=burrito-front \
