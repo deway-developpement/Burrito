@@ -802,7 +802,8 @@ export class AnalyticsService {
       : undefined;
 
     const clusterSummaries = (response.cluster_summaries || []).filter(
-      (item) => typeof item?.summary === 'string' && item.summary.trim().length > 0,
+      (item) =>
+        typeof item?.summary === 'string' && item.summary.trim().length > 0,
     );
     const topIdeas = clusterSummaries.slice(0, 10).map((item) => ({
       idea: item.summary || '',
