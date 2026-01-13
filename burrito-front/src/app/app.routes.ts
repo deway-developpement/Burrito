@@ -20,6 +20,7 @@ import { teacherAccessGuard } from './guards/teacher-access.guard';
 import { VerifyEmailComponent } from './pages/verify-email/verify-email.component';
 import { EvaluateFormComponent } from './pages/evaluate-form/evaluate-form.component';
 import { AdminFormsComponent } from './pages/admin-forms/admin-forms.component';
+import { NotFoundComponent } from './pages/not-found/not-found.component';
 
 export const routes: Routes = [
   {
@@ -93,8 +94,7 @@ export const routes: Routes = [
   },
   {
     path: 'verify-email',
-    component: VerifyEmailComponent,
-    canActivate: [authGuard]
+    component: VerifyEmailComponent
   },
   {
     path: 'feedback/student',
@@ -105,5 +105,13 @@ export const routes: Routes = [
     path: 'feedback/admin',
     component: FeedbackAdminComponent,
     canActivate: [authGuard]
+  },
+  {
+    path: '404',
+    component: NotFoundComponent
+  },
+  {
+    path: '**',
+    component: NotFoundComponent
   }
 ];
