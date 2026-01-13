@@ -446,6 +446,10 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
         },
       );
     } catch (error) {
+      // TODO: Remove this temporary log once SMTP failures are resolved.
+      this.logger.error(
+        `Email send failed for notification ${notification.id}: ${this.describeError(error)}`,
+      );
       await this.notificationModel.updateOne(
         { _id: notification.id },
         {
