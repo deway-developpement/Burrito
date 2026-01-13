@@ -47,14 +47,14 @@ interface FormQuestion {
   styleUrls: ['./feedback-admin.component.scss'],
 })
 export class FeedbackAdminComponent implements OnInit {
-  private formService = inject(FormService);
-  private userService = inject(UserService);
-  private groupService = inject(GroupService);
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private toast = inject(ToastService);
-  private cdr = inject(ChangeDetectorRef);
-  private viewportScroller = inject(ViewportScroller);
+  private readonly formService = inject(FormService);
+  private readonly userService = inject(UserService);
+  private readonly groupService = inject(GroupService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly toast = inject(ToastService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly viewportScroller = inject(ViewportScroller);
 
   private readonly defaultTitle = 'Teacher feedback';
   private readonly defaultDescription =
@@ -63,7 +63,7 @@ export class FeedbackAdminComponent implements OnInit {
   formTitle = this.defaultTitle;
   formDescription = this.defaultDescription;
   audience = 'all';
-  // courseTag = '';
+
   semester = '';
   targetTeacherId = '';
   groupSelectValue = '';
@@ -247,7 +247,7 @@ export class FeedbackAdminComponent implements OnInit {
     this.originalStatus = form.status;
     this.status = form.status;
     this.formTitle = form.title;
-    // this.courseTag = form.groups?.[0]?.name ?? '';
+
     this.formDescription = form.description ?? '';
     this.startDate = this.formatDateInput(form.startDate);
     this.endDate = this.formatDateInput(form.endDate);
@@ -277,7 +277,7 @@ export class FeedbackAdminComponent implements OnInit {
     this.status = 'DRAFT';
     this.formTitle = this.defaultTitle;
     this.formDescription = this.defaultDescription;
-    // this.courseTag = '';
+
     this.startDate = '';
     this.endDate = '';
     this.targetTeacherId = '';
@@ -472,13 +472,7 @@ export class FeedbackAdminComponent implements OnInit {
             'success',
           );
           this.router.navigate(['/admin/forms']);
-          // if (this.status === 'PUBLISHED') {
-          //   this.savedMessage = 'Form saved and published.';
-          // } else if (this.status === 'DRAFT') {
-          //   this.savedMessage = 'Draft saved.';
-          // } else {
-          //   this.savedMessage = 'Form saved as closed.';
-          // }
+
         },
         error: () => {
           this.isSaving = false;

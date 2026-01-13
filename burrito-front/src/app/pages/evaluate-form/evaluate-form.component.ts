@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
-import { AdminPageHeaderComponent } from '../../component/shared/admin-page-header/admin-page-header.component';
 import { EvaluationService } from '../../services/evaluation.service';
 
 @Component({
@@ -20,11 +19,11 @@ import { EvaluationService } from '../../services/evaluation.service';
   styleUrls: ['./evaluate-form.component.scss']
 })
 export class EvaluateFormComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  router = inject(Router);
-  private fb = inject(FormBuilder);
-  private evaluationService = inject(EvaluationService);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly route = inject(ActivatedRoute);
+  readonly router = inject(Router);
+  private readonly fb = inject(FormBuilder);
+  private readonly evaluationService = inject(EvaluationService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   formId: string = '';
   formData: any = null;
@@ -129,6 +128,6 @@ export class EvaluateFormComponent implements OnInit {
 
   isFieldInvalid(questionId: string): boolean {
     const field = this.evaluationForm.get(questionId);
-    return !!(field && field.invalid && field.touched);
+    return !!(field?.invalid && field?.touched);
   }
 }

@@ -22,7 +22,7 @@
         (valueChange)="onStatusFilterChange($event)"
         ></app-select>
       </div>
-      <app-button variant="primary" type="button" (click)="createForm()">
+      <app-button variant="primary" type="button" (click)="createForm()" (keydown.enter)="createForm()">
         Create new form
       </app-button>
     </div>
@@ -83,6 +83,7 @@
                 variant="primary"
                 type="button"
                 (click)="publishForm(form.id)"
+                (keydown.enter)="publishForm(form.id)"
               >
                 Publish
               </app-button>
@@ -91,6 +92,7 @@
                 variant="primary"
                 type="button"
                 (click)="closeForm(form.id)"
+                (keydown.enter)="closeForm(form.id)"
               >
                 Close
               </app-button>
@@ -101,12 +103,13 @@
                 variant="outline"
                 type="button"
                 (click)="editForm(form.id)"
+                (keydown.enter)="editForm(form.id)"
               >
                 Edit
               </app-button>
             </div>
             <div class="card-actions__right">
-              <app-button variant="outline" type="button" (click)="deleteForm(form.id)">
+              <app-button variant="outline" type="button" (click)="deleteForm(form.id)" (keydown.enter)="deleteForm(form.id)">
                 Delete
               </app-button>
             </div>
@@ -129,6 +132,7 @@
         type="button"
         [disabled]="loadMoreDisabled()"
         (click)="loadMoreForms()"
+        (keydown.enter)="loadMoreForms()"
       >
         {{ loadMoreDisabled() ? 'Loading...' : 'Load more forms' }}
       </app-button>
