@@ -16,6 +16,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application files
 COPY . .
 
+# Ensure gRPC stubs exist in the image even if they are not committed
+RUN python -m grpc_tools.protoc -I proto --python_out=intelligence --grpc_python_out=intelligence proto/analytics.proto
+
 # Expose gRPC port
 EXPOSE 50051
 
