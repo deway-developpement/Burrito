@@ -224,9 +224,9 @@ pipeline {
                   set -e
                   echo "Building Service: ${serviceName}"
                   buildctl \
-                    --no-cache \
                     --addr "${env.BUILDKIT_HOST}" \
                     build \
+                    --no-cache \
                     --frontend dockerfile.v0 \
                     --local context=backend \
                     --local dockerfile=backend \
@@ -243,9 +243,9 @@ pipeline {
                   set -e
                   echo "Building Service: intelligence-ms"
                   buildctl \
-                    --no-cache \
                     --addr "${env.BUILDKIT_HOST}" \
                     build \
+                    --no-cache \
                     --frontend dockerfile.v0 \
                     --local context=backend/apps/intelligence-ms \
                     --local dockerfile=backend/apps/intelligence-ms \
@@ -261,9 +261,9 @@ pipeline {
                   set -e
                   echo "Building Service: frontend"
                   buildctl \
-                    --no-cache \
                     --addr "${env.BUILDKIT_HOST}" \
                     build \
+                    --no-cache \
                     --frontend dockerfile.v0 \
                     --local context=burrito-front \
                     --local dockerfile=burrito-front \
