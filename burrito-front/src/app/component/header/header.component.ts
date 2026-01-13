@@ -20,6 +20,8 @@ export class HeaderComponent {
   // UI state for resend action
   isResending = signal(false);
   resendStatus = signal<'idle' | 'success' | 'error'>('idle');
+  bannerDismissed = signal(false);
+  showSuccessModal = signal(false);
 
   logout() {
     // Calling the cleanup method we saw in your service earlier
@@ -35,13 +37,22 @@ export class HeaderComponent {
     this.resendStatus.set('idle');
     this.userService.resendEmailVerification().subscribe({
       next: () => {
-        this.resendStatus.set('success');
         this.isResending.set(false);
+        this.bannerDismissed.set(true);
+        this.showSuccessModal.set(true);
       },
       error: () => {
-        this.resendStatus.set('error');
         this.isResending.set(false);
+        this.resendStatus.set('error');
       },
     });
+  }
+
+  dismissBanner() {
+    this.bannerDismissed.set(true);
+  }
+
+  closeModal() {
+    this.showSuccessModal.set(false);
   }
 }
