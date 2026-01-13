@@ -1,4 +1,12 @@
-import { Component, OnInit, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
@@ -89,7 +97,7 @@ interface AlertDialogConfig {
   templateUrl: './admin-forms.component.html',
   styleUrls: ['./admin-forms.component.scss'],
 })
-export class AdminFormsComponent implements OnInit {
+export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
   forms = signal<FormListItem[]>([]);
   loading = signal<boolean>(false);
   hasMore = signal<boolean>(true);
@@ -114,6 +122,9 @@ export class AdminFormsComponent implements OnInit {
   alertDialogShowCancel = true;
   alertDialogIntent: AlertDialogIntent = 'primary';
   private alertDialogAction: (() => void) | null = null;
+  private loadMoreObserver?: IntersectionObserver;
+
+  @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLDivElement>;
 
   constructor(
     private apollo: Apollo,
@@ -127,6 +138,14 @@ export class AdminFormsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadForms();
+  }
+
+  ngAfterViewInit(): void {
+    this.setupLoadMoreObserver();
+  }
+
+  ngOnDestroy(): void {
+    this.loadMoreObserver?.disconnect();
   }
 
   loadForms(): void {
@@ -264,6 +283,32 @@ export class AdminFormsComponent implements OnInit {
   closeAlertDialog(): void {
     this.alertDialogOpen = false;
     this.alertDialogAction = null;
+  }
+
+  private setupLoadMoreObserver(): void {
+    if (!this.loadMoreTrigger?.nativeElement) {
+      return;
+    }
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    this.loadMoreObserver?.disconnect();
+    this.loadMoreObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) {
+          return;
+        }
+        if (!this.hasMore() || this.loadMoreDisabled() || this.loading()) {
+          return;
+        }
+        this.loadMoreForms();
+      },
+      { root: null, rootMargin: '200px', threshold: 0 },
+    );
+
+    this.loadMoreObserver.observe(this.loadMoreTrigger.nativeElement);
   }
 
   private fetchForms(reset: boolean): Promise<void> {

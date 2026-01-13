@@ -25,7 +25,7 @@ const GET_TEACHERS = gql`
   query GetTeachers {
     users(
       filter: { userType: { eq: TEACHER } }
-      sorting: [{ field: fullName, direction: ASC }] 
+      sorting: [{ field: fullName, direction: ASC }]
       paging: { first: 50 }
     ) {
       edges {
@@ -46,11 +46,40 @@ const GET_TEACHERS = gql`
   }
 `;
 
+const GET_TEACHERS_PAGE = gql`
+  query GetTeachersPage($limit: Int, $after: ConnectionCursor) {
+    users(
+      filter: { userType: { eq: TEACHER } }
+      sorting: [{ field: fullName, direction: ASC }]
+      paging: { first: $limit, after: $after }
+    ) {
+      edges {
+        cursor
+        node {
+          id
+          fullName
+          email
+          createdAt
+          userType
+          groups {
+            id
+            name
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;
+
 const GET_STUDENTS = gql`
   query GetStudents {
     users(
       filter: { userType: { eq: STUDENT } }
-      sorting: [{ field: fullName, direction: ASC }] 
+      sorting: [{ field: fullName, direction: ASC }]
       paging: { first: 50 }
     ) {
       edges {
@@ -66,6 +95,35 @@ const GET_STUDENTS = gql`
             name
           }
         }
+      }
+    }
+  }
+`;
+
+const GET_STUDENTS_PAGE = gql`
+  query GetStudentsPage($limit: Int, $after: ConnectionCursor) {
+    users(
+      filter: { userType: { eq: STUDENT } }
+      sorting: [{ field: fullName, direction: ASC }]
+      paging: { first: $limit, after: $after }
+    ) {
+      edges {
+        cursor
+        node {
+          id
+          fullName
+          email
+          createdAt
+          userType
+          groups {
+            id
+            name
+          }
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
       }
     }
   }
@@ -183,6 +241,32 @@ export class UserService {
     );
   }
 
+  getTeachersPage(limit: number, after?: string | null): Observable<{
+    users: UserProfile[];
+    pageInfo: { hasNextPage: boolean; endCursor: string | null };
+  }> {
+    return this.apollo.query<any>({
+      query: GET_TEACHERS_PAGE,
+      variables: { limit, after: after ?? null },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => {
+        const connection = result.data?.users;
+        return {
+          users: connection?.edges?.map((e: any) => e.node) || [],
+          pageInfo: {
+            hasNextPage: connection?.pageInfo?.hasNextPage || false,
+            endCursor: connection?.pageInfo?.endCursor || null
+          }
+        };
+      }),
+      catchError(error => {
+        console.error('Error fetching teachers page:', error);
+        return of({ users: [], pageInfo: { hasNextPage: false, endCursor: null } });
+      })
+    );
+  }
+
   getStudents(): Observable<UserProfile[]> {
     return this.apollo.watchQuery<any>({
       query: GET_STUDENTS,
@@ -192,6 +276,32 @@ export class UserService {
       catchError(error => {
         console.error('Error fetching students:', error);
         return of([]); 
+      })
+    );
+  }
+
+  getStudentsPage(limit: number, after?: string | null): Observable<{
+    users: UserProfile[];
+    pageInfo: { hasNextPage: boolean; endCursor: string | null };
+  }> {
+    return this.apollo.query<any>({
+      query: GET_STUDENTS_PAGE,
+      variables: { limit, after: after ?? null },
+      fetchPolicy: 'network-only'
+    }).pipe(
+      map(result => {
+        const connection = result.data?.users;
+        return {
+          users: connection?.edges?.map((e: any) => e.node) || [],
+          pageInfo: {
+            hasNextPage: connection?.pageInfo?.hasNextPage || false,
+            endCursor: connection?.pageInfo?.endCursor || null
+          }
+        };
+      }),
+      catchError(error => {
+        console.error('Error fetching students page:', error);
+        return of({ users: [], pageInfo: { hasNextPage: false, endCursor: null } });
       })
     );
   }

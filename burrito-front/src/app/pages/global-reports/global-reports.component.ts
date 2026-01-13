@@ -1,4 +1,12 @@
-import { Component, OnInit, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
@@ -48,13 +56,16 @@ interface FormCardData extends Form {
   templateUrl: './global-reports.component.html',
   styleUrls: ['./global-reports.component.scss'],
 })
-export class GlobalReportsComponent implements OnInit {
+export class GlobalReportsComponent implements OnInit, AfterViewInit, OnDestroy {
   forms = signal<FormCardData[]>([]);
   loading = signal<boolean>(false);
   hasMore = signal<boolean>(true);
   loadMoreDisabled = signal<boolean>(false);
 
   private lastCursor: string | null = null;
+  private loadMoreObserver?: IntersectionObserver;
+
+  @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLDivElement>;
 
   private pageSize = 12;
   private currentPage = 0;
@@ -66,6 +77,14 @@ export class GlobalReportsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadForms();
+  }
+
+  ngAfterViewInit(): void {
+    this.setupLoadMoreObserver();
+  }
+
+  ngOnDestroy(): void {
+    this.loadMoreObserver?.disconnect();
   }
 
   loadForms(): void {
@@ -117,6 +136,32 @@ export class GlobalReportsComponent implements OnInit {
       .catch((err) => {
         console.error('Error loading forms:', err);
       });
+  }
+
+  private setupLoadMoreObserver(): void {
+    if (!this.loadMoreTrigger?.nativeElement) {
+      return;
+    }
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    this.loadMoreObserver?.disconnect();
+    this.loadMoreObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) {
+          return;
+        }
+        if (!this.hasMore() || this.loadMoreDisabled() || this.loading()) {
+          return;
+        }
+        this.loadMoreForms();
+      },
+      { root: null, rootMargin: '200px', threshold: 0 },
+    );
+
+    this.loadMoreObserver.observe(this.loadMoreTrigger.nativeElement);
   }
 
   navigateToFormResults(formId: string): void {
