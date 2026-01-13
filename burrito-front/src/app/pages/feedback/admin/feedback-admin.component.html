@@ -52,20 +52,22 @@
           </div>
 
           <div class="builder__grid">
-            <label class="form-field">
-              <span class="form-label">Form title <span class="required">*</span></span>
+            <div class="form-field">
+              <label for="formTitle" class="form-label">Form title <span class="required">*</span></label>
               <app-input
+                id="formTitle"
                 variant="primary"
                 placeholder="e.g. Semester feedback"
                 [fullWidth]="true"
                 [(model)]="formTitle"
                 [required]="true"
               ></app-input>
-            </label>
+            </div>
 
-            <label class="form-field">
-              <span class="form-label">Target teacher <span class="required">*</span></span>
+            <div class="form-field">
+              <label for="targetTeacher" class="form-label">Target teacher <span class="required">*</span></label>
               <app-select
+                id="targetTeacher"
                 variant="outline"
                 placeholder="Select a teacher"
                 [fullWidth]="true"
@@ -73,13 +75,14 @@
                 [disabled]="isLoadingTeachers"
                 [(value)]="targetTeacherId"
               ></app-select>
-            </label>
+            </div>
 
             <div class="form-field form-field--full">
-              <span class="form-label">Groups <span class="required">*</span></span>
+              <label for="groupPicker" class="form-label">Groups <span class="required">*</span></label>
               <div class="group-picker">
                 <div class="group-picker__select">
                   <app-select
+                    id="groupPicker"
                     variant="outline"
                     placeholder="select a group"
                     [fullWidth]="true"
@@ -112,14 +115,15 @@
               }
             </div>
 
-            <label class="form-field">
-              <span class="form-label">
+            <div class="form-field">
+              <label for="startDate" class="form-label">
                 Start date
                 @if (requiresSchedule) {
                   <span class="required">*</span>
                 }
-              </span>
+              </label>
               <app-input
+                id="startDate"
                 type="date"
                 variant="outline"
                 [fullWidth]="true"
@@ -128,16 +132,17 @@
               @if (publishAttempted && requiresSchedule && !startDate) {
                 <span class="field-error">Start date is required.</span>
               }
-            </label>
+            </div>
 
-            <label class="form-field">
-              <span class="form-label">
+            <div class="form-field">
+              <label for="endDate" class="form-label">
                 End date
                 @if (requiresSchedule) {
                   <span class="required">*</span>
                 }
-              </span>
+              </label>
               <app-input
+                id="endDate"
                 type="date"
                 variant="outline"
                 [fullWidth]="true"
@@ -146,7 +151,7 @@
               @if (publishAttempted && requiresSchedule && !endDate) {
                 <span class="field-error">End date is required.</span>
               }
-            </label>
+            </div>
           </div>
 
           <div class="form-field form-field--full">
@@ -190,9 +195,10 @@
                   </div>
                 </div>
 
-                <label class="form-field">
-                  <span class="form-label">Question text <span class="required">*</span></span>
+                <div class="form-field">
+                  <label [for]="'question-label-' + question.id" class="form-label">Question text <span class="required">*</span></label>
                   <app-input
+                    [id]="'question-label-' + question.id"
                     variant="primary"
                     placeholder="e.g. How clear were the explanations?"
                     [fullWidth]="true"
@@ -202,18 +208,19 @@
                   @if (publishAttempted && !question.label.trim()) {
                     <span class="field-error">Question text is required.</span>
                   }
-                </label>
+                </div>
 
                 @if (question.type === 'text') {
-                  <label class="form-field">
-                    <span class="form-label">Placeholder</span>
+                  <div class="form-field">
+                    <label [for]="'question-placeholder-' + question.id" class="form-label">Placeholder</label>
                     <app-input
+                      [id]="'question-placeholder-' + question.id"
                       variant="outline"
                       placeholder="e.g. Add a quick note"
                       [fullWidth]="true"
                       [(model)]="question.placeholder"
                     ></app-input>
-                  </label>
+                  </div>
                 }
 
                 @if (question.type === 'rating') {

@@ -85,7 +85,7 @@ export class FeedbackAdminComponent implements OnInit {
   groupsError = '';
   formLoadError = '';
 
-  questionTypeOptions: SelectOption[] = [
+  readonly questionTypeOptions: SelectOption[] = [
     { label: 'Rating', value: 'rating' },
     { label: 'Text', value: 'text' },
   ];

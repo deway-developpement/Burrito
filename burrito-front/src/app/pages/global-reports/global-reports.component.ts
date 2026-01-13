@@ -38,12 +38,14 @@ const GET_FORMS = gql`
   }
 `;
 
+type FormStatus = 'DRAFT' | 'PUBLISHED' | 'CLOSED';
+
 interface Form {
   id: string;
   title: string;
   description?: string;
   createdAt: Date;
-  status: 'DRAFT' | 'PUBLISHED' | 'CLOSED';
+  status: FormStatus;
 }
 
 interface FormCardData extends Form {
@@ -68,12 +70,12 @@ export class GlobalReportsComponent implements OnInit, AfterViewInit, OnDestroy 
 
   @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLDivElement>;
 
-  private pageSize = 12;
+  private readonly pageSize = 12;
   private currentPage = 0;
 
   constructor(
-    private apollo: Apollo,
-    private router: Router
+    private readonly apollo: Apollo,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
@@ -178,11 +180,11 @@ export class GlobalReportsComponent implements OnInit, AfterViewInit, OnDestroy 
     });
   }
 
-  getStatusBadge(status: 'DRAFT' | 'PUBLISHED' | 'CLOSED'): string {
+  getStatusBadge(status: FormStatus): string {
     return status;
   }
 
-  getStatusClass(status: 'DRAFT' | 'PUBLISHED' | 'CLOSED'): string {
+  getStatusClass(status: FormStatus): string {
     switch (status) {
       case 'PUBLISHED':
         return 'badge-published';

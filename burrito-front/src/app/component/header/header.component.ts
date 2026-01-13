@@ -13,9 +13,9 @@ import { AuthService } from '../../services/auth.service';
 })
 export class HeaderComponent {
   // Inject the service to access state
-  userService = inject(UserService);
-  authService = inject(AuthService);
-  router = inject(Router);
+  readonly userService = inject(UserService);
+  readonly authService = inject(AuthService);
+  readonly router = inject(Router);
 
   // UI state for resend action
   isResending = signal(false);
