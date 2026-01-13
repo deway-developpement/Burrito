@@ -136,12 +136,7 @@
               </thead>
               <tbody>
                 @for (teacher of analytics()!.teachersBreakdown; track teacher.teacherId) {
-                  <tr class="teacher-row" 
-                      (click)="navigateToTeacherResults(teacher.teacherId)"
-                      (keydown.enter)="navigateToTeacherResults(teacher.teacherId)"
-                      tabindex="0"
-                      role="button"
-                  >
+                  <tr class="teacher-row">
                     <td class="teacher-name">{{ teacher.teacherName }}</td>
                     <td>{{ teacher.totalResponses }}</td>
                     <td>
@@ -151,7 +146,7 @@
                     </td>
                     <td>{{ teacher.averageRating.toFixed(1) }}/10</td>
                     <td class="action-cell">
-                      <button class="btn-view" (click)="navigateToTeacherResults(teacher.teacherId)">
+                      <button class="btn-view" (click)="navigateToTeacherResults(teacher.teacherId)" (keydown.enter)="navigateToTeacherResults(teacher.teacherId)">
                         View Results →
                       </button>
                     </td>
@@ -169,12 +164,12 @@
 
         @for (question of analytics()!.questions; track question.questionId) {
           <div class="question-card">
-            <div
+            <button
+              type="button"
               class="question-header"
               (click)="toggleQuestionExpanded(question.questionId)"
               (keydown.enter)="toggleQuestionExpanded(question.questionId)"
-              role="button"
-              tabindex="0"
+              (keydown.space)="toggleQuestionExpanded(question.questionId)"
             >
               <div class="question-title">
                 <span class="expand-icon">
@@ -185,7 +180,7 @@
               <div class="question-meta">
                 <span class="answered-count">{{ question.answeredCount }} answered</span>
               </div>
-            </div>
+            </button>
 
             @if (isQuestionExpanded(question.questionId)) {
               <div class="question-content">
