@@ -155,6 +155,42 @@
     }
   }
 
+  .custom-date-picker {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: theme.$light-bg;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+
+    .date-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+
+      label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: theme.$text-muted;
+      }
+
+      .date-input {
+        padding: 0.5rem;
+        border: 2px solid theme.$border-color;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        transition: border-color 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: theme.$primary-color;
+          box-shadow: 0 0 4px rgba(theme.$primary-color, 0.2);
+        }
+      }
+    }
+  }
+
   .satisfaction-gauge {
     background: theme.$light-bg;
     border-radius: 4px;

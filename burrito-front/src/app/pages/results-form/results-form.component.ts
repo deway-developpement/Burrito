@@ -200,6 +200,9 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   textError = signal<string | null>(null);
   currentQuestionId = signal<string | null>(null);
 
+  // Time window options for template
+  readonly timeWindowOptions: TimeWindow[] = ['all', '30d', '7d', 'custom'];
+
   private destroy$ = new Subject<void>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -234,6 +237,20 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     }, 500);
   }
 
+  onCustomFromDateChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const date = input.value ? new Date(input.value + 'T00:00:00') : null;
+    this.customFromDate.set(date);
+    this.loadFormAnalytics();
+  }
+
+  onCustomToDateChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const date = input.value ? new Date(input.value + 'T23:59:59') : null;
+    this.customToDate.set(date);
+    this.loadFormAnalytics();
+  }
+
   onRefreshAnalytics(): void {
     this.loading.set(true);
     this.fetchFormAnalytics(true).finally(() => this.loading.set(false));
@@ -254,6 +271,10 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   }
 
   private loadFormAnalytics(): void {
+    // Clear Apollo cache to avoid stale queries
+    this.apollo.client.cache.evict({ fieldName: 'evaluations' });
+    this.apollo.client.cache.gc();
+    
     this.loading.set(true);
     this.fetchFormAnalytics(false).finally(() => this.loading.set(false));
   }
@@ -392,13 +413,6 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
       formId: { eq: this.formId() },
     };
 
-    if (window?.from) {
-      filter.createdAt = { gte: window.from };
-    }
-    if (window?.to) {
-      filter.createdAt = { ...filter.createdAt, lte: window.to };
-    }
-
     return firstValueFrom(
       this.apollo.query<{ evaluations: { edges: Array<{ node: Evaluation }> } }>({
         query: GET_EVALUATIONS,
@@ -407,7 +421,24 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
       })
     ).then((response) => {
       if (response.data?.evaluations?.edges) {
-        return response.data.evaluations.edges.map(edge => edge.node);
+        let evaluations = response.data.evaluations.edges.map(edge => edge.node);
+        
+        // Filter by date window client-side
+        if (window?.from || window?.to) {
+          evaluations = evaluations.filter((item) => {
+            const evalDate = item.createdAt ? new Date(item.createdAt).getTime() : 0;
+            
+            if (window.from && evalDate < new Date(window.from).getTime()) {
+              return false;
+            }
+            if (window.to && evalDate > new Date(window.to).getTime()) {
+              return false;
+            }
+            return true;
+          });
+        }
+        
+        return evaluations;
       }
       return [];
     });
