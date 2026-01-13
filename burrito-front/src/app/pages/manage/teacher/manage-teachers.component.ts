@@ -8,6 +8,18 @@ import { UserService, UserProfile } from '../../../services/user.service';
 import { Observable, map, take, tap } from 'rxjs';
 import { EditUserModalComponent } from '../../../component/shared/edit-user-modal/edit-user-modal.component';
 import { AddUserModalComponent } from '../../../component/shared/add-user-modal/add-user-modal.component';
+import { AlertDialogComponent } from '../../../component/shared/alert-dialog/alert-dialog.component';
+
+type AlertDialogIntent = 'primary' | 'danger';
+
+interface AlertDialogConfig {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  showCancel?: boolean;
+  intent?: AlertDialogIntent;
+}
 
 @Component({
   selector: 'app-manage-teachers',
@@ -19,7 +31,8 @@ import { AddUserModalComponent } from '../../../component/shared/add-user-modal/
     AdminPageHeaderComponent, 
     AdminTableComponent,
     EditUserModalComponent,
-    AddUserModalComponent
+    AddUserModalComponent,
+    AlertDialogComponent
   ],
   templateUrl: './manage-teachers.component.html',
   styleUrls: ['./manage-teachers.component.scss']
@@ -40,6 +53,15 @@ export class ManageTeachersComponent {
   // États pour les modales 
   selectedUser: UserProfile | null = null; // Pour l'édition
   showAddModal = false;                    // Pour l'ajout
+
+  alertDialogOpen = false;
+  alertDialogTitle = 'Confirm action';
+  alertDialogMessage = '';
+  alertDialogConfirmLabel = 'Confirm';
+  alertDialogCancelLabel = 'Cancel';
+  alertDialogShowCancel = true;
+  alertDialogIntent: AlertDialogIntent = 'primary';
+  private alertDialogAction: (() => void) | null = null;
 
   constructor() {
     this.teachers$ = this.loadTeachers();
@@ -74,23 +96,35 @@ export class ManageTeachersComponent {
 
   // --- LOGIQUE SUPPRESSION (DELETE) ---
   onDelete(id: any) {
-    if(confirm('Are you sure you want to delete this teacher?')) {
-      
-      // We convert id to String because AdminTable emits number, 
-      // but GraphQL Service expects a String ID.
-      this.userService.deleteUser(String(id)).subscribe({
-        next: () => {
-          console.log('User deleted successfully');
-          // Since we updated the Apollo Cache in the Service, the list might update automatically.
-          // However, calling refreshData() ensures the Observable logic re-runs if needed.
-          this.refreshData(); 
-        },
-        error: (err) => {
-          console.error('Error deleting user:', err);
-          alert('Failed to delete user');
-        }
-      });
-    }
+    this.openAlertDialog(
+      {
+        title: 'Delete teacher',
+        message: 'Are you sure you want to delete this teacher?',
+        confirmLabel: 'Delete',
+        intent: 'danger',
+      },
+      () => {
+        // We convert id to String because AdminTable emits number,
+        // but GraphQL Service expects a String ID.
+        this.userService.deleteUser(String(id)).subscribe({
+          next: () => {
+            console.log('User deleted successfully');
+            // Since we updated the Apollo Cache in the Service, the list might update automatically.
+            // However, calling refreshData() ensures the Observable logic re-runs if needed.
+            this.refreshData(); 
+          },
+          error: (err) => {
+            console.error('Error deleting user:', err);
+            this.openAlertDialog({
+              title: 'Delete failed',
+              message: 'Failed to delete user.',
+              confirmLabel: 'Ok',
+              showCancel: false,
+            });
+          }
+        });
+      },
+    );
   }
 
   // --- LOGIQUE ÉDITION (EDIT) ---
@@ -121,5 +155,29 @@ export class ManageTeachersComponent {
     this.selectedUser = null;
     this.showAddModal = false;
     this.teachers$ = this.loadTeachers();
+  }
+
+  openAlertDialog(config: AlertDialogConfig, action?: () => void): void {
+    this.alertDialogTitle = config.title;
+    this.alertDialogMessage = config.message;
+    this.alertDialogConfirmLabel = config.confirmLabel ?? 'Confirm';
+    this.alertDialogCancelLabel = config.cancelLabel ?? 'Cancel';
+    this.alertDialogShowCancel = config.showCancel ?? true;
+    this.alertDialogIntent = config.intent ?? 'primary';
+    this.alertDialogAction = action ?? null;
+    this.alertDialogOpen = true;
+  }
+
+  confirmAlertDialog(): void {
+    const action = this.alertDialogAction;
+    this.closeAlertDialog();
+    if (action) {
+      action();
+    }
+  }
+
+  closeAlertDialog(): void {
+    this.alertDialogOpen = false;
+    this.alertDialogAction = null;
   }
 }

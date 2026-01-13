@@ -26,11 +26,18 @@
             <th>Course</th>
             <th>Received On</th>
             <th>Rating</th>
-            <th class="text-right">Action</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let eval of readEvaluations">
+          <tr
+            *ngFor="let eval of readEvaluations"
+            class="history-row"
+            role="button"
+            tabindex="0"
+            (click)="viewEvaluation(eval.id)"
+            (keydown.enter)="viewEvaluation(eval.id)"
+            (keydown.space)="viewEvaluation(eval.id)"
+          >
             <td class="course-col">{{ eval.courseName }}</td>
             <td class="text-muted">{{ eval.submittedDate | date:'mediumDate' }}</td>
             <td>

@@ -1,0 +1,130 @@
+@use 'burrito-theme' as theme;
+
+.alert-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.alert-container {
+  background: theme.$white;
+  width: 90%;
+  max-width: 420px;
+  border-radius: theme.$radius-lg;
+  box-shadow: theme.$shadow-soft;
+  font-family: theme.$font-family-base;
+  overflow: hidden;
+  animation: slideUp 0.25s ease-out;
+}
+
+.alert-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid theme.$primary-light;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: theme.$text-dark;
+    font-weight: 700;
+  }
+
+  .close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: theme.$text-muted;
+    cursor: pointer;
+
+    &:hover {
+      color: theme.$primary-color;
+    }
+  }
+}
+
+.alert-body {
+  padding: 20px 22px;
+  color: theme.$text-dark;
+  font-size: 0.95rem;
+  line-height: 1.5;
+
+  p {
+    margin: 0;
+    white-space: pre-line;
+  }
+}
+
+.alert-footer {
+  padding: 16px 22px 20px;
+  background: theme.$bg-light;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  button {
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    font-family: theme.$font-family-base;
+  }
+
+  .btn-secondary {
+    background: theme.$white;
+    border: 2px solid theme.$primary-light;
+    color: theme.$text-muted;
+
+    &:hover {
+      color: theme.$text-dark;
+      border-color: theme.$primary-color;
+    }
+  }
+
+  .btn-primary {
+    background: theme.$primary-color;
+    color: theme.$white;
+    box-shadow: 0 4px 12px rgba(255, 138, 0, 0.2);
+
+    &:hover {
+      background: darken(theme.$primary-color, 5%);
+    }
+  }
+
+  .btn-danger {
+    background: theme.$danger-red;
+    box-shadow: 0 4px 12px rgba(217, 45, 32, 0.2);
+
+    &:hover {
+      background: darken(theme.$danger-red, 5%);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

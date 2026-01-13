@@ -1,4 +1,12 @@
-import { Component, OnInit, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
@@ -6,6 +14,7 @@ import { BackgroundDivComponent } from '../../component/shared/background-div/ba
 import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 import { AdminPageHeaderComponent } from '../../component/shared/admin-page-header/admin-page-header.component';
 import { ButtonComponent } from '../../component/shared/button/button.component';
+import { AlertDialogComponent } from '../../component/shared/alert-dialog/alert-dialog.component';
 import {
   SelectComponent,
   SelectOption,
@@ -64,6 +73,16 @@ interface FormListItem {
 }
 
 type StatusFilter = FormStatus | 'ALL';
+type AlertDialogIntent = 'primary' | 'danger';
+
+interface AlertDialogConfig {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  showCancel?: boolean;
+  intent?: AlertDialogIntent;
+}
 
 @Component({
   selector: 'app-admin-forms',
@@ -75,11 +94,12 @@ type StatusFilter = FormStatus | 'ALL';
     AdminPageHeaderComponent,
     ButtonComponent,
     SelectComponent,
+    AlertDialogComponent,
   ],
   templateUrl: './admin-forms.component.html',
   styleUrls: ['./admin-forms.component.scss'],
 })
-export class AdminFormsComponent implements OnInit {
+export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
   forms = signal<FormListItem[]>([]);
   loading = signal<boolean>(false);
   hasMore = signal<boolean>(true);
@@ -96,6 +116,18 @@ export class AdminFormsComponent implements OnInit {
     { label: 'Closed', value: 'CLOSED' },
   ];
 
+  alertDialogOpen = false;
+  alertDialogTitle = 'Confirm action';
+  alertDialogMessage = '';
+  alertDialogConfirmLabel = 'Confirm';
+  alertDialogCancelLabel = 'Cancel';
+  alertDialogShowCancel = true;
+  alertDialogIntent: AlertDialogIntent = 'primary';
+  private alertDialogAction: (() => void) | null = null;
+  private loadMoreObserver?: IntersectionObserver;
+
+  @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLDivElement>;
+
   constructor(
     private apollo: Apollo,
     private router: Router,
@@ -108,6 +140,14 @@ export class AdminFormsComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadForms();
+  }
+
+  ngAfterViewInit(): void {
+    this.setupLoadMoreObserver();
+  }
+
+  ngOnDestroy(): void {
+    this.loadMoreObserver?.disconnect();
   }
 
   loadForms(): void {
@@ -144,17 +184,50 @@ export class AdminFormsComponent implements OnInit {
   }
 
   deleteForm(formId: string): void {
-    if (!confirm('Delete this form? This action cannot be undone.')) {
-      return;
-    }
-    this.formService.deleteForm(formId).subscribe({
-      next: () => {
-        this.forms.set(this.forms().filter((form) => form.id !== formId));
+    this.openAlertDialog(
+      {
+        title: 'Delete form',
+        message: 'Delete this form? This action cannot be undone.',
+        confirmLabel: 'Delete',
+        intent: 'danger',
       },
-      error: () => {
-        this.error.set('Failed to delete the form.');
+      () => {
+        this.formService.deleteForm(formId).subscribe({
+          next: () => {
+            this.forms.set(this.forms().filter((form) => form.id !== formId));
+          },
+          error: () => {
+            this.error.set('Failed to delete the form.');
+          },
+        });
       },
-    });
+    );
+  }
+
+  publishForm(formId: string): void {
+    this.openAlertDialog(
+      {
+        title: 'Publish form',
+        message: 'Publish this form?',
+        confirmLabel: 'Publish',
+      },
+      () => {
+        this.updateFormStatus(formId, 'PUBLISHED', 'Failed to publish the form.');
+      },
+    );
+  }
+
+  closeForm(formId: string): void {
+    this.openAlertDialog(
+      {
+        title: 'Close form',
+        message: 'Close this form?',
+        confirmLabel: 'Close',
+      },
+      () => {
+        this.updateFormStatus(formId, 'CLOSED', 'Failed to close the form.');
+      },
+    );
   }
 
   formatDate(value?: string): string {
@@ -188,6 +261,56 @@ export class AdminFormsComponent implements OnInit {
       default:
         return 'status-draft';
     }
+  }
+
+  openAlertDialog(config: AlertDialogConfig, action?: () => void): void {
+    this.alertDialogTitle = config.title;
+    this.alertDialogMessage = config.message;
+    this.alertDialogConfirmLabel = config.confirmLabel ?? 'Confirm';
+    this.alertDialogCancelLabel = config.cancelLabel ?? 'Cancel';
+    this.alertDialogShowCancel = config.showCancel ?? true;
+    this.alertDialogIntent = config.intent ?? 'primary';
+    this.alertDialogAction = action ?? null;
+    this.alertDialogOpen = true;
+  }
+
+  confirmAlertDialog(): void {
+    const action = this.alertDialogAction;
+    this.closeAlertDialog();
+    if (action) {
+      action();
+    }
+  }
+
+  closeAlertDialog(): void {
+    this.alertDialogOpen = false;
+    this.alertDialogAction = null;
+  }
+
+  private setupLoadMoreObserver(): void {
+    if (!this.loadMoreTrigger?.nativeElement) {
+      return;
+    }
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    this.loadMoreObserver?.disconnect();
+    this.loadMoreObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) {
+          return;
+        }
+        if (!this.hasMore() || this.loadMoreDisabled() || this.loading()) {
+          return;
+        }
+        this.loadMoreForms();
+      },
+      { root: null, rootMargin: '200px', threshold: 0 },
+    );
+
+    this.loadMoreObserver.observe(this.loadMoreTrigger.nativeElement);
   }
 
   private fetchForms(reset: boolean): Promise<void> {
@@ -228,5 +351,27 @@ export class AdminFormsComponent implements OnInit {
     return {
       status: { eq: this.statusFilter },
     };
+  }
+
+  private updateFormStatus(
+    formId: string,
+    status: FormStatus,
+    errorMessage: string,
+  ): void {
+    this.formService.changeFormStatus(formId, status).subscribe({
+      next: () => {
+        const updated = this.forms().map((form) =>
+          form.id === formId ? { ...form, status } : form,
+        );
+        const filtered =
+          this.statusFilter === 'ALL'
+            ? updated
+            : updated.filter((form) => form.status === this.statusFilter);
+        this.forms.set(filtered);
+      },
+      error: () => {
+        this.error.set(errorMessage);
+      },
+    });
   }
 }
