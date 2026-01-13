@@ -331,38 +331,52 @@ pipeline {
                   -n "\$K8S_NAMESPACE"
               """
             }
+            def restart = { String deployment ->
+              sh """
+                kubectl rollout restart deployment/${deployment} -n "\$K8S_NAMESPACE"
+              """
+            }
             def rollout = { String deployment ->
               sh """
-                kubectl rollout status deployment/${deployment} -n "\$K8S_NAMESPACE"
+                kubectl rollout status deployment/${deployment} -n "\$K8S_NAMESPACE" --timeout=5m
               """
             }
 
             if (services.contains('api-gateway')) {
               updateImage('api-gateway', 'burrito-api-gateway')
+              restart('api-gateway')
             }
             if (services.contains('users-ms')) {
               updateImage('users-ms', 'burrito-users-ms')
+              restart('users-ms')
             }
             if (services.contains('forms-ms')) {
               updateImage('forms-ms', 'burrito-forms-ms')
+              restart('forms-ms')
             }
             if (services.contains('evaluations-ms')) {
               updateImage('evaluations-ms', 'burrito-evaluations-ms')
+              restart('evaluations-ms')
             }
             if (services.contains('analytics-ms')) {
               updateImage('analytics-ms', 'burrito-analytics-ms')
+              restart('analytics-ms')
             }
             if (services.contains('groups-ms')) {
               updateImage('groups-ms', 'burrito-groups-ms')
+              restart('groups-ms')
             }
             if (services.contains('notifications-ms')) {
               updateImage('notifications-ms', 'burrito-notifications-ms')
+              restart('notifications-ms')
             }
             if (env.BUILD_INTELLIGENCE == 'true') {
               updateImage('intelligence-ms', 'burrito-intelligence-ms')
+              restart('intelligence-ms')
             }
             if (env.BUILD_FRONTEND == 'true') {
               updateImage('burrito-frontend', 'burrito-frontend')
+              restart('burrito-frontend')
             }
 
             if (services.contains('api-gateway')) {
