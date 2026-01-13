@@ -143,6 +143,21 @@ const GET_STUDENT_EVALUATIONS = gql`
   }
 `;
 
+const LIST_EVALUATIONS = gql`
+  query ListEvaluations {
+    evaluations(paging: { first: 500 }) {
+      edges {
+        node {
+          id
+          formId
+          createdAt
+          respondentToken
+        }
+      }
+    }
+  }
+`;
+
 const SUBMIT_EVALUATION = gql`
   mutation SubmitEvaluation($input: CreateEvaluationInput!) {
     submitEvaluation(input: $input) {
@@ -324,6 +339,23 @@ export class EvaluationService {
               ),
             );
         }),
+        catchError(() => of([])),
+      );
+  }
+
+  getEvaluationsList(): Observable<
+    Array<{ formId: string; createdAt: string; respondentToken?: string }>
+  > {
+    return this.apollo
+      .query<any>({
+        query: LIST_EVALUATIONS,
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map(
+          (result) =>
+            result.data?.evaluations?.edges?.map((edge: any) => edge.node) || [],
+        ),
         catchError(() => of([])),
       );
   }

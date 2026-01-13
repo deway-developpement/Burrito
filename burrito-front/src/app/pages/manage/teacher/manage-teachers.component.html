@@ -2,35 +2,54 @@
   <div class="nav-bar">
     <app-go-back></app-go-back>
   </div>
-  
+
   <div class="page-container">
-    <app-admin-page-header 
-      title="Manage Teachers" 
+    <app-admin-page-header
+      i18n-title="@@manageTeachers.title"
+      title="Manage Teachers"
+      i18n-subtitle="@@manageTeachers.subtitle"
       subtitle="View, edit, or onboard new teaching staff."
+      i18n-buttonLabel="@@manageTeachers.addButton"
       buttonLabel="Add New Teacher"
-      (action)="onAdd()">
-    </app-admin-page-header>
+      (action)="onAdd()"
+    ></app-admin-page-header>
 
-  <app-admin-table 
-    [columns]="tableColumns" 
-    [data]="(teachers$ | async) || []" 
-    (edit)="onEdit($event)"
-    (delete)="onDelete($event)">
-  </app-admin-table>
+    <app-admin-table
+      [columns]="tableColumns"
+      [data]="teachers()"
+      (edit)="onEdit($event)"
+      (delete)="onDelete($event)"
+    ></app-admin-table>
 
-  <app-edit-user-modal
-    [user]="selectedUser"
-    (close)="closeEditModal()"
-    (saved)="refreshData()">
-  </app-edit-user-modal>
+    @if (loading() && teachers().length === 0) {
+      <div class="table-status" i18n="@@manageTeachers.loading">Loading teachers...</div>
+    }
 
-  @if (showAddModal) {
-    <app-add-user-modal 
-      userType="TEACHER"
-      (close)="closeAddModal()" 
-      (saved)="refreshData()">
-    </app-add-user-modal>
-  }
+    @if (!loading() && teachers().length === 0) {
+      <div class="table-status" i18n="@@manageTeachers.empty">No teachers found.</div>
+    }
+
+    @if (loadMoreDisabled()) {
+      <div class="table-status" i18n="@@manageTeachers.loadingMore">Loading more...</div>
+    }
+
+    <div #loadMoreTrigger class="load-more-trigger" aria-hidden="true"></div>
+
+    <app-edit-user-modal
+      [user]="selectedUser"
+      (close)="closeEditModal()"
+      (saved)="refreshData()"
+    >
+    </app-edit-user-modal>
+
+    @if (showAddModal) {
+      <app-add-user-modal
+        userType="TEACHER"
+        (close)="closeAddModal()"
+        (saved)="refreshData()"
+      >
+      </app-add-user-modal>
+    }
   </div>
 
   <app-alert-dialog
@@ -44,5 +63,4 @@
     (confirm)="confirmAlertDialog()"
     (cancel)="closeAlertDialog()"
   ></app-alert-dialog>
-
 </app-background-div>

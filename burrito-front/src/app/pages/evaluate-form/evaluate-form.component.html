@@ -9,8 +9,12 @@
         <h1>{{ formData.title }}</h1>
         <p class="form-description" *ngIf="formData.description">{{ formData.description }}</p>
         <div class="form-meta">
-          <span *ngIf="formData.teacher">Teacher: {{ formData.teacher.fullName }}</span>
-          <span *ngIf="formData.endDate" class="deadline">Deadline: {{ formData.endDate | date: 'medium' }}</span>
+          <span *ngIf="formData.teacher" i18n="@@evaluateForm.teacherLabel">
+            Teacher: {{ formData.teacher.fullName }}
+          </span>
+          <span *ngIf="formData.endDate" class="deadline" i18n="@@evaluateForm.deadlineLabel">
+            Deadline: {{ formData.endDate | date: 'medium' }}
+          </span>
         </div>
       </div>
 
@@ -35,8 +39,8 @@
               </label>
             </div>
             <div class="rating-scale-labels">
-              <span>Poor</span>
-              <span>Excellent</span>
+              <span i18n="@@evaluateForm.poorLabel">Poor</span>
+              <span i18n="@@evaluateForm.excellentLabel">Excellent</span>
             </div>
           </div>
 
@@ -46,13 +50,14 @@
               [formControlName]="question.id"
               [id]="'text-' + question.id"
               rows="4"
+              i18n-placeholder="@@evaluateForm.responsePlaceholder"
               placeholder="Enter your response..."
               class="text-input"
             ></textarea>
           </div>
 
           <div class="error-message" *ngIf="isFieldInvalid(question.id)">
-            This field is required
+            <span i18n="@@evaluateForm.fieldRequired">This field is required</span>
           </div>
         </div>
 
@@ -62,10 +67,14 @@
 
         <div class="form-actions">
           <button type="button" class="btn btn-secondary" (click)="router.navigate(['/'])" [disabled]="submitting">
-            Cancel
+            <span i18n="@@evaluateForm.cancel">Cancel</span>
           </button>
           <button type="submit" class="btn btn-primary" [disabled]="submitting">
-            {{ submitting ? 'Submitting...' : 'Submit Evaluation' }}
+            @if (submitting) {
+              <span i18n="@@evaluateForm.submitting">Submitting...</span>
+            } @else {
+              <span i18n="@@evaluateForm.submit">Submit Evaluation</span>
+            }
           </button>
         </div>
       </form>
@@ -73,15 +82,14 @@
 
     <div class="loading-container" *ngIf="loading">
       <div class="spinner"></div>
-      <p>Loading form...</p>
+      <p i18n="@@evaluateForm.loading">Loading form...</p>
     </div>
 
     <div class="error-container" *ngIf="error && !formData">
       <div class="error-icon">⚠️</div>
       <h2>{{ error }}</h2>
-      <button class="btn btn-primary" (click)="router.navigate(['/'])">
-        Back to Home
-      </button>
+      <button class="btn btn-primary" (click)="router.navigate(['/'])"><span i18n="@@evaluateForm.backHome">Back to Home</span></button>
     </div>
   </div>
 </app-background-div>
+

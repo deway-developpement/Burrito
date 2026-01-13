@@ -7,8 +7,10 @@ import {
   computed,
   inject,
   signal,
+  LOCALE_ID,
+  Inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate as formatCommonDate } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { Subject, firstValueFrom } from 'rxjs';
@@ -259,7 +261,8 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private apollo: Apollo,
-    private authService: AuthService
+    private authService: AuthService,
+    @Inject(LOCALE_ID) private localeId: string,
   ) {}
 
   ngOnInit(): void {
@@ -351,7 +354,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       if (!forms || forms.length === 0) {
         this.analytics.set({
           teacherId: this.teacherId(),
-          teacherName: 'Unknown',
+          teacherName: $localize`:@@resultsTeacher.unknown:Unknown`,
           generatedAt: new Date(),
           staleAt: new Date(),
           totalResponsesAcrossAllForms: 0,
@@ -376,7 +379,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
         // Still show the forms with empty analytics
         this.analytics.set({
           teacherId: this.teacherId(),
-          teacherName: 'Teacher',
+          teacherName: $localize`:@@resultsTeacher.teacherFallback:Teacher`,
           generatedAt: new Date(),
           staleAt: new Date(),
           totalResponsesAcrossAllForms: 0,
@@ -390,7 +393,9 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
             averageRating: 0
           })),
         });
-        this.error.set('Analytics service unavailable - showing forms without data');
+        this.error.set(
+          $localize`:@@resultsTeacher.analyticsUnavailable:Analytics service unavailable - showing forms without data`,
+        );
         return;
       }
 
@@ -399,7 +404,9 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       this.analytics.set(aggregated);
       this.error.set(null);
     } catch (err) {
-      this.error.set('Failed to load teacher analytics');
+      this.error.set(
+        $localize`:@@resultsTeacher.loadError:Failed to load teacher analytics`,
+      );
       console.error('Analytics fetch error:', err);
     }
   }
@@ -505,7 +512,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       totalRatingCount > 0 ? totalRatingSum / totalRatingCount : 0;
 
     // Fetch teacher name
-    let teacherName = 'Unknown Teacher';
+    let teacherName = $localize`:@@resultsTeacher.unknownTeacher:Unknown Teacher`;
     try {
       const userResponse = await firstValueFrom(
         this.apollo.query<{ user: { id: string; fullName: string } | null }>({
@@ -761,23 +768,19 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   }
 
   formatDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatCommonDate(date, 'MMM d, y', this.localeId);
   }
 
   getTimeWindowLabel(window: TimeWindow): string {
     switch (window) {
       case '30d':
-        return 'Last 30 days';
+        return $localize`:@@resultsTeacher.last30Days:Last 30 days`;
       case '7d':
-        return 'Last 7 days';
+        return $localize`:@@resultsTeacher.last7Days:Last 7 days`;
       case 'custom':
-        return 'Custom Range';
+        return $localize`:@@resultsTeacher.customRange:Custom Range`;
       default:
-        return 'All Time';
+        return $localize`:@@resultsTeacher.allTime:All Time`;
     }
   }
 }

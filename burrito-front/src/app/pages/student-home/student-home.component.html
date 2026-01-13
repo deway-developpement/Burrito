@@ -1,22 +1,24 @@
 <app-background-div>
   
   <app-admin-page-header 
+    i18n-title="@@studentHome.title"
     title="My Evaluations" 
+    i18n-subtitle="@@studentHome.subtitle"
     subtitle="Provide feedback on your courses. Your responses are anonymous.">
   </app-admin-page-header>
 
   <!-- Success Message -->
   <div class="success-banner" *ngIf="showSuccessMessage">
     <span class="success-icon">✓</span>
-    <span class="success-text">Evaluation submitted successfully! Thank you for your feedback.</span>
+    <span class="success-text" i18n="@@studentHome.submittedSuccess">Evaluation submitted successfully! Thank you for your feedback.</span>
   </div>
 
   <section class="section-container">
-    <h2 class="section-title">Waiting for your feedback</h2>
+    <h2 class="section-title" i18n="@@studentHome.pendingTitle">Waiting for your feedback</h2>
     
     <div *ngIf="pendingEvaluations.length === 0" class="empty-state">
       <span class="icon">🎉</span>
-      <p>You're all caught up! No pending evaluations.</p>
+      <p i18n="@@studentHome.pendingEmpty">You're all caught up! No pending evaluations.</p>
     </div>
 
     <div class="eval-grid" *ngIf="pendingEvaluations.length > 0">
@@ -31,14 +33,14 @@
         
         <div class="card-body">
           <div class="deadline-badge">
-            <span class="label">Deadline:</span>
+            <span class="label" i18n="@@studentHome.deadlineLabel">Deadline:</span>
             <span class="date">{{ eval.deadline | date:'mediumDate' }}</span>
           </div>
         </div>
 
         <div class="card-footer">
           <button class="btn-action" (click)="startEvaluation(eval.id)">
-            Evaluate Now &rarr;
+            <span i18n="@@studentHome.evaluateNow">Evaluate Now</span> &rarr;
           </button>
         </div>
       </div>
@@ -47,21 +49,21 @@
 
 
   <section class="section-container history-section">
-    <h2 class="section-title">Submission History</h2>
+    <h2 class="section-title" i18n="@@studentHome.historyTitle">Submission History</h2>
     
     <div *ngIf="completedEvaluations.length === 0" class="empty-state">
       <span class="icon">📋</span>
-      <p>No evaluations submitted yet.</p>
+      <p i18n="@@studentHome.historyEmpty">No evaluations submitted yet.</p>
     </div>
 
     <div class="history-container" *ngIf="completedEvaluations.length > 0">
       <table class="history-table">
         <thead>
           <tr>
-            <th>Course</th>
-            <th>Professor</th>
-            <th>Submitted On</th>
-            <th class="text-right">Status</th>
+            <th i18n="@@studentHome.courseHeader">Course</th>
+            <th i18n="@@studentHome.professorHeader">Professor</th>
+            <th i18n="@@studentHome.submittedOnHeader">Submitted On</th>
+            <th class="text-right" i18n="@@studentHome.statusHeader">Status</th>
           </tr>
         </thead>
         <tbody>
@@ -71,7 +73,7 @@
             <td class="text-muted">{{ eval.submittedDate | date:'mediumDate' }}</td>
             <td class="text-right">
               <span class="status-done">
-                <span class="check">✓</span> Submitted
+                <span class="check">✓</span> <span i18n="@@studentHome.submittedStatus">Submitted</span>
               </span>
             </td>
           </tr>
@@ -81,3 +83,5 @@
   </section>
 
 </app-background-div>
+
+

@@ -2,35 +2,54 @@
   <div class="nav-bar">
     <app-go-back></app-go-back>
   </div>
-  
+
   <div class="page-container">
-    <app-admin-page-header 
-      title="Manage Students" 
-      subtitle="Enroll students, handle accounts, and manage anonymity settings."
-      buttonLabel="Enroll Student"
-      (action)="onAdd()">
-    </app-admin-page-header>
+    <app-admin-page-header
+      i18n-title="@@manageStudents.title"
+      title="Manage Students"
+      i18n-subtitle="@@manageStudents.subtitle"
+      subtitle="View, edit, or onboard new students."
+      i18n-buttonLabel="@@manageStudents.addButton"
+      buttonLabel="Add New Student"
+      (action)="onAdd()"
+    ></app-admin-page-header>
 
-  <app-admin-table 
-    [columns]="tableColumns" 
-    [data]="(students$ | async) || []"
-    (edit)="onEdit($event)"
-    (delete)="onDelete($event)">
-  </app-admin-table>
+    <app-admin-table
+      [columns]="tableColumns"
+      [data]="students()"
+      (edit)="onEdit($event)"
+      (delete)="onDelete($event)"
+    ></app-admin-table>
 
-  <app-edit-user-modal
-    [user]="selectedUser"
-    (close)="closeEditModal()"
-    (saved)="refreshData()">
-  </app-edit-user-modal>
+    @if (loading() && students().length === 0) {
+      <div class="table-status" i18n="@@manageStudents.loading">Loading students...</div>
+    }
 
-  @if (showAddModal) {
-    <app-add-user-modal 
-      userType="STUDENT"
-      (close)="closeAddModal()" 
-      (saved)="refreshData()">
-    </app-add-user-modal>
-  }
+    @if (!loading() && students().length === 0) {
+      <div class="table-status" i18n="@@manageStudents.empty">No students found.</div>
+    }
+
+    @if (loadMoreDisabled()) {
+      <div class="table-status" i18n="@@manageStudents.loadingMore">Loading more...</div>
+    }
+
+    <div #loadMoreTrigger class="load-more-trigger" aria-hidden="true"></div>
+
+    <app-edit-user-modal
+      [user]="selectedUser"
+      (close)="closeEditModal()"
+      (saved)="refreshData()"
+    >
+    </app-edit-user-modal>
+
+    @if (showAddModal) {
+      <app-add-user-modal
+        userType="STUDENT"
+        (close)="closeAddModal()"
+        (saved)="refreshData()"
+      >
+      </app-add-user-modal>
+    }
   </div>
 
   <app-alert-dialog
@@ -44,5 +63,4 @@
     (confirm)="confirmAlertDialog()"
     (cancel)="closeAlertDialog()"
   ></app-alert-dialog>
-
 </app-background-div>

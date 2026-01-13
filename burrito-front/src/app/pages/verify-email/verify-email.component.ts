@@ -21,18 +21,18 @@ const VERIFY_EMAIL_MUTATION = gql`
   selector: 'app-verify-email',
   standalone: true,
   imports: [CommonModule, RouterModule],
-  template: `
+    template: `
     <section class="verify">
-      <h1>Email verification</h1>
+      <h1 i18n="@@verifyEmail.title">Email verification</h1>
 
-      <div *ngIf="status() === 'loading'">Verifying your email…</div>
-      <div *ngIf="status() === 'success'" class="success">
-        ✓ Your email has been verified successfully!
-        <p>Redirecting to home in a moment…</p>
+      <div *ngIf="status() === \'loading\'" i18n="@@verifyEmail.loading">Verifying your email...</div>
+      <div *ngIf="status() === \'success\'" class="success">
+        <span i18n="@@verifyEmail.success">Your email has been verified successfully!</span>
+        <p i18n="@@verifyEmail.redirect">Redirecting to home in a moment...</p>
       </div>
-      <div *ngIf="status() === 'error'" class="error">
-        Verification failed: {{ errorMessage() || 'Invalid or expired token.' }}
-        <a routerLink="/sign-in">Sign in</a>
+      <div *ngIf="status() === \'error\'" class="error">
+        <span i18n="@@verifyEmail.failed">Verification failed: {{ errorMessage() || invalidTokenMessage }}</span>
+        <a routerLink="/sign-in" i18n="@@verifyEmail.signIn">Sign in</a>
       </div>
     </section>
   `,
@@ -53,6 +53,8 @@ export class VerifyEmailComponent implements OnInit {
 
   status = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
   errorMessage = signal<string | null>(null);
+  invalidTokenMessage = $localize`:@@verifyEmail.invalidToken:Invalid or expired token.`;
+  missingTokenMessage = $localize`:@@verifyEmail.missingToken:Missing token.`;
   private hasAttempted = false;
 
   async ngOnInit() {
@@ -67,7 +69,7 @@ export class VerifyEmailComponent implements OnInit {
 
     if (!token) {
       this.status.set('error');
-      this.errorMessage.set('Missing token');
+      this.errorMessage.set(this.missingTokenMessage);
       return;
     }
 
@@ -104,3 +106,4 @@ export class VerifyEmailComponent implements OnInit {
     }
   }
 }
+

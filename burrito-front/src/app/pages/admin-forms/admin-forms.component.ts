@@ -5,9 +5,11 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
+  inject,
   signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate as formatCommonDate } from '@angular/common';
+import { LOCALE_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
@@ -110,21 +112,22 @@ export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
   private pageSize = 12;
   statusFilter: StatusFilter = 'ALL';
   statusOptions: SelectOption[] = [
-    { label: 'All statuses', value: 'ALL' },
-    { label: 'Draft', value: 'DRAFT' },
-    { label: 'Published', value: 'PUBLISHED' },
-    { label: 'Closed', value: 'CLOSED' },
+    { label: $localize`:@@adminForms.statusAll:All statuses`, value: 'ALL' },
+    { label: $localize`:@@adminForms.statusDraft:Draft`, value: 'DRAFT' },
+    { label: $localize`:@@adminForms.statusPublished:Published`, value: 'PUBLISHED' },
+    { label: $localize`:@@adminForms.statusClosed:Closed`, value: 'CLOSED' },
   ];
 
   alertDialogOpen = false;
-  alertDialogTitle = 'Confirm action';
+  alertDialogTitle = $localize`:@@adminForms.confirmActionTitle:Confirm action`;
   alertDialogMessage = '';
-  alertDialogConfirmLabel = 'Confirm';
-  alertDialogCancelLabel = 'Cancel';
+  alertDialogConfirmLabel = $localize`:@@adminForms.confirmAction:Confirm`;
+  alertDialogCancelLabel = $localize`:@@adminForms.cancelAction:Cancel`;
   alertDialogShowCancel = true;
   alertDialogIntent: AlertDialogIntent = 'primary';
   private alertDialogAction: (() => void) | null = null;
   private loadMoreObserver?: IntersectionObserver;
+  private localeId = inject(LOCALE_ID);
 
   @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLDivElement>;
 
@@ -186,9 +189,9 @@ export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
   deleteForm(formId: string): void {
     this.openAlertDialog(
       {
-        title: 'Delete form',
-        message: 'Delete this form? This action cannot be undone.',
-        confirmLabel: 'Delete',
+        title: $localize`:@@adminForms.deleteTitle:Delete form`,
+        message: $localize`:@@adminForms.deleteConfirm:Delete this form? This action cannot be undone.`,
+        confirmLabel: $localize`:@@adminForms.deleteAction:Delete`,
         intent: 'danger',
       },
       () => {
@@ -197,7 +200,7 @@ export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
             this.forms.set(this.forms().filter((form) => form.id !== formId));
           },
           error: () => {
-            this.error.set('Failed to delete the form.');
+            this.error.set($localize`:@@adminForms.deleteError:Failed to delete the form.`);
           },
         });
       },
@@ -207,12 +210,16 @@ export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
   publishForm(formId: string): void {
     this.openAlertDialog(
       {
-        title: 'Publish form',
-        message: 'Publish this form?',
-        confirmLabel: 'Publish',
+        title: $localize`:@@adminForms.publishTitle:Publish form`,
+        message: $localize`:@@adminForms.publishConfirm:Publish this form?`,
+        confirmLabel: $localize`:@@adminForms.publishAction:Publish`,
       },
       () => {
-        this.updateFormStatus(formId, 'PUBLISHED', 'Failed to publish the form.');
+        this.updateFormStatus(
+          formId,
+          'PUBLISHED',
+          $localize`:@@adminForms.publishError:Failed to publish the form.`,
+        );
       },
     );
   }
@@ -220,34 +227,34 @@ export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
   closeForm(formId: string): void {
     this.openAlertDialog(
       {
-        title: 'Close form',
-        message: 'Close this form?',
-        confirmLabel: 'Close',
+        title: $localize`:@@adminForms.closeTitle:Close form`,
+        message: $localize`:@@adminForms.closeConfirm:Close this form?`,
+        confirmLabel: $localize`:@@adminForms.closeAction:Close`,
       },
       () => {
-        this.updateFormStatus(formId, 'CLOSED', 'Failed to close the form.');
+        this.updateFormStatus(
+          formId,
+          'CLOSED',
+          $localize`:@@adminForms.closeError:Failed to close the form.`,
+        );
       },
     );
   }
 
   formatDate(value?: string): string {
     if (!value) {
-      return 'Not set';
+      return $localize`:@@adminForms.dateNotSet:Not set`;
     }
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) {
-      return 'Not set';
+      return $localize`:@@adminForms.dateNotSet:Not set`;
     }
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    return formatCommonDate(date, 'MMM d, y', this.localeId);
   }
 
   formatGroups(groups?: FormListItem['groups']): string {
     if (!groups || groups.length === 0) {
-      return 'No groups';
+      return $localize`:@@adminForms.noGroups:No groups`;
     }
     return groups.map((group) => group.name).join(', ');
   }
@@ -263,11 +270,28 @@ export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  getStatusLabel(status: FormListItem['status']): string {
+    switch (status) {
+      case 'PUBLISHED':
+        return $localize`:@@adminForms.statusPublished:Published`;
+      case 'CLOSED':
+        return $localize`:@@adminForms.statusClosed:Closed`;
+      default:
+        return $localize`:@@adminForms.statusDraft:Draft`;
+    }
+  }
+
+  getTeacherLabel(form: FormListItem): string {
+    return form.teacher?.fullName || $localize`:@@adminForms.allTeachers:All teachers`;
+  }
+
   openAlertDialog(config: AlertDialogConfig, action?: () => void): void {
     this.alertDialogTitle = config.title;
     this.alertDialogMessage = config.message;
-    this.alertDialogConfirmLabel = config.confirmLabel ?? 'Confirm';
-    this.alertDialogCancelLabel = config.cancelLabel ?? 'Cancel';
+    this.alertDialogConfirmLabel =
+      config.confirmLabel ?? $localize`:@@adminForms.confirmAction:Confirm`;
+    this.alertDialogCancelLabel =
+      config.cancelLabel ?? $localize`:@@adminForms.cancelAction:Cancel`;
     this.alertDialogShowCancel = config.showCancel ?? true;
     this.alertDialogIntent = config.intent ?? 'primary';
     this.alertDialogAction = action ?? null;
@@ -340,7 +364,7 @@ export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .catch((err) => {
         console.error('Error loading forms:', err);
-        this.error.set('Unable to load forms right now.');
+        this.error.set($localize`:@@adminForms.loadError:Unable to load forms right now.`);
       });
   }
 

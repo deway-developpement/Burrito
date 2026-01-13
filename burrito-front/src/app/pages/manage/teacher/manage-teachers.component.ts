@@ -1,11 +1,20 @@
-import { Component, inject } from '@angular/core';
+﻿import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BackgroundDivComponent } from '../../../component/shared/background-div/background-div.component';
 import { GoBackComponent } from '../../../component/shared/go-back/go-back.component';
 import { AdminPageHeaderComponent } from '../../../component/shared/admin-page-header/admin-page-header.component';
 import { AdminTableComponent, TableColumn } from '../../../component/shared/admin-table/admin-table.component';
-import { UserService, UserProfile } from '../../../services/user.service'; 
-import { Observable, map, take, tap } from 'rxjs';
+import { UserService, UserProfile } from '../../../services/user.service';
+import { firstValueFrom } from 'rxjs';
 import { EditUserModalComponent } from '../../../component/shared/edit-user-modal/edit-user-modal.component';
 import { AddUserModalComponent } from '../../../component/shared/add-user-modal/add-user-modal.component';
 import { AlertDialogComponent } from '../../../component/shared/alert-dialog/alert-dialog.component';
@@ -21,71 +30,124 @@ interface AlertDialogConfig {
   intent?: AlertDialogIntent;
 }
 
+interface TeacherRow {
+  id: string;
+  name: string;
+  email: string;
+  createdAt?: string;
+  groups: {
+    id: string;
+    name: string;
+  }[];
+}
+
 @Component({
   selector: 'app-manage-teachers',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     BackgroundDivComponent,
     GoBackComponent,
-    AdminPageHeaderComponent, 
+    AdminPageHeaderComponent,
     AdminTableComponent,
     EditUserModalComponent,
     AddUserModalComponent,
-    AlertDialogComponent
+    AlertDialogComponent,
   ],
   templateUrl: './manage-teachers.component.html',
-  styleUrls: ['./manage-teachers.component.scss']
+  styleUrls: ['./manage-teachers.component.scss'],
 })
-export class ManageTeachersComponent {
-
+export class ManageTeachersComponent implements OnInit, AfterViewInit, OnDestroy {
   private userService = inject(UserService);
 
   tableColumns: TableColumn[] = [
-    { key: 'name', label: 'Name', type: 'user' },
-    { key: 'email', label: 'Contact', type: 'text' },
-    { key: 'groups', label: 'Assigned Groups', type: 'groups' },
-    { key: 'actions', label: 'Actions', type: 'actions' },
+    { key: 'name', label: $localize`:@@manageTeachers.name:Name`, type: 'user' },
+    { key: 'email', label: $localize`:@@manageTeachers.contact:Contact`, type: 'text' },
+    { key: 'groups', label: $localize`:@@manageTeachers.groups:Assigned Groups`, type: 'groups' },
+    { key: 'actions', label: $localize`:@@manageTeachers.actions:Actions`, type: 'actions' },
   ];
 
-  teachers$: Observable<any[]>;
-  
-  // États pour les modales 
-  selectedUser: UserProfile | null = null; // Pour l'édition
-  showAddModal = false;                    // Pour l'ajout
+  teachers = signal<TeacherRow[]>([]);
+  loading = signal<boolean>(false);
+  hasMore = signal<boolean>(true);
+  loadMoreDisabled = signal<boolean>(false);
+
+  selectedUser: UserProfile | null = null;
+  showAddModal = false;
 
   alertDialogOpen = false;
-  alertDialogTitle = 'Confirm action';
+  alertDialogTitle = $localize`:@@manageTeachers.confirmActionTitle:Confirm action`;
   alertDialogMessage = '';
-  alertDialogConfirmLabel = 'Confirm';
-  alertDialogCancelLabel = 'Cancel';
+  alertDialogConfirmLabel = $localize`:@@manageTeachers.confirmAction:Confirm`;
+  alertDialogCancelLabel = $localize`:@@manageTeachers.cancelAction:Cancel`;
   alertDialogShowCancel = true;
   alertDialogIntent: AlertDialogIntent = 'primary';
   private alertDialogAction: (() => void) | null = null;
+  private lastCursor: string | null = null;
+  private loadMoreObserver?: IntersectionObserver;
+  private pageSize = 25;
 
-  constructor() {
-    this.teachers$ = this.loadTeachers();
+  @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLDivElement>;
+
+  constructor() {}
+
+  ngOnInit(): void {
+    this.loadTeachers();
   }
 
-  // Méthode helper pour charger (et recharger) les données
-  loadTeachers() {
-    return this.userService.getTeachers().pipe(
-      tap(data => console.log('Teachers loaded:', data)),
-      map(users => {
-        if (!users) return [];
-        return users.map(u => ({
-          id: u.id,
-          name: u.fullName || 'Unknown', 
-          email: u.email || 'N/A',
-          // On inclut createdAt ici pour pouvoir le passer à la modal d'édition plus tard
-          createdAt: u.createdAt,
-          groups: u.groups || []
-        }));
+  ngAfterViewInit(): void {
+    this.setupLoadMoreObserver();
+  }
+
+  ngOnDestroy(): void {
+    this.loadMoreObserver?.disconnect();
+  }
+
+  loadTeachers(): void {
+    this.loading.set(true);
+    this.lastCursor = null;
+    this.fetchTeachers(true).finally(() => {
+      this.loading.set(false);
+    });
+  }
+
+  loadMoreTeachers(): void {
+    this.loadMoreDisabled.set(true);
+    this.fetchTeachers(false).finally(() => {
+      this.loadMoreDisabled.set(false);
+    });
+  }
+
+  private fetchTeachers(reset: boolean): Promise<void> {
+    return firstValueFrom(
+      this.userService.getTeachersPage(this.pageSize, reset ? null : this.lastCursor),
+    )
+      .then((result) => {
+        const rows = result.users.map((user) => this.mapTeacherRow(user));
+        if (reset) {
+          this.teachers.set(rows);
+        } else {
+          this.teachers.set([...this.teachers(), ...rows]);
+        }
+        this.hasMore.set(result.pageInfo.hasNextPage);
+        this.lastCursor = result.pageInfo.endCursor;
       })
-    );
+      .catch((err) => {
+        console.error('Error loading teachers:', err);
+        this.hasMore.set(false);
+      });
   }
 
-  // --- LOGIQUE AJOUT (ADD) ---
+  private mapTeacherRow(user: UserProfile): TeacherRow {
+    return {
+      id: user.id,
+      name: user.fullName || $localize`:@@manageTeachers.unknown:Unknown`,
+      email: user.email || $localize`:@@manageTeachers.notAvailable:N/A`,
+      createdAt: user.createdAt,
+      groups: user.groups || [],
+    };
+  }
+
   onAdd() {
     this.showAddModal = true;
   }
@@ -94,74 +156,65 @@ export class ManageTeachersComponent {
     this.showAddModal = false;
   }
 
-  // --- LOGIQUE SUPPRESSION (DELETE) ---
   onDelete(id: any) {
     this.openAlertDialog(
       {
-        title: 'Delete teacher',
-        message: 'Are you sure you want to delete this teacher?',
-        confirmLabel: 'Delete',
+        title: $localize`:@@manageTeachers.deleteTitle:Delete teacher`,
+        message: $localize`:@@manageTeachers.deleteConfirm:Are you sure you want to delete this teacher?`,
+        confirmLabel: $localize`:@@manageTeachers.deleteAction:Delete`,
         intent: 'danger',
       },
       () => {
-        // We convert id to String because AdminTable emits number,
-        // but GraphQL Service expects a String ID.
         this.userService.deleteUser(String(id)).subscribe({
           next: () => {
             console.log('User deleted successfully');
-            // Since we updated the Apollo Cache in the Service, the list might update automatically.
-            // However, calling refreshData() ensures the Observable logic re-runs if needed.
-            this.refreshData(); 
+            this.refreshData();
           },
           error: (err) => {
             console.error('Error deleting user:', err);
             this.openAlertDialog({
-              title: 'Delete failed',
-              message: 'Failed to delete user.',
-              confirmLabel: 'Ok',
+              title: $localize`:@@manageTeachers.deleteFailed:Delete failed`,
+              message: $localize`:@@manageTeachers.deleteError:Failed to delete user.`,
+              confirmLabel: $localize`:@@manageTeachers.ok:Ok`,
               showCancel: false,
             });
-          }
+          },
         });
       },
     );
   }
 
-  // --- LOGIQUE ÉDITION (EDIT) ---
   onEdit(id: any) {
-    this.teachers$.pipe(take(1)).subscribe(teachers => {
-      // Note: We compare using String(id) to be safe against type mismatches
-      const user = teachers.find(t => String(t.id) === String(id));
-      
-      if (user) {
-        this.selectedUser = {
-           id: user.id,
-           fullName: user.name, // Le tableau utilise 'name', la modal veut 'fullName'
-           email: user.email,
-           userType: 'TEACHER',
-           createdAt: user.createdAt,
-            groups: user.groups || []
-        };
-      }
-    });
+    const user = this.teachers().find((t) => String(t.id) === String(id));
+    if (user) {
+      this.selectedUser = {
+        id: user.id,
+        fullName: user.name,
+        email: user.email,
+        userType: 'TEACHER',
+        createdAt: user.createdAt,
+        groups: user.groups || [],
+      };
+    }
   }
 
   closeEditModal() {
     this.selectedUser = null;
   }
 
-  // Rafraîchir la liste après Ajout ou Édition
   refreshData() {
     this.selectedUser = null;
     this.showAddModal = false;
-    this.teachers$ = this.loadTeachers();
+    this.loadTeachers();
   }
 
   openAlertDialog(config: AlertDialogConfig, action?: () => void): void {
     this.alertDialogTitle = config.title;
     this.alertDialogMessage = config.message;
-    this.alertDialogConfirmLabel = config.confirmLabel ?? 'Confirm';
-    this.alertDialogCancelLabel = config.cancelLabel ?? 'Cancel';
+    this.alertDialogConfirmLabel =
+      config.confirmLabel ?? $localize`:@@manageTeachers.confirmAction:Confirm`;
+    this.alertDialogCancelLabel =
+      config.cancelLabel ?? $localize`:@@manageTeachers.cancelAction:Cancel`;
     this.alertDialogShowCancel = config.showCancel ?? true;
     this.alertDialogIntent = config.intent ?? 'primary';
     this.alertDialogAction = action ?? null;
@@ -179,5 +232,31 @@ export class ManageTeachersComponent {
   closeAlertDialog(): void {
     this.alertDialogOpen = false;
     this.alertDialogAction = null;
+  }
+
+  private setupLoadMoreObserver(): void {
+    if (!this.loadMoreTrigger?.nativeElement) {
+      return;
+    }
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    this.loadMoreObserver?.disconnect();
+    this.loadMoreObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) {
+          return;
+        }
+        if (!this.hasMore() || this.loadMoreDisabled() || this.loading()) {
+          return;
+        }
+        this.loadMoreTeachers();
+      },
+      { root: null, rootMargin: '200px', threshold: 0 },
+    );
+
+    this.loadMoreObserver.observe(this.loadMoreTrigger.nativeElement);
   }
 }

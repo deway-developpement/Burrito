@@ -7,7 +7,13 @@
   >
     <div class="alert-header">
       <h2>{{ title }}</h2>
-      <button class="close-btn" type="button" (click)="onCancel()" aria-label="Close dialog">
+      <button
+        class="close-btn"
+        type="button"
+        (click)="onCancel()"
+        i18n-aria-label="@@alertDialog.close"
+        aria-label="Close dialog"
+      >
         &times;
       </button>
     </div>

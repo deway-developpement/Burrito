@@ -1,32 +1,35 @@
 <app-background-div>
   
-  <app-admin-page-header 
-    title="Course Feedback" 
-    subtitle="Review anonymous feedback from your students.">
+  <app-admin-page-header
+    i18n-title="@@teacherHome.title"
+    title="Course Feedback"
+    i18n-subtitle="@@teacherHome.subtitle"
+    subtitle="Review anonymous feedback from your students."
+  >
   </app-admin-page-header>
 
   <section class="section-container">
     <div class="section-header">
-      <h2 class="section-title">My Analytics</h2>
+      <h2 class="section-title" i18n="@@teacherHome.analyticsTitle">My Analytics</h2>
     </div>
     <a class="btn-action view-results-btn" 
        [routerLink]="['/results/teacher', teacherId]"
        [class.disabled]="!teacherId">
-      📊 View My Results Dashboard
+      📊 <span i18n="@@teacherHome.viewResults">View My Results Dashboard</span>
     </a>
   </section>
 
   <section class="section-container">
     <div class="section-header">
-      <h2 class="section-title">New Feedback</h2>
+      <h2 class="section-title" i18n="@@teacherHome.newFeedbackTitle">New Feedback</h2>
       <span class="badge-count" *ngIf="unreadEvaluations.length > 0">
-        {{ unreadEvaluations.length }} new
+        <span i18n="@@teacherHome.newCount">{{ unreadEvaluations.length }} new</span>
       </span>
     </div>
     
     <div *ngIf="unreadEvaluations.length === 0" class="empty-state">
       <span class="icon">👍</span>
-      <p>You're all caught up! No new feedback to review.</p>
+      <p i18n="@@teacherHome.noNewFeedback">You're all caught up! No new feedback to review.</p>
     </div>
 
     <div class="eval-grid" *ngIf="unreadEvaluations.length > 0">
@@ -35,14 +38,14 @@
           <div class="avatar-anon">?</div>
           <div class="meta">
             <h3>{{ eval.courseName }}</h3>
-            <span class="date-sub">Received: {{ eval.submittedDate | date:'MMM d' }}</span>
+            <span class="date-sub" i18n="@@teacherHome.receivedLabel">Received: {{ eval.submittedDate | date:'MMM d' }}</span>
           </div>
-          <div class="status-badge new">NEW</div>
+          <div class="status-badge new" i18n="@@teacherHome.newBadge">NEW</div>
         </div>
         
         <div class="card-body">
           <div class="rating-display">
-            <span class="label">Overall Rating:</span>
+            <span class="label" i18n="@@teacherHome.overallRating">Overall Rating:</span>
             <div class="stars">
               <span *ngFor="let star of [1,2,3,4,5]" 
                     [class.filled]="star <= eval.rating">★</span>
@@ -52,7 +55,7 @@
 
         <div class="card-footer">
           <button class="btn-action" (click)="viewEvaluation(eval.id)">
-            Read Feedback &rarr;
+            <span i18n="@@teacherHome.readFeedback">Read Feedback</span> &rarr;
           </button>
         </div>
       </div>
@@ -61,15 +64,15 @@
 
 
   <section class="section-container history-section">
-    <h2 class="section-title">Read History</h2>
+    <h2 class="section-title" i18n="@@teacherHome.historyTitle">Read History</h2>
     
     <div class="history-container">
       <table class="history-table">
         <thead>
           <tr>
-            <th>Course</th>
-            <th>Received On</th>
-            <th>Rating</th>
+            <th i18n="@@teacherHome.courseHeader">Course</th>
+            <th i18n="@@teacherHome.receivedOnHeader">Received On</th>
+            <th i18n="@@teacherHome.ratingHeader">Rating</th>
           </tr>
         </thead>
         <tbody>
@@ -98,13 +101,13 @@
     <div class="modal-overlay" (click)="closeFeedbackModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>Evaluation Details</h2>
-          <button class="btn-close" (click)="closeFeedbackModal()" aria-label="Close">×</button>
+          <h2 i18n="@@teacherHome.detailsTitle">Evaluation Details</h2>
+          <button class="btn-close" (click)="closeFeedbackModal()" i18n-aria-label="@@teacherHome.closeLabel" aria-label="Close">×</button>
         </div>
         
         @if (feedbackLoading()) {
           <div class="modal-body">
-            <div class="loading-state">Loading feedback…</div>
+            <div class="loading-state" i18n="@@teacherHome.loadingFeedback">Loading feedback...</div>
           </div>
         } @else if (feedbackError()) {
           <div class="modal-body">
@@ -114,11 +117,11 @@
           <div class="modal-body">
             <div class="feedback-header">
               <h3>{{ selectedEvaluation.courseName }}</h3>
-              <p class="feedback-date">Submitted: {{ selectedEvaluation.submittedDate | date:'MMM d, yyyy' }}</p>
+              <p class="feedback-date" i18n="@@teacherHome.submittedLabel">Submitted: {{ selectedEvaluation.submittedDate | date:'MMM d, yyyy' }}</p>
             </div>
 
             <div class="feedback-rating">
-              <span class="label">Overall Rating:</span>
+              <span class="label" i18n="@@teacherHome.overallRating">Overall Rating:</span>
               <div class="stars">
                 <span *ngFor="let star of [1,2,3,4,5]" 
                       [class.filled]="star <= selectedEvaluation.rating">★</span>
@@ -129,10 +132,11 @@
         }
 
         <div class="modal-footer">
-          <button class="btn-primary" (click)="closeFeedbackModal()">Close</button>
+          <button class="btn-primary" (click)="closeFeedbackModal()"><span i18n="@@teacherHome.close">Close</span></button>
         </div>
       </div>
     </div>
   }
 
 </app-background-div>
+

@@ -1,14 +1,14 @@
 <div class="contact-container">
   <div class="contact-card">
     <header class="contact-header">
-      <h1>Contact Us</h1>
-      <p class="subtitle">We'd love to hear from you</p>
+      <h1 i18n="@@contact.title">Contact Us</h1>
+      <p class="subtitle" i18n="@@contact.subtitle">We'd love to hear from you</p>
     </header>
 
     <div class="contact-content">
       
       <section class="info-section">
-        <p>
+        <p i18n="@@contact.intro">
           Having trouble with the platform? Have a suggestion for the Burito team? 
           Fill out the form below or reach us directly.
         </p>
@@ -26,27 +26,33 @@
 
       <form (submit)="onSubmit($event)">
         <div class="form-group">
-          <label for="email">Your Email</label>
+          <label for="email" i18n="@@contact.emailLabel">Your Email</label>
           <input type="email" id="email" placeholder="student@efrei.net" required>
         </div>
 
         <div class="form-group">
-          <label for="subject">Subject</label>
+          <label for="subject" i18n="@@contact.subjectLabel">Subject</label>
           <select id="subject" required>
-            <option value="" disabled selected>Select a topic</option>
-            <option value="tech">Technical Issue / Bug</option>
-            <option value="account">Account Access</option>
-            <option value="feedback">General Feedback</option>
-            <option value="other">Other</option>
+            <option value="" disabled selected i18n="@@contact.subjectPlaceholder">Select a topic</option>
+            <option value="tech" i18n="@@contact.subjectTech">Technical Issue / Bug</option>
+            <option value="account" i18n="@@contact.subjectAccount">Account Access</option>
+            <option value="feedback" i18n="@@contact.subjectFeedback">General Feedback</option>
+            <option value="other" i18n="@@contact.subjectOther">Other</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="message">Message</label>
-          <textarea id="message" rows="5" placeholder="How can we help you?" required></textarea>
+          <label for="message" i18n="@@contact.messageLabel">Message</label>
+          <textarea
+            id="message"
+            rows="5"
+            i18n-placeholder="@@contact.messagePlaceholder"
+            placeholder="How can we help you?"
+            required
+          ></textarea>
         </div>
 
-        <button type="submit" class="btn-submit">Send Message</button>
+        <button type="submit" class="btn-submit" i18n="@@contact.submit">Send Message</button>
       </form>
 
     </div>

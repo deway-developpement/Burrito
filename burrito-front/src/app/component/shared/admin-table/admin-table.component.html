@@ -20,7 +20,7 @@
               </span>
             </div>
             <ng-template #noGroups>
-              <span class="text-muted">No Groups</span>
+              <span class="text-muted" i18n="@@adminTable.noGroups">No groups</span>
             </ng-template>
           </div>
           
@@ -34,8 +34,8 @@
           </div>
 
           <div *ngSwitchCase="'actions'" class="text-left">
-            <button class="action-btn edit" (click)="edit.emit(row.id)" title="Edit">✏️</button>
-            <button class="action-btn delete" (click)="delete.emit(row.id)" title="Delete">🗑️</button>
+            <button class="action-btn edit" (click)="edit.emit(row.id)" i18n-title="@@adminTable.edit" title="Edit">✏️</button>
+            <button class="action-btn delete" (click)="delete.emit(row.id)" i18n-title="@@adminTable.delete" title="Delete">🗑️</button>
           </div>
 
           <span *ngSwitchDefault [class.text-muted]="col.key === 'email'">

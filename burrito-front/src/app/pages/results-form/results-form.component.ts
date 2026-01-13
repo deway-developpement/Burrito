@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, signal, PLATFORM_ID, Inject } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { Component, OnInit, OnDestroy, signal, PLATFORM_ID, Inject, LOCALE_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser, formatDate as formatCommonDate } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { Subject, firstValueFrom } from 'rxjs';
@@ -199,6 +199,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   textLoading = signal<boolean>(false);
   textError = signal<string | null>(null);
   currentQuestionId = signal<string | null>(null);
+  textResponsesTitle = $localize`:@@resultsForm.textResponsesTitle:Text responses`;
 
   // Time window options for template
   readonly timeWindowOptions: TimeWindow[] = ['all', '30d', '7d', 'custom'];
@@ -212,6 +213,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     private apollo: Apollo,
     private authService: AuthService,
     @Inject(PLATFORM_ID) private platformId: Object,
+    @Inject(LOCALE_ID) private localeId: string,
   ) {}
 
   ngOnInit(): void {
@@ -287,7 +289,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
       const formData = await this.fetchFormSnapshot(forceSync, window);
       
       if (!formData) {
-        this.error.set('Failed to load form analytics');
+        this.error.set($localize`:@@resultsForm.loadError:Failed to load form analytics`);
         return;
       }
 
@@ -305,7 +307,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
       
       this.error.set(null);
     } catch (err) {
-      this.error.set('Failed to load form analytics');
+      this.error.set($localize`:@@resultsForm.loadError:Failed to load form analytics`);
       console.error('Analytics fetch error:', err);
     }
   }
@@ -358,9 +360,9 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
       if (response.data?.form?.title) {
         return response.data.form.title;
       }
-      return 'Unknown Form';
+      return $localize`:@@resultsForm.unknownForm:Unknown Form`;
     } catch {
-      return 'Unknown Form';
+      return $localize`:@@resultsForm.unknownForm:Unknown Form`;
     }
   }
 
@@ -391,7 +393,9 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
         const metrics = this.calculateTeacherMetrics(evals);
         breakdown.push({
           teacherId,
-          teacherName: teacherNames.get(teacherId) || 'Unknown',
+          teacherName:
+            teacherNames.get(teacherId) ||
+            $localize`:@@resultsForm.unknownTeacher:Unknown`,
           totalResponses: evals.length,
           nps: metrics.nps,
           averageRating: metrics.averageRating,
@@ -577,16 +581,15 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   }
 
   formatDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatCommonDate(date, 'MMM d, y', this.localeId);
   }
 
   getQuestionLabel(questionId: string): string {
     const q = this.analytics()?.questions.find((item) => item.questionId === questionId);
-    return q?.label ?? `Question ${questionId}`;
+    return (
+      q?.label ??
+      $localize`:@@resultsForm.questionFallback:Question ${questionId}`
+    );
   }
 
   async openTextResponses(questionId: string): Promise<void> {
@@ -630,7 +633,9 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
       this.textResponses.set(responses);
     } catch (err) {
       console.error('Failed to load text responses', err);
-      this.textError.set('Failed to load text responses');
+      this.textError.set(
+        $localize`:@@resultsForm.textResponsesError:Failed to load text responses`,
+      );
     } finally {
       this.textLoading.set(false);
     }
@@ -648,13 +653,13 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   getTimeWindowLabel(window: TimeWindow): string {
     switch (window) {
       case '30d':
-        return 'Last 30 days';
+        return $localize`:@@resultsForm.last30Days:Last 30 days`;
       case '7d':
-        return 'Last 7 days';
+        return $localize`:@@resultsForm.last7Days:Last 7 days`;
       case 'custom':
-        return 'Custom Range';
+        return $localize`:@@resultsForm.customRange:Custom Range`;
       default:
-        return 'All Time';
+        return $localize`:@@resultsForm.allTime:All Time`;
     }
   }
 

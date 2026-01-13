@@ -33,7 +33,8 @@ export class SignInComponent {
   onSubmit() {
     // Basic validation
     if (!this.email || !this.password) {
-      this.errorMessage = 'Please fill in all fields.';
+      this.errorMessage =
+        $localize`:@@signIn.missingFields:Please fill in all fields.`;
       return;
     }
 
@@ -54,7 +55,10 @@ export class SignInComponent {
         // On arrive ici SEULEMENT quand le login ET le fetchMe sont finis
         console.log('Login & User data fetched successfully', userProfile);
         
-        this.toast.show('Welcome back! Login successful.', 'success');
+        this.toast.show(
+          $localize`:@@signIn.successToast:Welcome back! Login successful.`,
+          'success',
+        );
         
         // ✅ Le redirect se fait maintenant avec les données utilisateur en poche
         this.router.navigate(['/']); 
@@ -65,11 +69,19 @@ export class SignInComponent {
         this.isLoading = false;
         
         if (err.status === 401) {
-          this.errorMessage = 'Invalid email or password.';
-          this.toast.show('Login failed. Please check your credentials.', 'error');
+          this.errorMessage =
+            $localize`:@@signIn.invalidCredentials:Invalid email or password.`;
+          this.toast.show(
+            $localize`:@@signIn.failedToast:Login failed. Please check your credentials.`,
+            'error',
+          );
         } else {
-          this.errorMessage = 'An unexpected error occurred.';
-          this.toast.show('An unknown error has occurred', 'error');
+          this.errorMessage =
+            $localize`:@@signIn.unexpectedError:An unexpected error occurred.`;
+          this.toast.show(
+            $localize`:@@signIn.unknownError:An unknown error has occurred`,
+            'error',
+          );
         }
       }
     });

@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule, formatDate as formatCommonDate } from '@angular/common';
+import { Component, OnInit, inject, LOCALE_ID } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Apollo, gql } from 'apollo-angular';
 import { BackgroundDivComponent } from '../../../component/shared/background-div/background-div.component';
@@ -79,12 +79,16 @@ const SUBMIT_EVALUATION = gql`
 export class FeedbackStudentComponent implements OnInit {
   private evaluationService = inject(EvaluationService);
   private apollo = inject(Apollo);
+  private localeId = inject(LOCALE_ID);
 
   forms: EvaluationForm[] = [];
   selectedFormId = '';
   selectedForm: FormDetails | null = null;
   selectedTeacherName = '';
-  nextDeadlineLabel = 'No deadlines';
+  nextDeadlineLabel = $localize`:@@feedbackStudent.noDeadlines:No deadlines`;
+  fallbackFormTitle = $localize`:@@feedbackStudent.chooseForm:Choose a form`;
+  fallbackTeacherLabel = $localize`:@@feedbackStudent.teacherDetailsPlaceholder:Teacher details appear here.`;
+  fallbackTeacherPending = $localize`:@@feedbackStudent.teacherPending:Teacher pending`;
 
   loadingForms = false;
   loadingForm = false;
@@ -196,7 +200,8 @@ export class FeedbackStudentComponent implements OnInit {
       .subscribe({
         next: () => {
           this.isSubmitting = false;
-          this.submitSuccess = 'Thanks. Your feedback has been submitted.';
+          this.submitSuccess =
+            $localize`:@@feedbackStudent.submitSuccess:Thanks. Your feedback has been submitted.`;
           this.submittedFormIds.add(this.selectedForm!.id);
           this.selectedForm = {
             ...this.selectedForm!,
@@ -206,7 +211,7 @@ export class FeedbackStudentComponent implements OnInit {
         error: () => {
           this.isSubmitting = false;
           this.submitError =
-            'We could not submit your feedback. Please try again.';
+            $localize`:@@feedbackStudent.submitError:We could not submit your feedback. Please try again.`;
         },
       });
   }
@@ -230,7 +235,8 @@ export class FeedbackStudentComponent implements OnInit {
       },
       error: () => {
         this.loadingForms = false;
-        this.formsError = 'Failed to load active forms.';
+        this.formsError =
+          $localize`:@@feedbackStudent.loadFormsError:Failed to load active forms.`;
       },
     });
   }
@@ -253,7 +259,7 @@ export class FeedbackStudentComponent implements OnInit {
           const form = result.data?.form;
           if (!form) {
             this.selectedForm = null;
-            this.formError = 'Form not found.';
+            this.formError = $localize`:@@feedbackStudent.formNotFound:Form not found.`;
             this.loadingForm = false;
             return;
           }
@@ -264,7 +270,8 @@ export class FeedbackStudentComponent implements OnInit {
         error: () => {
           this.loadingForm = false;
           this.selectedForm = null;
-          this.formError = 'Failed to load the selected form.';
+          this.formError =
+            $localize`:@@feedbackStudent.loadFormError:Failed to load the selected form.`;
         },
       });
   }
@@ -328,14 +335,27 @@ export class FeedbackStudentComponent implements OnInit {
       .sort((a, b) => a.getTime() - b.getTime())[0];
 
     if (!nextDate) {
-      this.nextDeadlineLabel = 'No deadlines';
+      this.nextDeadlineLabel = $localize`:@@feedbackStudent.noDeadlines:No deadlines`;
       return;
     }
 
-    this.nextDeadlineLabel = nextDate.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    this.nextDeadlineLabel = formatCommonDate(
+      nextDate,
+      'MMM d, y',
+      this.localeId,
+    );
+  }
+
+  getQuestionTypeLabel(type: QuestionType): string {
+    if (type === 'RATING') {
+      return $localize`:@@feedbackStudent.questionTypeRating:Rating`;
+    }
+    return $localize`:@@feedbackStudent.questionTypeText:Text`;
+  }
+
+  getTextPlaceholder(required: boolean): string {
+    return required
+      ? $localize`:@@feedbackStudent.requiredPlaceholder:Share a concrete example to help the teacher`
+      : $localize`:@@feedbackStudent.optionalPlaceholder:Optional note`;
   }
 }

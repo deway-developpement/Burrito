@@ -2,27 +2,31 @@
   <main class="student__main">
     <section class="student__hero">
       <div class="student__heading">
-        <p class="student__eyebrow">Student feedback</p>
-        <h1 class="student__title">Share your learning experience</h1>
-        <p class="student__lead">
+        <p class="student__eyebrow" i18n="@@feedbackStudent.eyebrow">Student feedback</p>
+        <h1 class="student__title" i18n="@@feedbackStudent.title">Share your learning experience</h1>
+        <p class="student__lead" i18n="@@feedbackStudent.lead">
           Complete the active forms below to help teachers improve. Your responses are kept confidential and shared only in aggregate.
         </p>
         <div class="student__badges">
-          <span class="pill pill--accent">{{ forms.length }} active forms</span>
-          <span class="pill">Anonymous by design</span>
-          <span class="pill pill--soft">2-4 minutes</span>
+          <span class="pill pill--accent" i18n="@@feedbackStudent.activeForms">
+            {{ forms.length }} active forms
+          </span>
+          <span class="pill" i18n="@@feedbackStudent.anonymous">Anonymous by design</span>
+          <span class="pill pill--soft" i18n="@@feedbackStudent.timeEstimate">2-4 minutes</span>
         </div>
       </div>
       <div class="student__hero-card">
         <div class="hero-stat">
-          <p class="hero-stat__label">Next deadline</p>
+          <p class="hero-stat__label" i18n="@@feedbackStudent.nextDeadlineLabel">Next deadline</p>
           <p class="hero-stat__value">{{ nextDeadlineLabel }}</p>
-          <p class="hero-stat__hint">Submit before the due date to be counted.</p>
+          <p class="hero-stat__hint" i18n="@@feedbackStudent.nextDeadlineHint">
+            Submit before the due date to be counted.
+          </p>
         </div>
         <div class="hero-stat">
-          <p class="hero-stat__label">Selected form</p>
-          <p class="hero-stat__value">{{ selectedForm?.title || 'Choose a form' }}</p>
-          <p class="hero-stat__hint">{{ selectedTeacherName || 'Teacher details appear here.' }}</p>
+          <p class="hero-stat__label" i18n="@@feedbackStudent.selectedFormLabel">Selected form</p>
+          <p class="hero-stat__value">{{ selectedForm?.title || fallbackFormTitle }}</p>
+          <p class="hero-stat__hint">{{ selectedTeacherName || fallbackTeacherLabel }}</p>
         </div>
       </div>
     </section>
@@ -30,18 +34,18 @@
     <section class="student__content">
       <div class="student__card student__card--list">
         <div class="section-header">
-          <h2>Available forms</h2>
-          <p>Select the evaluation you want to complete.</p>
+          <h2 i18n="@@feedbackStudent.availableTitle">Available forms</h2>
+          <p i18n="@@feedbackStudent.availableSubtitle">Select the evaluation you want to complete.</p>
         </div>
 
         @if (loadingForms) {
-          <p class="state-text">Loading active forms...</p>
+          <p class="state-text" i18n="@@feedbackStudent.loadingForms">Loading active forms...</p>
         } @else if (formsError) {
           <p class="state-text state-text--error">{{ formsError }}</p>
         } @else if (forms.length === 0) {
           <div class="empty-state">
-            <h3>No active feedback yet</h3>
-            <p>Check back soon for a new evaluation window.</p>
+            <h3 i18n="@@feedbackStudent.emptyTitle">No active feedback yet</h3>
+            <p i18n="@@feedbackStudent.emptySubtitle">Check back soon for a new evaluation window.</p>
           </div>
         } @else {
           <div class="form-list">
@@ -58,12 +62,16 @@
                 </div>
                 <div class="form-item__meta">
                   <span class="pill pill--ghost">
-                    {{ form.endDate ? (form.endDate | date: 'mediumDate') : 'No deadline' }}
+                    @if (form.endDate) {
+                      {{ form.endDate | date: 'mediumDate' }}
+                    } @else {
+                      <span i18n="@@feedbackStudent.noDeadline">No deadline</span>
+                    }
                   </span>
                   @if (isSubmitted(form.id)) {
-                    <span class="pill pill--success">Submitted</span>
+                    <span class="pill pill--success" i18n="@@feedbackStudent.submittedPill">Submitted</span>
                   } @else {
-                    <span class="pill pill--soft">Open</span>
+                    <span class="pill pill--soft" i18n="@@feedbackStudent.openPill">Open</span>
                   }
                 </div>
               </button>
@@ -74,18 +82,22 @@
 
       <div class="student__card student__card--form">
         <div class="section-header">
-          <h2>Feedback form</h2>
-          <p>Answer each question honestly. Required questions are marked.</p>
+          <h2 i18n="@@feedbackStudent.formTitle">Feedback form</h2>
+          <p i18n="@@feedbackStudent.formSubtitle">
+            Answer each question honestly. Required questions are marked.
+          </p>
         </div>
 
         @if (loadingForm) {
-          <p class="state-text">Loading form...</p>
+          <p class="state-text" i18n="@@feedbackStudent.loadingForm">Loading form...</p>
         } @else if (formError) {
           <p class="state-text state-text--error">{{ formError }}</p>
         } @else if (!selectedForm) {
           <div class="empty-state empty-state--compact">
-            <h3>Select a form to begin</h3>
-            <p>Your questions will appear here once you choose a form.</p>
+            <h3 i18n="@@feedbackStudent.selectFormTitle">Select a form to begin</h3>
+            <p i18n="@@feedbackStudent.selectFormSubtitle">
+              Your questions will appear here once you choose a form.
+            </p>
           </div>
         } @else {
           <form class="feedback-form" (ngSubmit)="onSubmit()">
@@ -93,28 +105,43 @@
               <div>
                 <h3>{{ selectedForm.title }}</h3>
                 <p>
-                  {{ selectedForm.description || 'Share your experience with this course.' }}
+                  @if (selectedForm.description) {
+                    {{ selectedForm.description }}
+                  } @else {
+                    <span i18n="@@feedbackStudent.formDescriptionFallback">
+                      Share your experience with this course.
+                    </span>
+                  }
                 </p>
               </div>
               <div class="feedback-form__meta">
                 <span class="pill pill--ghost">
-                  {{ selectedForm.endDate ? (selectedForm.endDate | date: 'mediumDate') : 'No deadline' }}
+                  @if (selectedForm.endDate) {
+                    {{ selectedForm.endDate | date: 'mediumDate' }}
+                  } @else {
+                    <span i18n="@@feedbackStudent.noDeadline">No deadline</span>
+                  }
                 </span>
-                <span class="pill">{{ selectedTeacherName || 'Teacher pending' }}</span>
+                <span class="pill">{{ selectedTeacherName || fallbackTeacherPending }}</span>
               </div>
             </div>
 
             @if (isSubmitted(selectedForm.id)) {
               <div class="banner banner--success">
-                Thanks. You already submitted this form.
+                <span i18n="@@feedbackStudent.alreadySubmitted">
+                  Thanks. You already submitted this form.
+                </span>
               </div>
             }
 
             @if (!selectedForm.targetTeacherId) {
               <label class="form-field">
-                <span class="form-label">Teacher ID <span class="required">*</span></span>
+                <span class="form-label" i18n="@@feedbackStudent.teacherIdLabel">
+                  Teacher ID <span class="required">*</span>
+                </span>
                 <app-input
                   variant="outline"
+                  i18n-placeholder="@@feedbackStudent.teacherIdPlaceholder"
                   placeholder="Enter the teacher ID"
                   [fullWidth]="true"
                   [disabled]="formLocked"
@@ -122,7 +149,9 @@
                   [(model)]="teacherIdOverride"
                 ></app-input>
                 @if (submitAttempted && !teacherIdOverride.trim()) {
-                  <span class="field-error">Teacher ID is required for this form.</span>
+                  <span class="field-error" i18n="@@feedbackStudent.teacherIdRequired">
+                    Teacher ID is required for this form.
+                  </span>
                 }
               </label>
             }
@@ -132,11 +161,13 @@
                 <div class="question-card">
                   <div class="question-card__header">
                     <div>
-                      <p class="question-card__eyebrow">Question {{ i + 1 }}</p>
+                      <p class="question-card__eyebrow" i18n="@@feedbackStudent.questionNumber">
+                        Question {{ i + 1 }}
+                      </p>
                       <h4>{{ question.label }}</h4>
                     </div>
                     <span class="pill pill--ghost">
-                      {{ question.type === 'RATING' ? 'Rating' : 'Text' }}
+                      {{ getQuestionTypeLabel(question.type) }}
                     </span>
                   </div>
 
@@ -154,7 +185,7 @@
                     <textarea
                       class="form-textarea"
                       rows="4"
-                      [attr.placeholder]="question.required ? 'Share a concrete example to help the teacher' : 'Optional note'"
+                      [attr.placeholder]="getTextPlaceholder(question.required)"
                       [name]="'text-' + question.id"
                       [disabled]="formLocked"
                       [(ngModel)]="responses[question.id].text"
@@ -163,12 +194,14 @@
 
                   <div class="question-card__footer">
                     @if (question.required) {
-                      <span class="required-pill">Required</span>
+                      <span class="required-pill" i18n="@@feedbackStudent.requiredPill">Required</span>
                     } @else {
-                      <span class="optional-pill">Optional</span>
+                      <span class="optional-pill" i18n="@@feedbackStudent.optionalPill">Optional</span>
                     }
                     @if (isQuestionInvalid(question)) {
-                      <span class="field-error">Please answer this question.</span>
+                      <span class="field-error" i18n="@@feedbackStudent.questionRequired">
+                        Please answer this question.
+                      </span>
                     }
                   </div>
                 </div>
@@ -177,7 +210,9 @@
 
             <div class="feedback-form__footer">
               @if (submitAttempted && isFormInvalid) {
-                <p class="state-text state-text--error">Please complete required fields before submitting.</p>
+                <p class="state-text state-text--error" i18n="@@feedbackStudent.completeRequired">
+                  Please complete required fields before submitting.
+                </p>
               }
               @if (submitError) {
                 <p class="state-text state-text--error">{{ submitError }}</p>
@@ -187,14 +222,22 @@
               }
               <div class="feedback-form__actions">
                 <div class="footer-meta">
-                  <p>{{ answeredRequiredCount }}/{{ requiredCount }} required answered</p>
+                  <p i18n="@@feedbackStudent.requiredCount">
+                    {{ answeredRequiredCount }}/{{ requiredCount }} required answered
+                  </p>
                 </div>
                 <app-button
                   variant="primary"
                   type="submit"
                   [disabled]="isFormInvalid || formLocked"
                 >
-                  {{ formLocked ? 'Submitted' : (isSubmitting ? 'Submitting...' : 'Submit feedback') }}
+                  @if (formLocked) {
+                    <span i18n="@@feedbackStudent.submittedButton">Submitted</span>
+                  } @else if (isSubmitting) {
+                    <span i18n="@@feedbackStudent.submittingButton">Submitting...</span>
+                  } @else {
+                    <span i18n="@@feedbackStudent.submitButton">Submit feedback</span>
+                  }
                 </app-button>
               </div>
             </div>

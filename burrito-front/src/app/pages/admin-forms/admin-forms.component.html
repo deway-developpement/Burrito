@@ -5,8 +5,11 @@
 
   <div class="page-container">
     <app-admin-page-header
+      i18n-title="@@adminForms.title"
       title="Evaluation Forms"
+      i18n-subtitle="@@adminForms.subtitle"
       subtitle="Browse, update, and publish the evaluation forms used across the platform."
+      i18n-buttonLabel="@@adminForms.createButton"
       buttonLabel="Create new form"
       (action)="createForm()"
     ></app-admin-page-header>
@@ -14,7 +17,7 @@
   <section class="forms-section">
     <div class="forms-toolbar">
       <div class="forms-filter">
-        <span class="forms-filter__label">Status</span>
+        <span class="forms-filter__label" i18n="@@adminForms.statusLabel">Status</span>
         <app-select
         variant="outline"
         [options]="statusOptions"
@@ -23,7 +26,7 @@
         ></app-select>
       </div>
       <app-button variant="primary" type="button" (click)="createForm()">
-        Create new form
+        <span i18n="@@adminForms.createButtonInline">Create new form</span>
       </app-button>
     </div>
     @if (error()) {
@@ -34,9 +37,11 @@
       <article class="form-card" *ngFor="let form of forms()">
         <header class="card-header">
           <span class="status-badge" [ngClass]="getStatusClass(form.status)">
-            {{ form.status }}
+            {{ getStatusLabel(form.status) }}
           </span>
-          <span class="date-pill">Ends {{ formatDate(form.endDate) }}</span>
+          <span class="date-pill" i18n="@@adminForms.endsLabel">
+            Ends {{ formatDate(form.endDate) }}
+          </span>
         </header>
 
         <div class="card-body">
@@ -47,29 +52,29 @@
 
           <div class="form-meta">
             <div class="meta-row">
-              <span class="meta-label">Teacher</span>
+              <span class="meta-label" i18n="@@adminForms.teacherLabel">Teacher</span>
               <span class="meta-value">
-                {{ form.teacher?.fullName || 'All teachers' }}
+                {{ getTeacherLabel(form) }}
               </span>
             </div>
             <div class="meta-row">
-              <span class="meta-label">Starts</span>
+              <span class="meta-label" i18n="@@adminForms.startsLabel">Starts</span>
               <span class="meta-value">{{ formatDate(form.startDate) }}</span>
             </div>
             <div class="meta-row">
-              <span class="meta-label">Ends</span>
+              <span class="meta-label" i18n="@@adminForms.endsMetaLabel">Ends</span>
               <span class="meta-value">{{ formatDate(form.endDate) }}</span>
             </div>
           </div>
           <div class="form-groups">
-            <span class="form-groups__label">Groups</span>
+            <span class="form-groups__label" i18n="@@adminForms.groupsLabel">Groups</span>
             <div class="meta-groups">
               @if (form.groups?.length) {
                 @for (group of form.groups; track group.id) {
                   <span class="meta-group-pill">{{ group.name }}</span>
                 }
               } @else {
-                <span class="meta-group-empty">No groups</span>
+                <span class="meta-group-empty" i18n="@@adminForms.noGroups">No groups</span>
               }
             </div>
           </div>
@@ -84,7 +89,7 @@
                 type="button"
                 (click)="publishForm(form.id)"
               >
-                Publish
+                <span i18n="@@adminForms.publish">Post</span>
               </app-button>
               <app-button
                 *ngIf="form.status === 'PUBLISHED'"
@@ -92,7 +97,7 @@
                 type="button"
                 (click)="closeForm(form.id)"
               >
-                Close
+                <span i18n="@@adminForms.close">Close</span>
               </app-button>
             </div>
             <div class="card-actions__middle">
@@ -102,12 +107,12 @@
                 type="button"
                 (click)="editForm(form.id)"
               >
-                Edit
+                <span i18n="@@adminForms.edit">Edit</span>
               </app-button>
             </div>
             <div class="card-actions__right">
               <app-button variant="outline" type="button" (click)="deleteForm(form.id)">
-                Delete
+                <span i18n="@@adminForms.delete">Delete</span>
               </app-button>
             </div>
           </div>
@@ -116,11 +121,11 @@
     </div>
 
     <div class="loading-container" *ngIf="loading() && forms().length === 0">
-      <p>Loading forms...</p>
+      <p i18n="@@adminForms.loading">Loading forms...</p>
     </div>
 
     <div class="empty-state" *ngIf="!loading() && forms().length === 0">
-      <p>No forms available yet.</p>
+      <p i18n="@@adminForms.empty">No forms available yet.</p>
     </div>
 
     <div class="load-more-container" *ngIf="hasMore() && forms().length > 0">
@@ -130,7 +135,11 @@
         [disabled]="loadMoreDisabled()"
         (click)="loadMoreForms()"
       >
-        {{ loadMoreDisabled() ? 'Loading...' : 'Load more forms' }}
+        @if (loadMoreDisabled()) {
+          <span i18n="@@adminForms.loadingMore">Loading...</span>
+        } @else {
+          <span i18n="@@adminForms.loadMore">Load more forms</span>
+        }
       </app-button>
     </div>
     <div #loadMoreTrigger class="load-more-trigger" aria-hidden="true"></div>
