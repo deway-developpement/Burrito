@@ -35,16 +35,42 @@
 
         <!-- Time Window Selector -->
         <div class="time-window-selector">
-          @for (window of ['all', '30d', '7d', 'custom']; track window) {
+          @for (window of timeWindowOptions; track window) {
             <button
               [class.active]="timeWindow() === window"
-              (click)="onTimeWindowChange($any(window))"
+              (click)="onTimeWindowChange(window)"
               class="time-btn"
             >
-              {{ getTimeWindowLabel($any(window)) }}
+              {{ getTimeWindowLabel(window) }}
             </button>
           }
         </div>
+
+        <!-- Custom Date Range Picker -->
+        @if (timeWindow() === 'custom') {
+          <div class="custom-date-picker">
+            <div class="date-input-group">
+              <label for="from-date">From</label>
+              <input
+                id="from-date"
+                type="date"
+                [valueAsDate]="customFromDate()"
+                (change)="onCustomFromDateChange($event)"
+                class="date-input"
+              />
+            </div>
+            <div class="date-input-group">
+              <label for="to-date">To</label>
+              <input
+                id="to-date"
+                type="date"
+                [valueAsDate]="customToDate()"
+                (change)="onCustomToDateChange($event)"
+                class="date-input"
+              />
+            </div>
+          </div>
+        }
       </div>
 
       <!-- Response Summary (Hero Section) -->
