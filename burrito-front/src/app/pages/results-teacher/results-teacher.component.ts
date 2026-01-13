@@ -1,4 +1,13 @@
-import { Component, OnInit, OnDestroy, signal, computed, inject } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
@@ -235,6 +244,16 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   private allRemarks: EvaluationRemark[] = [];
   private destroy$ = new Subject<void>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private remarksLoadMoreObserver?: IntersectionObserver;
+
+  @ViewChild('remarksLoadMoreTrigger')
+  set remarksLoadMoreTrigger(element: ElementRef<HTMLDivElement> | undefined) {
+    if (!element?.nativeElement) {
+      this.remarksLoadMoreObserver?.disconnect();
+      return;
+    }
+    this.setupRemarksLoadMoreObserver(element);
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -253,6 +272,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.remarksLoadMoreObserver?.disconnect();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -303,6 +323,9 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   }
 
   loadMoreRemarks(): void {
+    if (this.remarksLoading() || !this.hasMoreRemarks()) {
+      return;
+    }
     this.remarksLoading.set(true);
     const nextPage = this.remarksPage() + 1;
     const offset = nextPage * this.remarksPageSize();
@@ -697,6 +720,31 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       clearTimeout(this.debounceTimer);
       this.debounceTimer = null;
     }
+  }
+
+  private setupRemarksLoadMoreObserver(
+    element: ElementRef<HTMLDivElement>
+  ): void {
+    if (typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    this.remarksLoadMoreObserver?.disconnect();
+    this.remarksLoadMoreObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) {
+          return;
+        }
+        if (!this.hasMoreRemarks() || this.remarksLoading()) {
+          return;
+        }
+        this.loadMoreRemarks();
+      },
+      { root: null, rootMargin: '200px', threshold: 0 },
+    );
+
+    this.remarksLoadMoreObserver.observe(element.nativeElement);
   }
 
   // Helper methods for template

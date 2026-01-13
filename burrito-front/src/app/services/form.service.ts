@@ -93,6 +93,7 @@ export interface CreateFormPayload {
   targetTeacherId?: string;
   startDate?: string;
   endDate?: string;
+  status?: FormStatus;
 }
 
 export interface FormDetails {
