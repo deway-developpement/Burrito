@@ -15,11 +15,11 @@ import { firstValueFrom } from 'rxjs';
 })
 export class EditUserModalComponent implements OnChanges, OnInit {
   
-  private fb = inject(FormBuilder);
-  private userService = inject(UserService);
-  private groupService = inject(GroupService);
-  private toast = inject(ToastService);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly fb = inject(FormBuilder);
+  private readonly userService = inject(UserService);
+  private readonly groupService = inject(GroupService);
+  private readonly toast = inject(ToastService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   @Input() user: UserProfile | null = null;
   @Output() closed = new EventEmitter<void>();
@@ -72,7 +72,7 @@ export class EditUserModalComponent implements OnChanges, OnInit {
 
   get availableGroups(): GroupProfile[] {
     return this.allGroups.filter(
-      allG => !this.selectedGroups.find(selG => selG.id === allG.id)
+      allG => !this.selectedGroups.some(selG => selG.id === allG.id)
     );
   }
 

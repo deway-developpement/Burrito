@@ -13,9 +13,9 @@ import { ToastService } from '../../../services/toast.service';
 })
 export class AddUserModalComponent {
   
-  private fb = inject(FormBuilder);
-  private userService = inject(UserService);
-  private toast = inject(ToastService);
+  private readonly fb = inject(FormBuilder);
+  private readonly userService = inject(UserService);
+  private readonly toast = inject(ToastService);
 
   @Input() userType: UserType = 'STUDENT'; 
   

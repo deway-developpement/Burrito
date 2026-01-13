@@ -136,7 +136,12 @@
               </thead>
               <tbody>
                 @for (teacher of analytics()!.teachersBreakdown; track teacher.teacherId) {
-                  <tr class="teacher-row" (click)="navigateToTeacherResults(teacher.teacherId)">
+                  <tr class="teacher-row" 
+                      (click)="navigateToTeacherResults(teacher.teacherId)"
+                      (keydown.enter)="navigateToTeacherResults(teacher.teacherId)"
+                      tabindex="0"
+                      role="button"
+                  >
                     <td class="teacher-name">{{ teacher.teacherName }}</td>
                     <td>{{ teacher.totalResponses }}</td>
                     <td>
@@ -167,6 +172,9 @@
             <div
               class="question-header"
               (click)="toggleQuestionExpanded(question.questionId)"
+              (keydown.enter)="toggleQuestionExpanded(question.questionId)"
+              role="button"
+              tabindex="0"
             >
               <div class="question-title">
                 <span class="expand-icon">
