@@ -39,7 +39,7 @@ interface AlertDialogConfig {
 })
 export class ManageStudentsComponent {
 
-  private userService = inject(UserService);
+  private readonly userService = inject(UserService);
 
   tableColumns: TableColumn[] = [
     { key: 'name', label: 'Student Name', type: 'user' },

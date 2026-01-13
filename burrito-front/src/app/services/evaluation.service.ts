@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { map, forkJoin, Observable, catchError, switchMap } from 'rxjs';
-import { of } from 'rxjs';
+import { map, forkJoin, Observable, catchError, switchMap, of } from 'rxjs';
 
 const GET_FORMS_AND_TEACHERS = gql`
   query GetFormsAndTeachers {
