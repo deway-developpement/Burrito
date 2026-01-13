@@ -426,6 +426,11 @@ resource "kubernetes_deployment" "registry" {
           name  = "registry"
           image = "registry:2"
 
+          env {
+            name  = "REGISTRY_STORAGE_DELETE_ENABLED"
+            value = "true"
+          }
+
           resources {
             requests = {
               cpu    = "250m"

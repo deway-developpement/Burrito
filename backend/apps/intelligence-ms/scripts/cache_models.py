@@ -23,7 +23,7 @@ PARAPHRASE_MODEL = os.getenv(
     'google/flan-t5-small',
 )
 TRANSLATE_BEFORE_SENTIMENT = (
-    os.getenv('TRANSLATE_BEFORE_SENTIMENT', 'false').lower() == 'true'
+    os.getenv('TRANSLATE_BEFORE_SENTIMENT', 'true').lower() == 'true'
 )
 TRANSLATION_MODEL = os.getenv(
     'TRANSLATION_MODEL',
