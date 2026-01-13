@@ -25,7 +25,7 @@ import { UserService } from '../../services/user.service';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
-  private userService = inject(UserService);
+  private readonly userService = inject(UserService);
 
   // INCORRECT: returns the Signal object
   // get user() { return this.userService.currentUser; } 

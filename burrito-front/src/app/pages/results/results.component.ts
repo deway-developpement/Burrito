@@ -2,7 +2,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { Apollo, gql } from 'apollo-angular';
-import { AuthService } from '../../services/auth.service';
 import { HeaderComponent } from '../../component/header/header.component';
 import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 
