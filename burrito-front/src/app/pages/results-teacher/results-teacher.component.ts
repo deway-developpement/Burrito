@@ -625,7 +625,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
         let evaluations = response.data.evaluations.edges.map(edge => edge.node);
         
         // Filter by form if selected
-        const formId = this.selectedFormFilter() !== 'all' ? this.selectedFormFilter() : undefined;
+        const formId = this.selectedFormFilter() === 'all' ? undefined : this.selectedFormFilter();
         if (formId) {
           evaluations = evaluations.filter(e => e.formId === formId);
         }
