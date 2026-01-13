@@ -17,7 +17,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Ensure gRPC stubs exist in the image even if they are not committed
-RUN python -m grpc_tools.protoc -I proto --python_out=intelligence --grpc_python_out=intelligence proto/analytics.proto
+RUN python -m grpc_tools.protoc -I proto --python_out=intelligence --grpc_python_out=intelligence proto/analytics.proto \
+    && sed -i 's/^import analytics_pb2 as analytics__pb2$/from . import analytics_pb2 as analytics__pb2/' intelligence/analytics_pb2_grpc.py
 
 # Expose gRPC port
 EXPOSE 50051

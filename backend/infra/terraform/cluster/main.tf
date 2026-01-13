@@ -659,6 +659,22 @@ resource "kubernetes_role" "jenkins_deployer" {
   }
 
   rule {
+    api_groups = ["traefik.io"]
+    resources = [
+      "middlewares",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
     api_groups = [""]
     resources = [
       "services",
