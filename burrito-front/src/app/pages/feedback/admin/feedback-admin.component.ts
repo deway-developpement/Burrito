@@ -67,7 +67,7 @@ export class FeedbackAdminComponent implements OnInit {
   groupSelectValue = '';
   startDate = '';
   endDate = '';
-  status: FormStatus = 'PUBLISHED';
+  status: FormStatus = 'DRAFT';
   originalStatus: FormStatus | null = null;
   originalGroupIds: string[] = [];
   editingFormId = '';
@@ -87,14 +87,6 @@ export class FeedbackAdminComponent implements OnInit {
     { label: 'Rating', value: 'rating' },
     { label: 'Text', value: 'text' },
   ];
-
-  private readonly baseStatusOptions: SelectOption[] = [
-    { label: 'Draft', value: 'DRAFT' },
-    { label: 'Published', value: 'PUBLISHED' },
-    { label: 'Closed', value: 'CLOSED' },
-  ];
-
-  statusOptions: SelectOption[] = [...this.baseStatusOptions];
 
   teacherOptions: SelectOption[] = [];
   groupOptions: SelectOption[] = [];
@@ -234,7 +226,6 @@ export class FeedbackAdminComponent implements OnInit {
           this.isEditing = false;
           this.editingFormId = '';
           this.originalStatus = null;
-          this.statusOptions = this.buildStatusOptions();
           this.cdr.detectChanges();
           return;
         }
@@ -253,7 +244,6 @@ export class FeedbackAdminComponent implements OnInit {
     this.editingFormId = form.id;
     this.originalStatus = form.status;
     this.status = form.status;
-    this.statusOptions = this.buildStatusOptions(form.status);
     this.formTitle = form.title;
     // this.courseTag = form.groups?.[0]?.name ?? '';
     this.formDescription = form.description ?? '';
@@ -282,8 +272,7 @@ export class FeedbackAdminComponent implements OnInit {
     this.isEditing = false;
     this.editingFormId = '';
     this.originalStatus = null;
-    this.status = 'PUBLISHED';
-    this.statusOptions = this.buildStatusOptions();
+    this.status = 'DRAFT';
     this.formTitle = this.defaultTitle;
     this.formDescription = this.defaultDescription;
     // this.courseTag = '';
@@ -303,19 +292,6 @@ export class FeedbackAdminComponent implements OnInit {
 
   private scrollToTop() {
     this.viewportScroller.scrollToPosition([0, 0]);
-  }
-
-  private buildStatusOptions(currentStatus?: FormStatus): SelectOption[] {
-    if (!currentStatus) {
-      return [...this.baseStatusOptions];
-    }
-    if (currentStatus === 'PUBLISHED') {
-      return this.baseStatusOptions.filter((option) => option.value !== 'DRAFT');
-    }
-    if (currentStatus === 'CLOSED') {
-      return this.baseStatusOptions.filter((option) => option.value === 'CLOSED');
-    }
-    return [...this.baseStatusOptions];
   }
 
   private formatDateInput(value?: string): string {
@@ -454,6 +430,9 @@ export class FeedbackAdminComponent implements OnInit {
       endDate: this.endDate || undefined,
       targetTeacherId: this.targetTeacherId.trim() || undefined,
     };
+    if (!this.isEditing) {
+      payload.status = 'DRAFT';
+    }
 
     this.isSaving = true;
     const save$ = this.isEditing
@@ -484,7 +463,6 @@ export class FeedbackAdminComponent implements OnInit {
           this.isSaving = false;
           this.originalStatus = this.status;
           this.originalGroupIds = [...this.selectedGroupIds];
-          this.statusOptions = this.buildStatusOptions(this.status);
           this.toast.show(
             this.isEditing
               ? 'Form updated successfully.'

@@ -77,12 +77,39 @@
 
         <footer class="card-footer">
           <div class="card-actions">
-            <app-button variant="outline" type="button" (click)="editForm(form.id)">
-              Modify
-            </app-button>
-            <app-button variant="outline" type="button" (click)="deleteForm(form.id)">
-              Delete
-            </app-button>
+            <div class="card-actions__left">
+              <app-button
+                *ngIf="form.status === 'DRAFT'"
+                variant="primary"
+                type="button"
+                (click)="publishForm(form.id)"
+              >
+                Publish
+              </app-button>
+              <app-button
+                *ngIf="form.status === 'PUBLISHED'"
+                variant="primary"
+                type="button"
+                (click)="closeForm(form.id)"
+              >
+                Close
+              </app-button>
+            </div>
+            <div class="card-actions__middle">
+              <app-button
+                *ngIf="form.status === 'DRAFT'"
+                variant="outline"
+                type="button"
+                (click)="editForm(form.id)"
+              >
+                Edit
+              </app-button>
+            </div>
+            <div class="card-actions__right">
+              <app-button variant="outline" type="button" (click)="deleteForm(form.id)">
+                Delete
+              </app-button>
+            </div>
           </div>
         </footer>
       </article>
@@ -107,4 +134,16 @@
       </app-button>
     </div>
   </section>
+
+  <app-alert-dialog
+    [open]="alertDialogOpen"
+    [title]="alertDialogTitle"
+    [message]="alertDialogMessage"
+    [confirmLabel]="alertDialogConfirmLabel"
+    [cancelLabel]="alertDialogCancelLabel"
+    [showCancel]="alertDialogShowCancel"
+    [intent]="alertDialogIntent"
+    (confirm)="confirmAlertDialog()"
+    (cancel)="closeAlertDialog()"
+  ></app-alert-dialog>
 </app-background-div>

@@ -1,0 +1,38 @@
+<div class="alert-backdrop" *ngIf="open" (click)="onCancel()">
+  <div
+    class="alert-container"
+    role="dialog"
+    aria-modal="true"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="alert-header">
+      <h2>{{ title }}</h2>
+      <button class="close-btn" type="button" (click)="onCancel()" aria-label="Close dialog">
+        &times;
+      </button>
+    </div>
+
+    <div class="alert-body">
+      <p>{{ message }}</p>
+    </div>
+
+    <div class="alert-footer">
+      <button
+        *ngIf="showCancel"
+        type="button"
+        class="btn-secondary"
+        (click)="onCancel()"
+      >
+        {{ cancelLabel }}
+      </button>
+      <button
+        type="button"
+        class="btn-primary"
+        [ngClass]="{ 'btn-danger': intent === 'danger' }"
+        (click)="onConfirm()"
+      >
+        {{ confirmLabel }}
+      </button>
+    </div>
+  </div>
+</div>

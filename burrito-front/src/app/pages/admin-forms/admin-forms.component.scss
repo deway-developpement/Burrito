@@ -290,6 +290,27 @@
   display: flex;
   gap: 0.75rem;
   flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.card-actions__left,
+.card-actions__middle,
+.card-actions__right {
+  display: flex;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.card-actions__left {
+  justify-content: flex-start;
+}
+
+.card-actions__middle {
+  justify-content: center;
+}
+
+.card-actions__right {
   justify-content: flex-end;
 }
 

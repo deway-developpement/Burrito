@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { map, forkJoin, Observable, catchError } from 'rxjs';
+import { map, forkJoin, Observable, catchError, switchMap } from 'rxjs';
 import { of } from 'rxjs';
 
 const GET_FORMS_AND_TEACHERS = gql`
@@ -117,6 +117,32 @@ const GET_FORM_BY_ID = gql`
   }
 `;
 
+const GET_ME_ID = gql`
+  query GetMeId {
+    me {
+      id
+    }
+  }
+`;
+
+const GET_STUDENT_EVALUATIONS = gql`
+  query GetStudentEvaluations($studentId: String!) {
+    evaluations(
+      filter: { respondentToken: { eq: $studentId } }
+      sorting: [{ field: createdAt, direction: DESC }]
+      paging: { first: 200 }
+    ) {
+      edges {
+        node {
+          id
+          formId
+          createdAt
+        }
+      }
+    }
+  }
+`;
+
 const SUBMIT_EVALUATION = gql`
   mutation SubmitEvaluation($input: CreateEvaluationInput!) {
     submitEvaluation(input: $input) {
@@ -167,6 +193,7 @@ export interface EvaluationForm {
   title: string;
   description?: string;
   endDate?: string;
+  userSubmittedAt?: string;
   groups?: Array<{
     id: string;
     name: string;
@@ -201,6 +228,12 @@ export interface SubmitEvaluationInput {
 
 interface FormsResponse {
   forms: { edges: { node: EvaluationForm }[] };
+}
+
+interface MeIdResponse {
+  me?: {
+    id: string;
+  } | null;
 }
 
 interface MeGroupsResponse {
@@ -263,6 +296,36 @@ export class EvaluationService {
       }),
       catchError(() => of([]))
     );
+  }
+
+  getStudentEvaluations(): Observable<Array<{ formId: string; createdAt: string }>> {
+    return this.apollo
+      .query<MeIdResponse>({
+        query: GET_ME_ID,
+        fetchPolicy: 'network-only',
+      })
+      .pipe(
+        map((result) => result.data?.me?.id || ''),
+        switchMap((studentId) => {
+          if (!studentId) {
+            return of([]);
+          }
+          return this.apollo
+            .query<any>({
+              query: GET_STUDENT_EVALUATIONS,
+              variables: { studentId },
+              fetchPolicy: 'network-only',
+            })
+            .pipe(
+              map(
+                (result) =>
+                  result.data?.evaluations?.edges?.map((edge: any) => edge.node) ||
+                  [],
+              ),
+            );
+        }),
+        catchError(() => of([])),
+      );
   }
 
   private buildEvaluationsUI(evaluations: any[], formMap: Record<string, string>): TeacherEvaluationUI[] {
