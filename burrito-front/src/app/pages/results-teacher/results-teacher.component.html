@@ -135,8 +135,10 @@
               </div>
               <div class="form-stats">
                 <span class="stat-item" i18n="@@resultsTeacher.responsesCount">{{ form.totalResponses }} responses</span>
-                <span class="stat-item" i18n="@@resultsTeacher.npsLabel">NPS: <span [class]="getFormBadgeClass(form.nps.score)">{{ form.nps.score.toFixed(0) }}</span></span>
-                <span class="stat-item">⭐ {{ form.averageRating.toFixed(1) }}/10</span>
+                @if (!isTeacherView()) {
+                  <span class="stat-item" i18n="@@resultsTeacher.npsLabel">NPS: <span [class]="getFormBadgeClass(form.nps.score)">{{ form.nps.score.toFixed(0) }}</span></span>
+                }
+                  <span class="stat-item">⭐ {{ form.averageRating.toFixed(1) }}/10</span>
               </div>
             </div>
           </button>
@@ -220,7 +222,7 @@
           @if (loading()) {
             <span class="spinner-small"></span>
           } @else {
-            🔄 <span i18n="@@resultsTeacher.refresh">Refresh</span>
+            �Y"" <span i18n="@@resultsTeacher.refresh">Refresh</span>
           }
         </button>
       </div>

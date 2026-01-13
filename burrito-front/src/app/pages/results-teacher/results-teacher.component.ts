@@ -224,6 +224,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   timeWindow = signal<TimeWindow>('all');
   customFromDate = signal<Date | null>(null);
   customToDate = signal<Date | null>(null);
+  isTeacherView = signal<boolean>(false);
 
   analytics = signal<TeacherAnalyticsSnapshot | null>(null);
   remarks = signal<EvaluationRemark[]>([]);
@@ -262,6 +263,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     @Inject(LOCALE_ID) private localeId: string,
   ) {}
 
+
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       this.teacherId.set(params['teacherId']);
@@ -269,6 +271,15 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       this.loadTeacherAnalytics();
       this.loadRemarks();
     });
+
+    const user = this.authService.getCurrentUser();
+
+    // If user is a teacher (not admin), they're viewing their own results
+    if (user && user.userType !== 'ADMIN') {
+      this.isTeacherView.set(true);
+    } else {
+      this.isTeacherView.set(false);
+    }
   }
 
   ngOnDestroy(): void {
