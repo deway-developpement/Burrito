@@ -4,7 +4,12 @@
       class="star"
       [class.star-filled]="isFilled(star)"
       (click)="rate(star)"
+      (keydown.enter)="rate(star)"
+      (keydown.space)="rate(star)"
       (mouseenter)="setHover(star)"
+      role="button"
+      tabindex="0"
+      [attr.aria-label]="'Rate ' + star + ' stars'"
     >
       ★
     </span>

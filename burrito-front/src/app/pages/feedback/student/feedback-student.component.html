@@ -111,9 +111,10 @@
             }
 
             @if (!selectedForm.targetTeacherId) {
-              <label class="form-field">
+              <label class="form-field" for="teacherId">
                 <span class="form-label">Teacher ID <span class="required">*</span></span>
                 <app-input
+                  id="teacherId"
                   variant="outline"
                   placeholder="Enter the teacher ID"
                   [fullWidth]="true"
