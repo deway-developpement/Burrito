@@ -323,11 +323,11 @@
   }
 
   @if (textModalOpen()) {
-    <div class="modal-overlay" (click)="closeTextResponses()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-overlay" (click)="closeTextResponses()" (keydown.escape)="closeTextResponses()">
+      <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="modal-header">
           <h3>{{ currentQuestionId() ? getQuestionLabel(currentQuestionId()!) : 'Text responses' }}</h3>
-          <button class="close-btn" (click)="closeTextResponses()">✕</button>
+          <button class="close-btn" (click)="closeTextResponses()" (keydown.enter)="closeTextResponses()">✕</button>
         </div>
 
         @if (textLoading()) {

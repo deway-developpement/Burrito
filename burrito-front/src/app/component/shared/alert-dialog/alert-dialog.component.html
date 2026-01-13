@@ -1,13 +1,14 @@
-<div class="alert-backdrop" *ngIf="open" (click)="onCancelClick()">
+<div class="alert-backdrop" *ngIf="open" (click)="onCancelClick()" (keydown.escape)="onCancelClick()">
   <div
     class="alert-container"
     role="dialog"
     aria-modal="true"
     (click)="$event.stopPropagation()"
+    (keydown)="$event.stopPropagation()"
   >
     <div class="alert-header">
       <h2>{{ title }}</h2>
-      <button class="close-btn" type="button" (click)="onCancelClick()" aria-label="Close dialog">
+      <button class="close-btn" type="button" (click)="onCancelClick()" (keydown.enter)="onCancelClick()" aria-label="Close dialog">
         &times;
       </button>
     </div>
@@ -23,7 +24,7 @@
         class="btn-secondary"
         (click)="onCancelClick()"
       >
-        {{ cancelLabel }}
+        {{ cancelLabel }}aaaaaaaa
       </button>
       <button
         type="button"
