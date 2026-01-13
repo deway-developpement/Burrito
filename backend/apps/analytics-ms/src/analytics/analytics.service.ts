@@ -229,14 +229,14 @@ export class AnalyticsService {
     const filter: Record<string, unknown> = { formId: { eq: formId } };
 
     if (window?.from || window?.to) {
-      const createdAt: Record<string, Date> = {};
+      const createdAtFilters: Record<string, unknown>[] = [];
       if (window.from) {
-        createdAt.gte = window.from as Date;
+        createdAtFilters.push({ createdAt: { gte: window.from as Date } });
       }
       if (window.to) {
-        createdAt.lte = window.to as Date;
+        createdAtFilters.push({ createdAt: { lte: window.to as Date } });
       }
-      filter.createdAt = createdAt;
+      filter.and = createdAtFilters;
     }
 
     const all: EvaluationRecord[] = [];

@@ -23,6 +23,16 @@ PARAPHRASE_MODEL = os.getenv(
     'PARAPHRASE_MODEL',
     'google/flan-t5-small',
 )
+TRANSLATE_BEFORE_SENTIMENT = (
+    os.getenv('TRANSLATE_BEFORE_SENTIMENT', 'true').lower() == 'true'
+)
+TRANSLATION_MODEL = os.getenv(
+    'TRANSLATION_MODEL',
+    'Helsinki-NLP/opus-mt-mul-en',
+)
+TRANSLATION_DETECT_LANGUAGE = (
+    os.getenv('TRANSLATION_DETECT_LANGUAGE', 'true').lower() == 'true'
+)
 
 CLUSTER_DISTANCE_THRESHOLD = float(
     os.getenv('CLUSTER_DISTANCE_THRESHOLD', '0.5')
