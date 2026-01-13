@@ -408,33 +408,56 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     }
   }
 
-  private fetchFormsForTeacher(): Promise<Form[]> {
+private fetchFormsForTeacher(): Promise<Form[]> {
     return firstValueFrom(
       this.apollo.query<{
-        evaluations: { edges: { node: { formId: string } }[] };
-        forms: { edges: { node: Form }[] };
+        user: {
+          groups: {
+            forms: Form[]
+          }[]
+        }
       }>({
-        query: GET_FORMS_WITH_EVALUATIONS,
+        query: gql`
+          query GetTeacherForms($teacherId: ID!) {
+            user(id: $teacherId) {
+              id
+              groups {
+                id
+                forms {
+                  id
+                  title
+                  status
+                  description
+                  # Dates removed to prevent DateTime serialization crash
+                }
+              }
+            }
+          }
+        `,
         variables: { teacherId: this.teacherId() },
         fetchPolicy: 'network-only'
       })
     ).then((response) => {
-      if (!response.data?.forms?.edges || !response.data?.evaluations?.edges) {
-        return [];
-      }
+      const groups = response.data?.user?.groups || [];
+      
+      // Flatten forms from all groups
+      const allForms = groups.flatMap(group => group.forms);
 
-      // Get unique form IDs from evaluations for this teacher
-      const teacherFormIds = new Set(
-        response.data.evaluations.edges.map(edge => edge.node.formId)
-      );
+      // Deduplicate by ID
+      const uniqueFormsMap = new Map<string, Form>();
+      allForms.forEach(form => {
+        uniqueFormsMap.set(form.id, form);
+      });
 
-      // Filter forms to only those the teacher has evaluations for
-      return response.data.forms.edges
-        .map(edge => edge.node)
-        .filter(form => teacherFormIds.has(form.id));
+      const result = Array.from(uniqueFormsMap.values());
+      
+      return result;
+    })
+    .catch(err => {
+      console.error('Fetch failed even without dates:', err);
+      return [];
     });
   }
-
   private fetchFormAnalytics(
     formId: string,
     forceSync: boolean

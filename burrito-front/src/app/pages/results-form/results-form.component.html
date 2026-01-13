@@ -76,17 +76,6 @@
       <!-- Response Summary (Hero Section) -->
       <div class="response-summary">
         <div class="summary-stats">
-          <div class="stat">
-            <div class="stat-value">{{ analytics()!.totalResponses }}</div>
-            <div class="stat-label" i18n="@@resultsForm.totalResponses">Total Responses</div>
-          </div>
-
-          <div class="stat nps-stat">
-            <div class="stat-value" [class]="'nps-' + getNpsColor(analytics()!.nps.score)">
-              {{ analytics()!.nps.score.toFixed(0) }}
-            </div>
-            <div class="stat-label" i18n="@@resultsForm.npsScore">NPS Score</div>
-          </div>
 
           <div class="stat satisfaction-breakdown-stat">
             <div class="stat-label" i18n="@@resultsForm.satisfactionBreakdown">Satisfaction Breakdown</div>
@@ -123,10 +112,9 @@
 
           <div class="stat">
             <div class="stat-value">{{ analytics()!.totalResponses }}</div>
-            <div class="stat-label">Total Responses</div>
+            <div class="stat-label" i18n="@@resultsForm.totalResponses">Total Responses</div>
           </div>
-
-        </div>
+          </div>
       </div>
 
       
