@@ -57,12 +57,33 @@ pipeline {
                 BUILD_FRONTEND=false
 
                 BASE_COMMIT=""
+                ensure_commit() {
+                  local commit="$1"
+                  if [ -z "$commit" ]; then
+                    return 1
+                  fi
+                  if git cat-file -e "${commit}^{commit}" 2>/dev/null; then
+                    return 0
+                  fi
+                  if ! git remote get-url origin >/dev/null 2>&1; then
+                    return 1
+                  fi
+                  for depth in 10 25 50 100 200; do
+                    echo "Fetching additional history (depth ${depth}) to find ${commit}..."
+                    git fetch --deepen="${depth}" origin >/dev/null 2>&1 || true
+                    if git cat-file -e "${commit}^{commit}" 2>/dev/null; then
+                      return 0
+                    fi
+                  done
+                  git fetch origin "${commit}" >/dev/null 2>&1 || true
+                  git cat-file -e "${commit}^{commit}" 2>/dev/null
+                }
                 if [ "$FORCE_BUILD_ALL" = "true" ]; then
                   BUILD_ALL=true
                 else
-                  if [ -n "$GIT_PREVIOUS_SUCCESSFUL_COMMIT" ] && git cat-file -e "$GIT_PREVIOUS_SUCCESSFUL_COMMIT^{commit}" 2>/dev/null; then
+                  if [ -n "$GIT_PREVIOUS_SUCCESSFUL_COMMIT" ] && ensure_commit "$GIT_PREVIOUS_SUCCESSFUL_COMMIT"; then
                     BASE_COMMIT="$GIT_PREVIOUS_SUCCESSFUL_COMMIT"
-                  elif [ -n "$GIT_PREVIOUS_COMMIT" ] && git cat-file -e "$GIT_PREVIOUS_COMMIT^{commit}" 2>/dev/null; then
+                  elif [ -n "$GIT_PREVIOUS_COMMIT" ] && ensure_commit "$GIT_PREVIOUS_COMMIT"; then
                     BASE_COMMIT="$GIT_PREVIOUS_COMMIT"
                   fi
 
