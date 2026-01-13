@@ -79,7 +79,7 @@ const SUBMIT_EVALUATION = gql`
 export class FeedbackStudentComponent implements OnInit {
   private readonly evaluationService = inject(EvaluationService);
   private readonly apollo = inject(Apollo);
-  private localeId = inject(LOCALE_ID);
+  private readonly localeId = inject(LOCALE_ID);
 
   forms: EvaluationForm[] = [];
   selectedFormId = '';
@@ -353,9 +353,11 @@ export class FeedbackStudentComponent implements OnInit {
     return $localize`:@@feedbackStudent.questionTypeText:Text`;
   }
 
-  getTextPlaceholder(required: boolean): string {
-    return required
-      ? $localize`:@@feedbackStudent.requiredPlaceholder:Share a concrete example to help the teacher`
-      : $localize`:@@feedbackStudent.optionalPlaceholder:Optional note`;
+  getRequiredTextPlaceholder(): string {
+    return $localize`:@@feedbackStudent.requiredPlaceholder:Share a concrete example to help the teacher`;
+  }
+
+  getOptionalTextPlaceholder(): string {
+    return $localize`:@@feedbackStudent.optionalPlaceholder:Optional note`;
   }
 }

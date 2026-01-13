@@ -186,7 +186,7 @@
                     <textarea
                       class="form-textarea"
                       rows="4"
-                      [attr.placeholder]="getTextPlaceholder(question.required)"
+                      [attr.placeholder]="question.required ? getRequiredTextPlaceholder() : getOptionalTextPlaceholder()"
                       [name]="'text-' + question.id"
                       [disabled]="formLocked"
                       [(ngModel)]="responses[question.id].text"

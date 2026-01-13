@@ -85,7 +85,7 @@ export class ManageStudentsComponent implements OnInit, AfterViewInit, OnDestroy
   private alertDialogAction: (() => void) | null = null;
   private lastCursor: string | null = null;
   private loadMoreObserver?: IntersectionObserver;
-  private pageSize = 25;
+  private readonly pageSize = 25;
 
   @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLDivElement>;
 
