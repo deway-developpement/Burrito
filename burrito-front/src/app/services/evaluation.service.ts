@@ -418,9 +418,7 @@ export class EvaluationService {
           new Date(ev.createdAt) >= oneWeekAgo
         ).length;
 
-        const totalStudents = students.length || 1;
-        let completionRate = Math.round((evaluations.length / totalStudents) * 100);
-        if (completionRate > 100) completionRate = 100;
+        let completionRate = evaluations.length; 
 
         return { completionRate, newFeedbackCount };
       })

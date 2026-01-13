@@ -156,7 +156,7 @@ export class ResultsComponent implements OnInit {
 
   displayAnswer(answer: EvaluationAnswer): string {
     if (answer.rating !== undefined && answer.rating !== null) {
-      return `${answer.rating}/5`;
+      return `${answer.rating}/10`;
     }
     return answer.text || 'No response provided';
   }
