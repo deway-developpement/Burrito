@@ -10,14 +10,22 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies (prefer CPU wheels and higher timeouts to avoid slow downloads)
+ENV PIP_DEFAULT_TIMEOUT=120 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN pip install \
+    --no-cache-dir \
+    --default-timeout=${PIP_DEFAULT_TIMEOUT} \
+    --retries=5 \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    -r requirements.txt
 
 # Copy application files
 COPY . .
 
 # Ensure gRPC stubs exist in the image even if they are not committed
-RUN python -m grpc_tools.protoc -I proto --python_out=intelligence --grpc_python_out=intelligence proto/analytics.proto
+RUN python -m grpc_tools.protoc -I proto --python_out=intelligence --grpc_python_out=intelligence proto/analytics.proto \
+    && sed -i 's/^import analytics_pb2 as analytics__pb2$/from . import analytics_pb2 as analytics__pb2/' intelligence/analytics_pb2_grpc.py
 
 # Expose gRPC port
 EXPOSE 50051

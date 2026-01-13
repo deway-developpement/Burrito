@@ -19,10 +19,16 @@ export class RedisLoggerInterceptor implements NestInterceptor {
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    if (context.getType() !== 'rpc') {
+      return next.handle();
+    }
     const now = Date.now();
 
     const rpcContext = context.switchToRpc();
     const redisContext = rpcContext.getContext<RedisContext>();
+    if (!redisContext || typeof redisContext.getChannel !== 'function') {
+      return next.handle();
+    }
     const rawChannel = redisContext.getChannel();
     let channel = 'unknown';
     if (typeof rawChannel === 'string') {

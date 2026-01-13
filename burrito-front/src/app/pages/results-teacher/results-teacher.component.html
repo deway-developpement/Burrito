@@ -49,14 +49,40 @@
         <!-- Time Window Selector -->
         <div class="time-window-selector">
           <button
-            *ngFor="let window of ['all', '30d', '7d', 'custom']"
+            *ngFor="let window of timeWindowOptions"
             [class.active]="timeWindow() === window"
-            (click)="onTimeWindowChange($any(window))"
+            (click)="onTimeWindowChange(window)"
             class="time-btn"
           >
-            {{ getTimeWindowLabel($any(window)) }}
+            {{ getTimeWindowLabel(window) }}
           </button>
         </div>
+
+        <!-- Custom Date Range Picker -->
+        @if (timeWindow() === 'custom') {
+          <div class="custom-date-picker">
+            <div class="date-input-group">
+              <label for="from-date-teacher">From</label>
+              <input
+                id="from-date-teacher"
+                type="date"
+                [valueAsDate]="customFromDate()"
+                (change)="onCustomFromDateChange($event)"
+                class="date-input"
+              />
+            </div>
+            <div class="date-input-group">
+              <label for="to-date-teacher">To</label>
+              <input
+                id="to-date-teacher"
+                type="date"
+                [valueAsDate]="customToDate()"
+                (change)="onCustomToDateChange($event)"
+                class="date-input"
+              />
+            </div>
+          </div>
+        }
 
         <!-- General Satisfaction Gauge -->
         <div class="satisfaction-gauge">
@@ -120,7 +146,7 @@
         <div class="remarks-controls">
           <select
             [value]="selectedFormFilter()"
-            (change)="onFormFilterChange($any($event.target).value)"
+            (change)="onFormFilterChange($event)"
             class="form-filter"
           >
             <option value="all">All Forms</option>
