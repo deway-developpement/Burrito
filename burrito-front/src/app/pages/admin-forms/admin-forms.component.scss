@@ -1,29 +1,13 @@
 @use 'burrito-theme' as theme;
 
 .nav-bar {
+  margin-top: 2rem;
+}
+
+.page-container {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 1.5rem;
-  margin-bottom: 2rem;
-
-  .btn-back {
-    padding: 0.6rem 1rem;
-    background: theme.$white;
-    border: 1px solid theme.$border-color;
-    border-radius: theme.$radius-md;
-    color: theme.$text-dark;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    flex-shrink: 0;
-
-    &:hover {
-      background: theme.$primary-color;
-      color: theme.$white;
-      border-color: theme.$primary-color;
-      transform: translateX(-4px);
-    }
-  }
 }
 
 .admin {
@@ -95,6 +79,7 @@
 
 
 .forms-section {
+  margin-top: 0px;
   margin-bottom: 2.5rem;
 }
 

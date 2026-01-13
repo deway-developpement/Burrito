@@ -14,7 +14,9 @@ import { Apollo, gql } from 'apollo-angular';
 import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { HeaderComponent } from '../../component/header/header.component';
+import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 import { AuthService } from '../../services/auth.service';
+import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 
 interface AnalyticsWindow {
   from?: Date;
@@ -213,7 +215,7 @@ const GET_USER = gql`
 @Component({
   selector: 'app-results-teacher',
   standalone: true,
-  imports: [CommonModule, HeaderComponent],
+  imports: [CommonModule, BackgroundDivComponent, GoBackComponent],
   templateUrl: './results-teacher.component.html',
   styleUrls: ['./results-teacher.component.scss'],
 })
@@ -254,7 +256,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private apollo: Apollo,
-    private authService: AuthService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -296,10 +298,6 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   onRefreshAnalytics(): void {
     this.loading.set(true);
     this.fetchTeacherAnalytics(true).finally(() => this.loading.set(false));
-  }
-
-  goBack(): void {
-    this.router.navigate(['/']);
   }
 
   loadMoreRemarks(): void {

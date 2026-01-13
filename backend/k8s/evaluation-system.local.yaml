@@ -47,6 +47,7 @@ stringData:
   SMTP_USER: smtp-user
   SMTP_PASS: smtp-pass
   SMTP_FROM: no-reply@example.com
+  HUGGINGFACE_HUB_TOKEN: replace-me
 ---
 apiVersion: apps/v1
 kind: Deployment

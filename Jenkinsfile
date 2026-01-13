@@ -26,6 +26,7 @@ pipeline {
     // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
     BUILDKIT_HOST = 'tcp://buildkit:1234'
     REGISTRY_HOST = 'registry.burrito.deway.fr'
+    REGISTRY_PUSH_HOST = 'registry.jenkins.svc.cluster.local:5000'
   }
 
   stages {
@@ -86,7 +87,7 @@ pipeline {
                 --local dockerfile=. \
                 --opt filename=Dockerfile \
                 --opt "build-arg:SERVICE_NAME=${svc}" \
-                --output type=image,\\"name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-${svc}:latest\\",push=true
+                --output type=image,\\"name=${REGISTRY_PUSH_HOST}/burrito-${svc}:${BUILD_NUMBER},${REGISTRY_PUSH_HOST}/burrito-${svc}:latest\\",push=true,registry.insecure=true
             done
 
             echo "-------------------------------------------------"
@@ -100,7 +101,22 @@ pipeline {
               --local context=apps/intelligence-ms \
               --local dockerfile=apps/intelligence-ms \
               --opt filename=Dockerfile \
-              --output type=image,\\"name=${REGISTRY_HOST}/burrito-intelligence-ms:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-intelligence-ms:latest\\",push=true
+              --output type=image,\\"name=${REGISTRY_PUSH_HOST}/burrito-intelligence-ms:${BUILD_NUMBER},${REGISTRY_PUSH_HOST}/burrito-intelligence-ms:latest\\",push=true,registry.insecure=true
+
+            cd ..
+
+            echo "-------------------------------------------------"
+            echo "Building Service: frontend"
+            echo "-------------------------------------------------"
+
+            buildctl \
+              --addr "${BUILDKIT_HOST}" \
+              build \
+              --frontend dockerfile.v0 \
+              --local context=burrito-front \
+              --local dockerfile=burrito-front \
+              --opt filename=Dockerfile \
+              --output type=image,\\"name=${REGISTRY_PUSH_HOST}/burrito-frontend:${BUILD_NUMBER},${REGISTRY_PUSH_HOST}/burrito-frontend:latest\\",push=true,registry.insecure=true
           '''
         }
       }
@@ -117,6 +133,7 @@ pipeline {
             string(credentialsId: 'burrito-jwt-refresh-expires-in', variable: 'JWT_REFRESH_EXPIRES_IN'),
             string(credentialsId: 'burrito-smtp-user', variable: 'SMTP_USER'),
             string(credentialsId: 'burrito-smtp-pass', variable: 'SMTP_PASS'),
+            string(credentialsId: 'burrito-huggingface-hub-token', variable: 'HUGGINGFACE_HUB_TOKEN'),
           ]) {
             sh '''
               set -e
@@ -129,6 +146,7 @@ pipeline {
                 --from-literal=JWT_REFRESH_EXPIRES_IN="${JWT_REFRESH_EXPIRES_IN}" \
                 --from-literal=SMTP_USER="${SMTP_USER}" \
                 --from-literal=SMTP_PASS="${SMTP_PASS}" \
+                --from-literal=HUGGINGFACE_HUB_TOKEN="${HUGGINGFACE_HUB_TOKEN}" \
                 --dry-run=client -o yaml | kubectl apply -n "$K8S_NAMESPACE" -f -
             '''
           }
@@ -144,6 +162,7 @@ pipeline {
 
             # Use in-cluster config (service account)
             kubectl apply -f backend/k8s/evaluation-system.yaml
+            kubectl apply -f backend/k8s/frontend.yaml
 
             kubectl set image deployment/api-gateway \
               api-gateway=${REGISTRY_HOST}/burrito-api-gateway:${BUILD_NUMBER} \
@@ -177,6 +196,10 @@ pipeline {
               intelligence-ms=${REGISTRY_HOST}/burrito-intelligence-ms:${BUILD_NUMBER} \
               -n "$K8S_NAMESPACE"
 
+            kubectl set image deployment/burrito-frontend \
+              burrito-frontend=${REGISTRY_HOST}/burrito-frontend:${BUILD_NUMBER} \
+              -n "$K8S_NAMESPACE"
+
             echo "Deployment updated successfully."
 
             kubectl rollout status deployment/api-gateway -n "$K8S_NAMESPACE"
@@ -187,6 +210,7 @@ pipeline {
             kubectl rollout status deployment/groups-ms -n "$K8S_NAMESPACE"
             kubectl rollout status deployment/notifications-ms -n "$K8S_NAMESPACE"
             kubectl rollout status deployment/intelligence-ms -n "$K8S_NAMESPACE"
+            kubectl rollout status deployment/burrito-frontend -n "$K8S_NAMESPACE"
           '''
         }
       }

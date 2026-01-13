@@ -1,9 +1,8 @@
 """
 MongoDB Database Module for Analytics
 """
-from typing import Dict, Any, List
+from typing import Dict, Any
 from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
 import os
 from datetime import datetime
 
@@ -20,20 +19,25 @@ class MongoDBManager:
             db_name: Database name
         """
         if not connection_string:
-            # Build from environment variables
-            host = os.getenv('MONGODB_HOST', 'localhost')
+            # Build from environment variables (align with other services)
+            mode = os.getenv('MONGODB_MODE', '').lower()
+            host = os.getenv('MONGODB_CONTAINER_NAME', 'mongo') if mode == 'docker' else 'localhost'
+            host = os.getenv('MONGODB_HOST', host)
             port = os.getenv('MONGODB_PORT', '27017')
             username = os.getenv('DATABASE_USERNAME', '')
             password = os.getenv('DATABASE_PASSWORD', '')
+            db_name = os.getenv('DATABASE_NAME', db_name)
 
             # Try with credentials first, fall back to no credentials
             if username and password:
                 try:
-                    connection_string = f"mongodb://{username}:{password}@{host}:{port}/"
-                except:
-                    connection_string = f"mongodb://{host}:{port}/"
+                    connection_string = (
+                        f"mongodb://{username}:{password}@{host}:{port}/{db_name}?authSource=admin"
+                    )
+                except Exception:
+                    connection_string = f"mongodb://{host}:{port}/{db_name}"
             else:
-                connection_string = f"mongodb://{host}:{port}/"
+                connection_string = f"mongodb://{host}:{port}/{db_name}"
 
         try:
             self.client = MongoClient(
@@ -62,7 +66,6 @@ class MongoDBManager:
         collections = [
             'analyses',
             'sentiment_stats',
-            'ideas_frequency'
         ]
 
         for collection in collections:
@@ -72,7 +75,6 @@ class MongoDBManager:
         # Create indexes
         self.db['analyses'].create_index('question_id', unique=True)
         self.db['analyses'].create_index('timestamp')
-        self.db['ideas_frequency'].create_index('idea', unique=True)
 
     def save_analysis(self, analysis_data: Dict[str, Any]) -> str:
         """
@@ -95,26 +97,6 @@ class MongoDBManager:
             return str(result.upserted_id or analysis_data['question_id'])
         except Exception as e:
             raise Exception(f"Failed to save analysis: {str(e)}")
-
-    def update_idea_frequency(self, ideas: List[str]):
-        """
-        Update idea frequency in database
-
-        Args:
-            ideas: List of extracted ideas
-        """
-        try:
-            for idea in ideas:
-                self.db['ideas_frequency'].update_one(
-                    {'idea': idea},
-                    {
-                        '$inc': {'frequency': 1},
-                        '$set': {'last_updated': datetime.utcnow()}
-                    },
-                    upsert=True
-                )
-        except Exception as e:
-            raise Exception(f"Failed to update idea frequency: {str(e)}")
 
     def update_sentiment_stats(self, sentiment_label: str):
         """
@@ -143,18 +125,47 @@ class MongoDBManager:
             Dictionary with sentiment stats
         """
         try:
-            stats = list(self.db['sentiment_stats'].find({}, {'_id': 0}))
-            total = sum(stat['count'] for stat in stats)
+            pipeline = [
+                {'$unwind': '$answers'},
+                {
+                    '$group': {
+                        '_id': '$answers.sentiment_label',
+                        'count': {'$sum': 1},
+                    }
+                },
+            ]
+            stats = list(self.db['analyses'].aggregate(pipeline))
 
+            if not stats:
+                fallback = [
+                    {
+                        '$group': {
+                            '_id': '$aggregate_sentiment_label',
+                            'count': {'$sum': 1},
+                        }
+                    }
+                ]
+                stats = list(self.db['analyses'].aggregate(fallback))
+
+            total = sum(stat.get('count', 0) for stat in stats)
             if total == 0:
                 return {'stats': [], 'total_analyzed': 0}
 
+            formatted = []
             for stat in stats:
-                stat['percentage'] = (stat['count'] / total) * 100
+                label = stat.get('_id') or ''
+                count = int(stat.get('count', 0))
+                formatted.append(
+                    {
+                        'sentiment': label,
+                        'count': count,
+                        'percentage': (count / total) * 100,
+                    }
+                )
 
             return {
-                'stats': stats,
-                'total_analyzed': total
+                'stats': formatted,
+                'total_analyzed': total,
             }
         except Exception as e:
             raise Exception(f"Failed to get sentiment stats: {str(e)}")
@@ -170,24 +181,99 @@ class MongoDBManager:
             Dictionary with frequent ideas
         """
         try:
-            ideas = list(
-                self.db['ideas_frequency']
-                .find({}, {'_id': 0})
-                .sort('frequency', -1)
-                .limit(limit)
+            pipeline = [
+                {'$unwind': '$cluster_summaries'},
+                {
+                    '$match': {
+                        'cluster_summaries.summary': {
+                            '$exists': True,
+                            '$ne': '',
+                        }
+                    }
+                },
+                {
+                    '$group': {
+                        '_id': '$cluster_summaries.summary',
+                        'frequency': {
+                            '$sum': {'$ifNull': ['$cluster_summaries.count', 1]},
+                        },
+                    }
+                },
+                {'$sort': {'frequency': -1}},
+                {'$limit': limit},
+            ]
+            ideas = list(self.db['analyses'].aggregate(pipeline))
+
+            total_frequency = 0
+            total_frequency_result = list(
+                self.db['analyses'].aggregate(
+                    [
+                        {'$unwind': '$cluster_summaries'},
+                        {
+                            '$match': {
+                                'cluster_summaries.summary': {
+                                    '$exists': True,
+                                    '$ne': '',
+                                }
+                            }
+                        },
+                        {
+                            '$group': {
+                                '_id': None,
+                                'total': {
+                                    '$sum': {
+                                        '$ifNull': ['$cluster_summaries.count', 1]
+                                    }
+                                },
+                            }
+                        },
+                    ]
+                )
             )
+            if total_frequency_result:
+                total_frequency = int(total_frequency_result[0].get('total', 0))
 
-            total_ideas = self.db['ideas_frequency'].count_documents({})
+            total_ideas_result = list(
+                self.db['analyses'].aggregate(
+                    [
+                        {'$unwind': '$cluster_summaries'},
+                        {
+                            '$match': {
+                                'cluster_summaries.summary': {
+                                    '$exists': True,
+                                    '$ne': '',
+                                }
+                            }
+                        },
+                        {'$group': {'_id': '$cluster_summaries.summary'}},
+                        {'$count': 'total'},
+                    ]
+                )
+            )
+            total_ideas = 0
+            if total_ideas_result:
+                total_ideas = int(total_ideas_result[0].get('total', 0))
 
-            if total_ideas > 0:
-                total_frequency = sum(idea['frequency'] for idea in ideas)
-                for idea in ideas:
-                    idea['percentage'] = (
-                        idea['frequency'] / total_frequency) * 100
+            formatted = []
+            for idea in ideas:
+                label = idea.get('_id') or ''
+                frequency = int(idea.get('frequency', 0))
+                percentage = (
+                    (frequency / total_frequency) * 100
+                    if total_frequency
+                    else 0
+                )
+                formatted.append(
+                    {
+                        'idea': label,
+                        'frequency': frequency,
+                        'percentage': percentage,
+                    }
+                )
 
             return {
-                'ideas': ideas,
-                'total_ideas': total_ideas
+                'ideas': formatted,
+                'total_ideas': total_ideas,
             }
         except Exception as e:
             raise Exception(f"Failed to get frequent ideas: {str(e)}")

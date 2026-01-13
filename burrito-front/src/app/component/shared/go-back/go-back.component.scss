@@ -1,0 +1,23 @@
+@use 'burrito-theme' as theme;
+
+.btn-back {
+  padding: 0.6rem 1.2rem;
+  background: rgba(theme.$primary-bg, 0.50);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: theme.$radius-md;
+  color: theme.$text-dark;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(4px);
+
+  &:hover {
+    background: theme.$primary-color;
+    color: theme.$white;
+    border-color: theme.$primary-color;
+    transform: translateX(-4px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  }
+}

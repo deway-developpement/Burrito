@@ -4,8 +4,8 @@ A Python-based microservice for analyzing survey questions and answers using sen
 
 ## Features
 
-- **Sentiment Analysis**: Uses TensorFlow and NLTK to analyze sentiment of questions and answers
-- **Idea Extraction**: Extracts key phrases and concepts from text
+- **Sentiment Analysis**: Uses NLTK VADER for stable sentiment scoring
+- **Cluster Summaries**: Generates one paraphrased sentence per answer cluster
 - **Statistics**: Provides aggregated sentiment and idea frequency statistics
 - **Database Storage**: Persists analysis results to MongoDB
 - **gRPC API**: Exposes all functionality through a modern gRPC interface
@@ -15,9 +15,11 @@ A Python-based microservice for analyzing survey questions and answers using sen
 ```
 Main Entry Point (main.py)
     ├── Sentiment Analyzer (sentiment_analyzer.py)
-    │   └── TensorFlow + NLTK for text analysis
+    │   └── VADER sentiment scoring (answer-only)
     ├── Database Manager (database.py)
     │   └── MongoDB for data persistence
+    ├── Idea Summarizer (idea_summarizer.py)
+    │   └── sentence-transformers + flan-t5-small for clustering + paraphrase labels
     └── gRPC Servicer (servicer.py)
         └── analytics_pb2_grpc service implementation
 ```
@@ -39,24 +41,41 @@ cd backend/apps/intelligence-ms
 pip install -r requirements.txt
 ```
 
-2. Generate gRPC Python files from proto definitions:
+2. Generate gRPC Python files from proto definitions (required after proto changes):
 
 ```bash
 python -m grpc_tools.protoc -I./proto --python_out=./intelligence --grpc_python_out=./intelligence proto/analytics.proto
 ```
 
-(This is done automatically when running main.py)
+
+3. Cache models and NLTK data (required for offline runtime):
+
+```bash
+python scripts/cache_models.py
+```
+
+Runtime downloads are disabled; the service fails fast if caches are missing.
 
 ### Configuration
 
 Edit `.env` file to configure:
 
 - `GRPC_PORT`: Port for gRPC server (default: 50051)
-- `MONGODB_HOST`: MongoDB hostname (default: localhost)
+- `MONGODB_MODE`: Set to `docker` to use `MONGODB_CONTAINER_NAME` (default: empty)
+- `MONGODB_CONTAINER_NAME`: MongoDB container/service name (default: mongo)
+- `MONGODB_HOST`: Optional override for MongoDB hostname (default: localhost)
 - `MONGODB_PORT`: MongoDB port (default: 27017)
+- `DATABASE_NAME`: MongoDB database name (default: burrito)
 - `DATABASE_USERNAME`: MongoDB username
 - `DATABASE_PASSWORD`: MongoDB password
-- `MODEL_PATH`: Path to saved TensorFlow model (optional)
+- `EMBEDDING_MODEL`: Sentence-transformer model ID (default: sentence-transformers/all-MiniLM-L6-v2)
+- `PARAPHRASE_MODEL`: Paraphrase model ID (default: google/flan-t5-small)
+- `PARAPHRASE_MIN_WORDS`: Minimum words in paraphrase (default: 6)
+- `PARAPHRASE_MAX_WORDS`: Maximum words in paraphrase (default: 12)
+- `PARAPHRASE_MAX_NEW_TOKENS`: Maximum new tokens for paraphrase generation (default: 18)
+- `PARAPHRASE_MIN_NEW_TOKENS`: Minimum new tokens for paraphrase generation (default: 6)
+- `HF_HOME`: HuggingFace cache directory (default: ./.cache/huggingface)
+- `NLTK_DATA`: NLTK data directory (default: ./.cache/nltk)
 
 ## Running the Service
 
@@ -71,8 +90,8 @@ python main.py
 ```
 
 The service will start on **port 50051** (configurable via `.env` with `GRPC_PORT`) and automatically:
-1. Generate/update proto files
-2. Initialize the sentiment analyzer
+1. Initialize the sentiment analyzer
+2. Initialize the idea summarizer
 3. Connect to MongoDB
 4. Start the gRPC server
 
@@ -103,15 +122,19 @@ channel = grpc.insecure_channel('localhost:50051')
 stub = analytics_pb2_grpc.AnalyticsServiceStub(channel)
 
 # Analyze a question
-response = stub.AnalyzeQuestion(analytics_pb2.AnalysisRequest(
+request = analytics_pb2.AnalysisRequest(
     question_id='q1',
     question_text='How satisfied are you?',
-    answer_text='Very satisfied with the service!'
-))
+    answer_text=[
+        'Very satisfied with the service!',
+        'It was okay, but there were some problems.'
+    ]
+)
+response = stub.AnalyzeQuestion(request)
 
-print(f"Sentiment: {response.sentiment_label}")
-print(f"Score: {response.sentiment_score}")
-print(f"Ideas: {response.extracted_ideas}")
+print(f\"Aggregate sentiment: {response.aggregate_sentiment_label}\")
+print(f\"Score: {response.aggregate_sentiment_score}\")
+print(f\"Cluster summaries: {[(c.summary, c.count) for c in response.cluster_summaries]}\")
 ```
 
 ## API Usage
@@ -120,7 +143,7 @@ print(f"Ideas: {response.extracted_ideas}")
 
 #### 1. AnalyzeQuestion
 
-Analyze a single question and its answer:
+Analyze a single question and its answers:
 
 ```protobuf
 rpc AnalyzeQuestion(AnalysisRequest) returns (AnalysisResponse);
@@ -128,16 +151,29 @@ rpc AnalyzeQuestion(AnalysisRequest) returns (AnalysisResponse);
 message AnalysisRequest {
   string question_id = 1;
   string question_text = 2;
-  string answer_text = 3;
+  repeated string answer_text = 3;
+}
+
+message AnswerAnalysis {
+  int32 index = 1;
+  string answer_text = 2;
+  float sentiment_score = 3;
+  string sentiment_label = 4;
 }
 
 message AnalysisResponse {
   string question_id = 1;
-  float sentiment_score = 2;      // 0.0 to 1.0
-  string sentiment_label = 3;     // POSITIVE, NEGATIVE, NEUTRAL
-  repeated string extracted_ideas = 4;
-  bool success = 5;
-  string error_message = 6;
+  repeated AnswerAnalysis answers = 2;
+  float aggregate_sentiment_score = 3;
+  string aggregate_sentiment_label = 4;
+  repeated ClusterSummary cluster_summaries = 8;
+  bool success = 6;
+  string error_message = 7;
+}
+
+message ClusterSummary {
+  string summary = 1;
+  int32 count = 2;
 }
 ```
 
@@ -200,12 +236,12 @@ const client = new analyticsProto.analytics.AnalyticsService(
 client.analyzeQuestion({
   question_id: 'q1',
   question_text: 'How satisfied are you?',
-  answer_text: 'Very satisfied with the service'
+  answer_text: ['Very satisfied with the service']
 }, (error, response) => {
   if (error) console.error(error);
-  console.log('Sentiment:', response.sentiment_label);
-  console.log('Score:', response.sentiment_score);
-  console.log('Ideas:', response.extracted_ideas);
+  console.log('Aggregate sentiment:', response.aggregate_sentiment_label);
+  console.log('Score:', response.aggregate_sentiment_score);
+  console.log('Cluster summaries:', response.cluster_summaries);
 });
 ```
 
@@ -219,10 +255,22 @@ client.analyzeQuestion({
   _id: ObjectId,
   question_id: String,
   question_text: String,
-  answer_text: String,
-  sentiment_score: Number,
-  sentiment_label: String,
-  extracted_ideas: [String],
+  answers: [
+    {
+      index: Number,
+      answer_text: String,
+      sentiment_score: Number,
+      sentiment_label: String,
+    }
+  ],
+  aggregate_sentiment_score: Number,
+  aggregate_sentiment_label: String,
+  cluster_summaries: [
+    {
+      summary: String,
+      count: Number
+    }
+  ],
   timestamp: Date
 }
 ```
@@ -236,16 +284,7 @@ client.analyzeQuestion({
   last_updated: Date
 }
 ```
-
-#### ideas_frequency
-```javascript
-{
-  _id: ObjectId,
-  idea: String,
-  frequency: Number,
-  last_updated: Date
-}
-```
+Note: stats are now aggregated from `analyses`; this collection is legacy.
 
 ## Project Structure
 
@@ -258,11 +297,15 @@ intelligence-ms/
 │   └── analytics.proto              # gRPC service definition
 ├── intelligence/
 │   ├── __init__.py
+│   ├── config.py                   # Environment defaults and thresholds
+│   ├── idea_summarizer.py          # Clustering + paraphrased summaries
 │   ├── sentiment_analyzer.py        # Sentiment analysis logic
 │   ├── database.py                  # MongoDB operations
 │   ├── servicer.py                  # gRPC service implementation
 │   ├── analytics_pb2.py             # Generated proto classes
 │   └── analytics_pb2_grpc.py        # Generated gRPC stubs
+├── scripts/
+│   └── cache_models.py              # Pre-cache models + NLTK data
 └── README.md                        # This file
 ```
 
@@ -271,26 +314,13 @@ intelligence-ms/
 ### Adding a New Analysis Feature
 
 1. Update `proto/analytics.proto` with new message types and RPC methods
-2. Regenerate proto files (automatic on server start)
-3. Implement new logic in `sentiment_analyzer.py` or create new modules
+2. Regenerate proto files (manual step)
+3. Implement new logic in `idea_summarizer.py` or other modules
 4. Add new RPC method implementation in `servicer.py`
-
-### Training a Custom Model
-
-```python
-from intelligence.sentiment_analyzer import SentimentAnalyzer
-
-# Initialize and train
-analyzer = SentimentAnalyzer()
-# ... train with your data ...
-analyzer.save_model('./models/custom_model.h5')
-```
-
-Update `.env` with `MODEL_PATH=./models/custom_model.h5` to use it.
 
 ## Troubleshooting
 
-### Proto Files Not Generated
+### Proto Files Out of Date
 ```bash
 pip install grpcio-tools
 python -m grpc_tools.protoc -I./proto --python_out=./intelligence --grpc_python_out=./intelligence proto/analytics.proto
@@ -301,10 +331,9 @@ python -m grpc_tools.protoc -I./proto --python_out=./intelligence --grpc_python_
 - Check credentials in `.env` file
 - Verify MongoDB is accessible at configured host:port
 
-### TensorFlow Issues
-- For CPU-only: `pip install tensorflow-cpu`
-- For GPU: Install CUDA toolkit and `pip install tensorflow`
-- On M1/M2 Mac: Use `conda install tensorflow-metal`
+### Model Cache Missing
+- Run `python scripts/cache_models.py`
+- Ensure `HF_HOME` and `NLTK_DATA` point to the cached directories
 
 ## Future Enhancements
 

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 class AnalyticsServicer:
     """Implementation of the Analytics gRPC service"""
     
-    def __init__(self, db_manager, sentiment_analyzer):
+    def __init__(self, db_manager, sentiment_analyzer, idea_summarizer):
         """
         Initialize the servicer
         
@@ -20,6 +20,7 @@ class AnalyticsServicer:
         """
         self.db_manager = db_manager
         self.sentiment_analyzer = sentiment_analyzer
+        self.idea_summarizer = idea_summarizer
     
     def AnalyzeQuestion(self, request, context):
         """
@@ -36,36 +37,32 @@ class AnalyticsServicer:
         
         try:
             # Support multiple answers: request.answer_text is now a repeated field
-            answers = list(request.answer_text) if hasattr(request, 'answer_text') else []
-
-            # Fallback: if the repeated field is empty but a single scalar exists
-            if not answers and getattr(request, 'answer_text', None):
-                # This covers older clients sending a single answer_text
-                answers = [request.answer_text]
+            answers = []
+            if hasattr(request, 'answer_text'):
+                if isinstance(request.answer_text, str):
+                    answers = [request.answer_text]
+                else:
+                    answers = list(request.answer_text)
 
             per_answer_results = []
-            aggregated_ideas = set()
             sentiment_scores = []
 
             for idx, ans in enumerate(answers):
-                combined_text = f"{request.question_text} {ans}"
-                score, label = self.sentiment_analyzer.analyze(combined_text)
-                ideas = self.sentiment_analyzer.extract_key_phrases(combined_text)
+                score, label = self.sentiment_analyzer.analyze(ans)
 
                 sentiment_scores.append(float(score))
-                aggregated_ideas.update(ideas)
 
                 per_answer_results.append({
                     'index': idx,
                     'answer_text': ans,
                     'sentiment_score': float(score),
                     'sentiment_label': label,
-                    'extracted_ideas': ideas
                 })
 
-                # Update idea frequency and sentiment stats per answer
-                self.db_manager.update_idea_frequency(ideas)
-                self.db_manager.update_sentiment_stats(label)
+            cluster_summaries = self.idea_summarizer.summarize_clusters(
+                answers,
+                request.question_text,
+            )
 
             # Aggregate sentiment across answers (mean)
             if sentiment_scores:
@@ -87,7 +84,7 @@ class AnalyticsServicer:
                 'answers': per_answer_results,
                 'aggregate_sentiment_score': aggregate_score,
                 'aggregate_sentiment_label': aggregate_label,
-                'aggregated_extracted_ideas': list(sorted(aggregated_ideas))
+                'cluster_summaries': cluster_summaries,
             }
 
             self.db_manager.save_analysis(analysis_data)
@@ -99,9 +96,17 @@ class AnalyticsServicer:
                     answer_text=a['answer_text'],
                     sentiment_score=a['sentiment_score'],
                     sentiment_label=a['sentiment_label'],
-                    extracted_ideas=a['extracted_ideas']
                 )
                 for a in per_answer_results
+            ]
+
+            cluster_summaries_proto = [
+                analytics_pb2.ClusterSummary(
+                    summary=item['summary'],
+                    count=int(item.get('count', 0)),
+                )
+                for item in cluster_summaries
+                if item.get('summary')
             ]
 
             return analytics_pb2.AnalysisResponse(
@@ -109,7 +114,7 @@ class AnalyticsServicer:
                 answers=answers_proto,
                 aggregate_sentiment_score=aggregate_score,
                 aggregate_sentiment_label=aggregate_label,
-                aggregated_extracted_ideas=list(sorted(aggregated_ideas)),
+                cluster_summaries=cluster_summaries_proto,
                 success=True
             )
 

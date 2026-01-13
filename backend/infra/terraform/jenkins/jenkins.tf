@@ -46,6 +46,12 @@ resource "jenkins_credential_secret_text" "smtp_pass" {
   secret      = var.burrito_smtp_pass
 }
 
+resource "jenkins_credential_secret_text" "huggingface_hub_token" {
+  name        = "burrito-huggingface-hub-token"
+  description = "Hugging Face Hub token for intelligence-ms"
+  secret      = var.burrito_huggingface_hub_token
+}
+
 resource "jenkins_job" "burrito_backend" {
   name = "burrito-backend"
 
@@ -66,6 +72,7 @@ resource "jenkins_job" "burrito_backend" {
     jenkins_credential_secret_text.jwt_refresh_expires_in,
     jenkins_credential_secret_text.smtp_user,
     jenkins_credential_secret_text.smtp_pass,
+    jenkins_credential_secret_text.huggingface_hub_token,
   ]
 }
 

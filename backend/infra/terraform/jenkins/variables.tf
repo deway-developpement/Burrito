@@ -85,3 +85,10 @@ variable "burrito_smtp_pass" {
   default     = "smtp-pass"
   sensitive   = true
 }
+
+variable "burrito_huggingface_hub_token" {
+  type        = string
+  description = "Hugging Face Hub token for intelligence-ms"
+  default     = "huggingface-token"
+  sensitive   = true
+}

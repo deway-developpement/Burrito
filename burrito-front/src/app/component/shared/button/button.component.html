@@ -3,6 +3,7 @@
   class="btn"
   [ngClass]="[
     variant ? 'btn--' + variant : '',
+    size ? 'btn--' + size : '',
     fullWidth ? 'btn--full' : ''
   ]"
   [disabled]="disabled"

@@ -11,6 +11,12 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
+const apiBaseUrl = (process.env['API_BASE_URL'] || 'https://api.burrito.deway.fr').replace(/\/+$/, '');
+
+(globalThis as { __env?: { API_BASE_URL?: string } }).__env = {
+  ...(globalThis as { __env?: { API_BASE_URL?: string } }).__env,
+  API_BASE_URL: apiBaseUrl,
+};
 
 /**
  * Example Express Rest API endpoints can be defined here.
@@ -23,6 +29,16 @@ const angularApp = new AngularNodeAppEngine();
  * });
  * ```
  */
+
+app.get('/env.js', (_req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
+  res.send(`window.__env = ${JSON.stringify({ API_BASE_URL: apiBaseUrl })};`);
+});
+
+app.get('/health', (_req, res) => {
+  res.status(200).send('ok');
+});
 
 /**
  * Serve static files from /browser

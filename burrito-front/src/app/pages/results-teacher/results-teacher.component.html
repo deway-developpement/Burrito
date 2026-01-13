@@ -1,11 +1,9 @@
-<app-header></app-header>
+<app-background-div>
 
 <div class="results-teacher-container">
   <!-- Navigation Bar -->
   <div class="nav-bar">
-    <button class="btn-back" (click)="goBack()" title="Go back">
-      ← Back
-    </button>
+    <app-go-back></app-go-back>
     <h1 class="page-title">Teacher Results</h1>
   </div>
 
@@ -75,13 +73,6 @@
 
       <!-- Aggregate Metrics Row -->
       <div class="metrics-row">
-        <div class="metric-card nps-card">
-          <div class="metric-label">NPS Score</div>
-          <div class="metric-value" [class]="'nps-' + getNpsColor(analytics()!.nps.score)">
-            {{ analytics()!.nps.score.toFixed(0) }}
-          </div>
-        </div>
-
         <div class="metric-card">
           <div class="metric-label">Promoters</div>
           <div class="metric-value promoters">{{ analytics()!.nps.promotersPct.toFixed(1) }}%</div>
@@ -203,3 +194,5 @@
     </div>
   }
 </div>
+
+</app-background-div>

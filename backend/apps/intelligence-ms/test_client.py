@@ -27,10 +27,10 @@ def run_test():
         resp = stub.AnalyzeQuestion(req)
         print('Response success:', resp.success)
         print('Aggregate sentiment:', resp.aggregate_sentiment_label, resp.aggregate_sentiment_score)
-        print('Aggregated ideas:', list(resp.aggregated_extracted_ideas))
+        print('Cluster summaries:', [(c.summary, c.count) for c in resp.cluster_summaries])
         print('Per-answer results:')
         for a in resp.answers:
-            print(f'  index={a.index} label={a.sentiment_label} score={a.sentiment_score} ideas={list(a.extracted_ideas)}')
+            print(f'  index={a.index} label={a.sentiment_label} score={a.sentiment_score}')
     except Exception as e:
         print('gRPC call failed:', e)
 

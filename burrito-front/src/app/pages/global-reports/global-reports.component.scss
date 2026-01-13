@@ -1,44 +1,29 @@
 @use 'burrito-theme' as theme;
 
+.nav-bar {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+}
+
 .page-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 2.5rem;
-  margin-top: 2.5rem;
   background-color: theme.$white;
   padding: 2rem;
   border-radius: theme.$radius-lg;
   box-shadow: theme.$shadow-soft;
+  margin-bottom: 2rem;
 
-  h1 {
-    margin: 0 0 0.5rem;
-    font-size: 2rem;
-    color: theme.$text-dark;
-    font-weight: 700;
-  }
+  .header-content {
+    h1 {
+      margin: 0 0 0.5rem;
+      font-size: 2rem;
+      color: theme.$text-dark;
+      font-weight: 700;
+    }
 
-  .subtitle {
-    margin: 0;
-    color: theme.$text-muted;
-    font-size: 0.95rem;
-  }
-
-  .btn-back {
-    margin-right: 1.5rem;
-    padding: 0.6rem 1rem;
-    background: theme.$light-bg;
-    border: 1px solid theme.$border-color;
-    border-radius: theme.$radius-md;
-    color: theme.$text-dark;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background: theme.$primary-color;
-      color: theme.$white;
-      border-color: theme.$primary-color;
-      transform: translateX(-4px);
+    .subtitle {
+      margin: 0;
+      color: theme.$text-muted;
+      font-size: 0.95rem;
     }
   }
 }

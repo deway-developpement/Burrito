@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService, UserType } from '../../../services/user.service';
+import { ToastService } from '../../../services/toast.service';
 
 @Component({
   selector: 'app-add-user-modal',
@@ -14,8 +15,8 @@ export class AddUserModalComponent {
   
   private fb = inject(FormBuilder);
   private userService = inject(UserService);
+  private toast = inject(ToastService);
 
-  // Determines if we are creating a Student or Teacher
   @Input() userType: UserType = 'STUDENT'; 
   
   @Output() close = new EventEmitter<void>();
@@ -42,21 +43,36 @@ export class AddUserModalComponent {
     if (this.addForm.invalid) return;
 
     this.isSubmitting = true;
-    this.errorMessage = '';
+    this.errorMessage = ''; // Clear previous errors
     const payload = this.addForm.value;
 
     this.userService.createUser(payload, this.userType).subscribe({
       next: (res) => {
-        console.log('User created:', res);
+        this.toast.show(`${this.userType} created successfully!`, 'success');
         this.isSubmitting = false;
         this.addForm.reset();
-        this.saved.emit(); // Tell parent to refresh list
-        this.close.emit(); // Close modal
+        this.saved.emit(); 
+        this.close.emit(); 
       },
       error: (err) => {
-        console.error(err);
-        this.isSubmitting = false;
-        this.errorMessage = 'Failed to create user. Email might be already in use.';
+        // Fix for NG0100: Defer the state updates
+        setTimeout(() => {
+          this.isSubmitting = false;
+
+          // Extract message
+          let friendlyMessage = 'An unexpected error occurred.';
+          if (err.graphQLErrors && err.graphQLErrors.length > 0) {
+            friendlyMessage = err.graphQLErrors[0].message;
+          } else if (err.message) {
+            friendlyMessage = err.message;
+          }
+
+          // Update UI
+          this.errorMessage = friendlyMessage;
+          this.toast.show(friendlyMessage, 'error');
+        });
+
+        console.error('Creation failed:', err);
       }
     });
   }

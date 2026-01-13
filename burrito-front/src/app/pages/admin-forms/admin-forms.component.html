@@ -1,16 +1,16 @@
 <app-background-div>
-  <div class="admin__heading">
-        <p class="admin__eyebrow">Admin</p>
-        <div class="nav-bar">
-          <button class="btn-back" (click)="goBack()" title="Go back">
-            ← Back
-          </button>
-          <h1 class="admin__title">
-            Evaluation Forms
-          </h1>
-        </div>
-      </div>
-    
+  <div class="nav-bar">
+    <app-go-back></app-go-back>
+  </div>
+
+  <div class="page-container">
+    <app-admin-page-header
+    title="Evaluation Forms"
+    subtitle="Browse, update, and publish the evaluation forms used across the platform."
+    buttonLabel="Create new form"
+    (action)="createForm()"
+  ></app-admin-page-header>
+
   <section class="forms-section">
     <div class="forms-toolbar">
       <div class="forms-filter">

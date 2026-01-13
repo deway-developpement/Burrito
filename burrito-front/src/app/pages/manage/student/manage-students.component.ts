@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BackgroundDivComponent } from '../../../component/shared/background-div/background-div.component';
+import { GoBackComponent } from '../../../component/shared/go-back/go-back.component';
 import { AdminPageHeaderComponent } from '../../../component/shared/admin-page-header/admin-page-header.component';
 import { AdminTableComponent, TableColumn } from '../../../component/shared/admin-table/admin-table.component';
 import { EditUserModalComponent } from '../../../component/shared/edit-user-modal/edit-user-modal.component';
@@ -25,7 +26,8 @@ interface AlertDialogConfig {
   standalone: true,
   imports: [
     CommonModule, 
-    BackgroundDivComponent, 
+    BackgroundDivComponent,
+    GoBackComponent,
     AdminPageHeaderComponent, 
     AdminTableComponent,
     EditUserModalComponent,
@@ -33,6 +35,7 @@ interface AlertDialogConfig {
     AlertDialogComponent
   ],
   templateUrl: './manage-students.component.html',
+  styleUrls: ['./manage-students.component.scss']
 })
 export class ManageStudentsComponent {
 

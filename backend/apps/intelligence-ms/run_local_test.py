@@ -1,5 +1,6 @@
 from intelligence.servicer import AnalyticsServicer
 from intelligence.sentiment_analyzer import SentimentAnalyzer
+from intelligence.idea_summarizer import IdeaSummarizer
 
 class MockDB:
     def __init__(self):
@@ -8,8 +9,6 @@ class MockDB:
         print('MockDB.save_analysis called')
         self.storage[analysis_data.get('question_id','')] = analysis_data
         return analysis_data.get('question_id','')
-    def update_idea_frequency(self, ideas):
-        print('MockDB.update_idea_frequency:', ideas)
     def update_sentiment_stats(self, label):
         print('MockDB.update_sentiment_stats:', label)
 
@@ -26,7 +25,8 @@ class DummyContext:
 def run():
     db = MockDB()
     analyzer = SentimentAnalyzer()
-    servicer = AnalyticsServicer(db, analyzer)
+    summarizer = IdeaSummarizer()
+    servicer = AnalyticsServicer(db, analyzer, summarizer)
 
     req = DummyRequest('q-local-1', 'How was the team meeting?', [
         'I thought it was excellent and very productive.',
@@ -35,6 +35,8 @@ def run():
 
     resp = servicer.AnalyzeQuestion(req, DummyContext())
     print('Response:', resp)
+    if hasattr(resp, 'cluster_summaries'):
+        print('Cluster summaries:', [(c.summary, c.count) for c in resp.cluster_summaries])
     print('Saved analysis in MockDB:', db.storage.get('q-local-1'))
 
 if __name__ == '__main__':

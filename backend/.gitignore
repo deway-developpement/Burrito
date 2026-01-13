@@ -66,3 +66,9 @@ infra/terraform/**/*.tfvars
 infra/terraform/**/*.tfvars.json
 infra/terraform/**/*.lock.hcl
 infra/ansible/**/*.retry
+
+# py env
+__pycache__/
+*.pyc
+**/.venv/
+**/.cache/

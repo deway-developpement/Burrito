@@ -1,9 +1,21 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { Apollo, gql } from 'apollo-angular';
-import { tap, catchError, of, map, Observable } from 'rxjs';
+import { tap, catchError, of, map, Observable,switchMap, throwError  } from 'rxjs';
 import { AuthService } from './auth.service';
 
 // --- QUERIES ---
+
+const CHECK_EMAIL_EXISTS = gql`
+  query CheckEmail($email: String!) {
+    users(filter: { email: { eq: $email } }) {
+      edges {
+        node {
+          id
+        }
+      }
+    }
+  }
+`;
 
 const GET_ME = gql`
   query ExampleQuery {
@@ -280,6 +292,20 @@ export class UserService {
     );
   }
 
+    checkEmailExists(email: string): Observable<boolean> {
+      return this.apollo.query<any>({
+        query: CHECK_EMAIL_EXISTS,
+        variables: { email },
+        fetchPolicy: 'network-only' // We want fresh data from the DB
+      }).pipe(
+        map(result => {
+          const users = result.data?.users?.edges || [];
+          return users.length > 0;
+        })
+      );
+    }
+
+
   getStudentsPage(limit: number, after?: string | null): Observable<{
     users: UserProfile[];
     pageInfo: { hasNextPage: boolean; endCursor: string | null };
@@ -306,20 +332,38 @@ export class UserService {
     );
   }
 
-    createUser(payload: CreateUserPayload, type: UserType) {
-    return this.apollo.mutate({
-      mutation: CREATE_ONE_USER,
-      variables: {
-        input: {
-          user: {
-            ...payload,
-            userType: type
+      createUser(payload: CreateUserPayload, type: UserType) {
+      // 1. First, check if the email exists
+      return this.checkEmailExists(payload.email).pipe(
+        switchMap(exists => {
+          if (exists) {
+            // 2. If it exists, manually throw an error before calling mutation
+            return throwError(() => new Error('A user with this email already exists.'));
           }
-        }
-      }
-    });
-  }
 
+          // 3. If it doesn't exist, proceed with the actual mutation
+          return this.apollo.mutate({
+            mutation: CREATE_ONE_USER,
+            variables: {
+              input: {
+                user: {
+                  ...payload,
+                  userType: type
+                }
+              }
+            }
+          });
+        }),
+        catchError(err => {
+          // Log it and re-throw the message for the toast
+          console.error('CreateUser Guard:', err.message);
+          return throwError(() => err);
+        })
+      );
+    }
+  
+
+  
   // --- FIXED UPDATE FUNCTION ---
   updateUser(id: string, data: { fullName: string; email: string }) {
     return this.apollo.mutate({
