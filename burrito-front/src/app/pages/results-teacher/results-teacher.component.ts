@@ -4,8 +4,6 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
-  computed,
-  inject,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -13,7 +11,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { HeaderComponent } from '../../component/header/header.component';
 import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 import { AuthService } from '../../services/auth.service';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
@@ -242,7 +239,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   readonly timeWindowOptions: TimeWindow[] = ['all', '30d', '7d', 'custom'];
 
   private allRemarks: EvaluationRemark[] = [];
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private remarksLoadMoreObserver?: IntersectionObserver;
 
@@ -256,10 +253,10 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   }
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apollo: Apollo,
-    private authService: AuthService
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly apollo: Apollo,
+    private readonly authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -442,12 +439,8 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
         variables: { formId, window, forceSync },
         fetchPolicy: 'network-only'
       })
-    ).then((response) => {
-      if (response.data?.analyticsSnapshot) {
-        return response.data.analyticsSnapshot;
-      }
-      return null;
-    }).catch((err) => {
+    ).then((response) => response.data?.analyticsSnapshot ?? null)
+    .catch((err) => {
       console.warn(`Failed to fetch analytics for form ${formId}:`, err);
       return null;
     });
@@ -514,9 +507,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
           fetchPolicy: 'cache-first'
         })
       );
-      if (userResponse.data?.user?.fullName) {
-        teacherName = userResponse.data.user.fullName;
-      }
+      teacherName = userResponse.data?.user?.fullName ?? 'Unknown Teacher';
     } catch {
       // Fallback to 'Unknown Teacher' on error
     }
@@ -668,7 +659,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
 
     evaluations.forEach((evaluation) => {
       evaluation.answers.forEach((answer) => {
-        if (answer.text && answer.text.trim()) {
+        if (answer.text?.trim()) {
           remarks.push({
             id: `${evaluation.id}-${answer.questionId}`,
             questionId: answer.questionId,

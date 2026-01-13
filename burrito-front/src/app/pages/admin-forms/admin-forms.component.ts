@@ -129,9 +129,9 @@ export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLDivElement>;
 
   constructor(
-    private apollo: Apollo,
-    private router: Router,
-    private formService: FormService
+    private readonly apollo: Apollo,
+    private readonly router: Router,
+    private readonly formService: FormService
   ) {}
 
   goBack(): void {
@@ -329,7 +329,7 @@ export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
         const edges = result?.data?.forms?.edges ?? [];
         const newForms = edges
           .map((edge: any) => edge?.node)
-          .filter((form: FormListItem | null) => Boolean(form));
+          .filter(Boolean);
         if (reset) {
           this.forms.set(newForms);
         } else {

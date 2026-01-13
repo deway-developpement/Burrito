@@ -149,9 +149,10 @@
             </label>
           </div>
 
-          <label class="form-field form-field--full">
-            <span class="form-label">Intro text <span class="required">*</span></span>
+          <div class="form-field form-field--full">
+            <label for="formDescription" class="form-label">Intro text <span class="required">*</span></label>
             <textarea
+              id="formDescription"
               class="form-textarea"
               rows="3"
               placeholder="Explain what you expect from students"
@@ -162,7 +163,7 @@
             @if (publishAttempted && !formDescription.trim()) {
               <span class="field-error">Description is required.</span>
             }
-          </label>
+          </div>
         </div>
 
         <div class="builder__section">
@@ -225,8 +226,8 @@
           <div class="add-question">
             <div class="add-question__label">Add a question card</div>
             <div class="add-question__actions">
-              <app-button variant="outline" type="button" (click)="addQuestion('rating')">Rating</app-button>
-              <app-button variant="outline" type="button" (click)="addQuestion('text')">Text</app-button>
+              <app-button variant="outline" type="button" (click)="addQuestion('rating')" (keydown.enter)="addQuestion('rating')">Rating</app-button>
+              <app-button variant="outline" type="button" (click)="addQuestion('text')" (keydown.enter)="addQuestion('text')">Text</app-button>
             </div>
           </div>
         </div>
