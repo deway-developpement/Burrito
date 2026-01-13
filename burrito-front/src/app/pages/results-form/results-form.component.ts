@@ -4,7 +4,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { Subject, firstValueFrom } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { HeaderComponent } from '../../component/header/header.component';
+
 import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 import { AuthService } from '../../services/auth.service';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
@@ -214,15 +214,15 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   // Time window options for template
   readonly timeWindowOptions: TimeWindow[] = ['all', '30d', '7d', 'custom'];
 
-  private destroy$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private apollo: Apollo,
-    private authService: AuthService,
-    @Inject(PLATFORM_ID) private platformId: Object,
+    private readonly route: ActivatedRoute,
+    private readonly router: Router,
+    private readonly apollo: Apollo,
+    private readonly authService: AuthService,
+    @Inject(PLATFORM_ID) private readonly platformId: Object,
   ) {}
 
   ngOnInit(): void {

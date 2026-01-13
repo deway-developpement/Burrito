@@ -985,22 +985,12 @@
 @media (max-width: 480px) {
   .response-summary .summary-stats {
     grid-template-columns: 1fr 1fr;
-  }
+    
+    .stat.satisfaction-breakdown-stat {
+      grid-column: 1 / -1;
 
-  .satisfaction-card .satisfaction-content {
-    display: flex;
-    flex-direction: column;
-  }
-
-  // On small screens, make the satisfaction breakdown take full width and stack
-  .response-summary {
-    .summary-stats {
-      .stat.satisfaction-breakdown-stat {
-        grid-column: 1 / -1;
-
-        .satisfaction-breakdown {
-          grid-template-columns: 1fr;
-        }
+      .satisfaction-breakdown {
+        grid-template-columns: 1fr;
       }
     }
   }
