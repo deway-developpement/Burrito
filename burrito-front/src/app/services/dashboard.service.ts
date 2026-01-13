@@ -11,7 +11,7 @@ interface DashboardStats {
   providedIn: 'root'
 })
 export class DashboardService {
-  private apollo = inject(Apollo);
+  private readonly apollo = inject(Apollo);
 
   getStats(): Observable<DashboardStats> {
     return this.apollo
