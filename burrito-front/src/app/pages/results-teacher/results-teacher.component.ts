@@ -229,6 +229,9 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   error = signal<string | null>(null);
   showAdminBanner = signal<boolean>(false);
 
+  // Time window options for template
+  readonly timeWindowOptions: TimeWindow[] = ['all', '30d', '7d', 'custom'];
+
   private allRemarks: EvaluationRemark[] = [];
   private destroy$ = new Subject<void>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -269,8 +272,27 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     }, 500);
   }
 
-  onFormFilterChange(formId: string): void {
-    this.selectedFormFilter.set(formId);
+  onCustomFromDateChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const date = input.value ? new Date(input.value + 'T00:00:00') : null;
+    this.customFromDate.set(date);
+    this.remarksPage.set(0);
+    this.loadTeacherAnalytics();
+    this.loadRemarks();
+  }
+
+  onCustomToDateChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const date = input.value ? new Date(input.value + 'T23:59:59') : null;
+    this.customToDate.set(date);
+    this.remarksPage.set(0);
+    this.loadTeacherAnalytics();
+    this.loadRemarks();
+  }
+
+  onFormFilterChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.selectedFormFilter.set(select.value);
     this.remarksPage.set(0);
     this.loadRemarks();
   }
@@ -291,6 +313,10 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   }
 
   private loadTeacherAnalytics(): void {
+    // Clear Apollo cache to avoid stale queries
+    this.apollo.client.cache.evict({ fieldName: 'evaluations' });
+    this.apollo.client.cache.gc();
+    
     this.loading.set(true);
     this.fetchTeacherAnalytics(false).finally(() => this.loading.set(false));
   }
@@ -523,6 +549,10 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   }
 
   private loadRemarks(): void {
+    // Clear Apollo cache to avoid stale queries
+    this.apollo.client.cache.evict({ fieldName: 'evaluations' });
+    this.apollo.client.cache.gc();
+    
     this.remarks.set([]);
     this.remarksPage.set(0);
     this.allRemarks = [];
@@ -579,10 +609,29 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     ).then((response) => {
       if (response.data?.evaluations?.edges) {
         let evaluations = response.data.evaluations.edges.map(edge => edge.node);
+        
+        // Filter by form if selected
         const formId = this.selectedFormFilter() !== 'all' ? this.selectedFormFilter() : undefined;
         if (formId) {
           evaluations = evaluations.filter(e => e.formId === formId);
         }
+        
+        // Filter by date window client-side
+        const window = this.getAnalyticsWindow();
+        if (window?.from || window?.to) {
+          evaluations = evaluations.filter((item) => {
+            const evalDate = item.createdAt ? new Date(item.createdAt).getTime() : 0;
+            
+            if (window.from && evalDate < new Date(window.from).getTime()) {
+              return false;
+            }
+            if (window.to && evalDate > new Date(window.to).getTime()) {
+              return false;
+            }
+            return true;
+          });
+        }
+        
         return evaluations;
       }
       return [];
