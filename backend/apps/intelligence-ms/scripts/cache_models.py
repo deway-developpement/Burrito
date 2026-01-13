@@ -22,8 +22,21 @@ PARAPHRASE_MODEL = os.getenv(
     'PARAPHRASE_MODEL',
     'google/flan-t5-small',
 )
+TRANSLATE_BEFORE_SENTIMENT = (
+    os.getenv('TRANSLATE_BEFORE_SENTIMENT', 'false').lower() == 'true'
+)
+TRANSLATION_MODEL = os.getenv(
+    'TRANSLATION_MODEL',
+    'Helsinki-NLP/opus-mt-mul-en',
+)
 
 MODELS = [EMBEDDING_MODEL, PARAPHRASE_MODEL]
+if (
+    TRANSLATE_BEFORE_SENTIMENT
+    and TRANSLATION_MODEL
+    and TRANSLATION_MODEL.lower() != 'none'
+):
+    MODELS.append(TRANSLATION_MODEL)
 NLTK_PACKAGES = [
     'vader_lexicon',
 ]

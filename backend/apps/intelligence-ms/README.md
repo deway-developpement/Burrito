@@ -4,7 +4,7 @@ A Python-based microservice for analyzing survey questions and answers using sen
 
 ## Features
 
-- **Sentiment Analysis**: Uses NLTK VADER for stable sentiment scoring
+- **Sentiment Analysis**: Uses VADER sentiment, with optional translate-to-English step
 - **Cluster Summaries**: Generates one paraphrased sentence per answer cluster
 - **Statistics**: Provides aggregated sentiment and idea frequency statistics
 - **Database Storage**: Persists analysis results to MongoDB
@@ -15,7 +15,7 @@ A Python-based microservice for analyzing survey questions and answers using sen
 ```
 Main Entry Point (main.py)
     ├── Sentiment Analyzer (sentiment_analyzer.py)
-    │   └── VADER sentiment scoring (answer-only)
+    │   └── VADER sentiment + optional translation to English
     ├── Database Manager (database.py)
     │   └── MongoDB for data persistence
     ├── Idea Summarizer (idea_summarizer.py)
@@ -74,6 +74,9 @@ Edit `.env` file to configure:
 - `PARAPHRASE_MAX_WORDS`: Maximum words in paraphrase (default: 12)
 - `PARAPHRASE_MAX_NEW_TOKENS`: Maximum new tokens for paraphrase generation (default: 18)
 - `PARAPHRASE_MIN_NEW_TOKENS`: Minimum new tokens for paraphrase generation (default: 6)
+- `TRANSLATE_BEFORE_SENTIMENT`: Translate answers to English before VADER (default: false)
+- `TRANSLATION_MODEL`: Translation model ID (default: Helsinki-NLP/opus-mt-mul-en)
+- `TRANSLATION_DETECT_LANGUAGE`: Skip translation when text is detected as English (default: true)
 - `HF_HOME`: HuggingFace cache directory (default: ./.cache/huggingface)
 - `NLTK_DATA`: NLTK data directory (default: ./.cache/nltk)
 
@@ -334,12 +337,13 @@ python -m grpc_tools.protoc -I./proto --python_out=./intelligence --grpc_python_
 ### Model Cache Missing
 - Run `python scripts/cache_models.py`
 - Ensure `HF_HOME` and `NLTK_DATA` point to the cached directories
+- If you enable translation, make sure the translation model is cached
 
 ## Future Enhancements
 
-- [ ] Multi-language sentiment analysis
 - [ ] Custom model training API
 - [ ] Real-time streaming analysis
 - [ ] Advanced NLP features (named entity recognition, topic modeling)
 - [ ] Performance metrics and monitoring
 - [ ] Model versioning and A/B testing
+- [ ] Native multilingual sentiment (no translation step)
