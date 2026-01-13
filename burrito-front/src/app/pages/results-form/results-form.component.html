@@ -76,18 +76,6 @@
       <!-- Response Summary (Hero Section) -->
       <div class="response-summary">
         <div class="summary-stats">
-          <div class="stat">
-            <div class="stat-value">{{ analytics()!.totalResponses }}</div>
-            <div class="stat-label">Total Responses</div>
-          </div>
-
-          <div class="stat nps-stat">
-            <div class="stat-value" [class]="'nps-' + getNpsColor(analytics()!.nps.score)">
-              {{ analytics()!.nps.score.toFixed(0) }}
-            </div>
-            <div class="stat-label">NPS Score</div>
-          </div>
-
           <div class="stat satisfaction-breakdown-stat">
             <div class="stat-label">Satisfaction Breakdown</div>
             <div class="satisfaction-breakdown">
@@ -104,6 +92,26 @@
                 <span class="breakdown-value">{{ analytics()!.nps.detractorsPct.toFixed(1) }}% ({{ analytics()!.nps.detractorsCount }})</span>
               </div>
             </div>
+          </div>
+
+          @if (!isTeacherView()) {
+            <div class="stat nps-stat">
+              <div 
+                class="stat-value" 
+                [style.background]="getNpsGradient(analytics()!.nps.score)"
+                [style.-webkit-background-clip]="'text'"
+                [style.background-clip]="'text'"
+                [style.-webkit-text-fill-color]="'transparent'"
+              >
+                {{ analytics()!.nps.score.toFixed(0) }}
+              </div>
+              <div class="stat-label">NPS Score</div>
+            </div>
+          }
+
+          <div class="stat">
+            <div class="stat-value">{{ analytics()!.totalResponses }}</div>
+            <div class="stat-label">Total Responses</div>
           </div>
 
         </div>

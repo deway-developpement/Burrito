@@ -195,6 +195,8 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   loading = signal<boolean>(false);
   error = signal<string | null>(null);
   isAdmin = signal<boolean>(false);
+  isTeacherView = signal<boolean>(false);
+  viewingTeacherId = signal<string | null>(null);
 
   expandedQuestions = signal<Set<string>>(new Set());
 
@@ -226,6 +228,15 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const user = this.authService.getCurrentUser();
     this.isAdmin.set(user?.userType === 'ADMIN');
+
+    // If user is a teacher (not admin), they're viewing their own results
+    if (user && user.userType !== 'ADMIN') {
+      this.isTeacherView.set(true);
+      this.viewingTeacherId.set(user.id);
+    } else {
+      this.isTeacherView.set(false);
+      this.viewingTeacherId.set(null);
+    }
 
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       this.formId.set(params['formId']);
@@ -300,9 +311,9 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // Step 2: If admin, calculate teacher breakdown
+      // Step 2: If admin (and not teacher view), calculate teacher breakdown
       let teachersBreakdown: TeacherBreakdown[] = [];
-      if (this.isAdmin()) {
+      if (this.isAdmin() && !this.isTeacherView()) {
         teachersBreakdown = await this.calculateTeacherBreakdown(window);
       }
 
@@ -424,6 +435,11 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     const filter: any = {
       formId: { eq: this.formId() },
     };
+
+    // If teacher view, filter by teacherId
+    if (this.isTeacherView() && this.viewingTeacherId()) {
+      filter.teacherId = { eq: this.viewingTeacherId() };
+    }
 
     const paging: any = { first: 100 };
     if (after) {
@@ -593,6 +609,41 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     if (score >= 50) return 'green';
     if (score >= 0) return 'yellow';
     return 'red';
+  }
+
+  getNpsGradient(score: number): string {
+    // NPS ranges from -100 to 100
+    // We'll create a gradient from red (-100) through yellow (0) to green (100)
+    
+    if (score >= 50) {
+      // Excellent: 50 to 100 - gradient from light green to dark green
+      const intensity = (score - 50) / 50; // 0 to 1
+      const r = Math.round(76 - 76 * intensity); // 76 to 0
+      const g = Math.round(175 + 55 * intensity); // 175 to 230
+      const b = Math.round(80 - 30 * intensity); // 80 to 50
+      return `linear-gradient(135deg, rgb(${r + 20}, ${g - 20}, ${b + 10}), rgb(${r}, ${g}, ${b}))`;
+    } else if (score >= 0) {
+      // Good: 0 to 50 - gradient from yellow to light green
+      const intensity = score / 50; // 0 to 1
+      const r = Math.round(255 - 179 * intensity); // 255 to 76
+      const g = Math.round(193 - 18 * intensity); // 193 to 175
+      const b = Math.round(7 + 73 * intensity); // 7 to 80
+      return `linear-gradient(135deg, rgb(${r + 20}, ${g - 10}, ${b}), rgb(${r}, ${g}, ${b}))`;
+    } else if (score >= -50) {
+      // Poor: -50 to 0 - gradient from orange to yellow
+      const intensity = (score + 50) / 50; // 0 to 1
+      const r = Math.round(255);
+      const g = Math.round(140 + 53 * intensity); // 140 to 193
+      const b = Math.round(0 + 7 * intensity); // 0 to 7
+      return `linear-gradient(135deg, rgb(${r}, ${g - 10}, ${b}), rgb(${r}, ${g}, ${b}))`;
+    } else {
+      // Very Poor: -100 to -50 - gradient from dark red to orange
+      const intensity = (score + 100) / 50; // 0 to 1
+      const r = Math.round(220 + 35 * intensity); // 220 to 255
+      const g = Math.round(53 + 87 * intensity); // 53 to 140
+      const b = Math.round(53 - 53 * intensity); // 53 to 0
+      return `linear-gradient(135deg, rgb(${r - 20}, ${g - 10}, ${b + 10}), rgb(${r}, ${g}, ${b}))`;
+    }
   }
 
   getTeacherBadgeClass(npsScore: number): string {
