@@ -1,14 +1,17 @@
 """
-Sentiment Analysis Module using NLTK VADER with optional translation.
+Sentiment Analysis Module using a transformer classifier with optional translation.
 """
 from typing import Tuple
 import logging
 import threading
 
-import nltk
 from langdetect import DetectorFactory, LangDetectException, detect
-from nltk.sentiment import SentimentIntensityAnalyzer
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
+from transformers import (
+    AutoModelForSeq2SeqLM,
+    AutoModelForSequenceClassification,
+    AutoTokenizer,
+    pipeline,
+)
 
 from . import config
 
@@ -17,16 +20,16 @@ DetectorFactory.seed = 0
 
 
 class SentimentAnalyzer:
-    """Analyzes sentiment using VADER; can translate to English first."""
+    """Analyzes sentiment using a transformer model; can translate to English first."""
 
     def __init__(self):
         self._logger = logging.getLogger(__name__)
-        if config.NLTK_DATA not in nltk.data.path:
-            nltk.data.path.append(config.NLTK_DATA)
-        self._ensure_resource('sentiment/vader_lexicon')
-        self._analyzer = SentimentIntensityAnalyzer()
         self._translator = None
         self._translator_lock = threading.Lock()
+        self._sentiment = None
+        self._sentiment_lock = threading.Lock()
+
+        self._init_sentiment_model()
 
         if config.TRANSLATE_BEFORE_SENTIMENT:
             self._init_translator()
@@ -44,22 +47,116 @@ class SentimentAnalyzer:
         if self._translator and self._should_translate(text):
             text = self._translate(text)
 
-        scores = self._analyzer.polarity_scores(text)
-        compound = float(scores.get('compound', 0.0))
-        sentiment_score = max(0.0, min(1.0, (compound + 1.0) / 2.0))
-
-        if compound >= 0.05:
-            label = "POSITIVE"
-        elif compound <= -0.05:
-            label = "NEGATIVE"
-        else:
-            label = "NEUTRAL"
+        sentiment_score, label, report = self._score_sentiment(text)
+        if config.SENTIMENT_REPORT_ENABLED:
+            self._logger.info(
+                "Sentiment report | pos=%.4f neu=%.4f neg=%.4f "
+                "positive_score=%.4f label=%s",
+                report["pos_prob"],
+                report["neu_prob"],
+                report["neg_prob"],
+                report["positive_score"],
+                label,
+            )
+        elif self._logger.isEnabledFor(logging.DEBUG):
+            self._logger.debug(
+                "Sentiment report | pos=%.4f neu=%.4f neg=%.4f "
+                "positive_score=%.4f label=%s",
+                report["pos_prob"],
+                report["neu_prob"],
+                report["neg_prob"],
+                report["positive_score"],
+                label,
+            )
 
         return sentiment_score, label
 
     def save_model(self, model_path: str):
-        """No-op for VADER analyzer."""
+        """No-op for the sentiment analyzer."""
         return None
+
+    def _init_sentiment_model(self) -> None:
+        model_id = (config.SENTIMENT_MODEL_ID or '').strip()
+        if not model_id:
+            raise RuntimeError('SENTIMENT_MODEL_ID is not set.')
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(
+                model_id,
+                cache_dir=config.HF_HOME,
+                local_files_only=True,
+                use_fast=True,
+            )
+            model = AutoModelForSequenceClassification.from_pretrained(
+                model_id,
+                cache_dir=config.HF_HOME,
+                local_files_only=True,
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                'Sentiment model unavailable. Run scripts/cache_models.py.'
+            ) from exc
+
+        self._sentiment = pipeline(
+            'sentiment-analysis',
+            model=model,
+            tokenizer=tokenizer,
+            device=-1,
+        )
+        self._logger.info('Sentiment model loaded: %s', model_id)
+
+    def _score_sentiment(self, text: str) -> Tuple[float, str, dict]:
+        with self._sentiment_lock:
+            result = self._sentiment(
+                text, truncation=True, return_all_scores=True)
+        if not result:
+            raise RuntimeError('Sentiment model returned empty result.')
+        scores = result[0] if isinstance(result[0], list) else result
+        label_scores = {}
+        for item in scores:
+            label = (item.get('label') or '').strip()
+            score = float(item.get('score', 0.0))
+            if label:
+                label_scores[label] = score
+
+        label_map = {
+            'LABEL_0': 'negative',
+            'LABEL_1': 'neutral',
+            'LABEL_2': 'positive',
+            'NEGATIVE': 'negative',
+            'NEUTRAL': 'neutral',
+            'POSITIVE': 'positive',
+            'negative': 'negative',
+            'neutral': 'neutral',
+            'positive': 'positive',
+        }
+
+        probs = {'positive': 0.0, 'neutral': 0.0, 'negative': 0.0}
+        for raw_label, score in label_scores.items():
+            normalized = label_map.get(
+                raw_label) or label_map.get(raw_label.upper())
+            if normalized:
+                probs[normalized] = score
+
+        total = probs['positive'] + probs['neutral'] + probs['negative']
+        if total > 0:
+            for key in probs:
+                probs[key] /= total
+
+        positive_score = probs['positive'] + 0.5 * probs['neutral']
+        if probs['positive'] >= probs['neutral'] and probs['positive'] >= probs['negative']:
+            label = "POSITIVE"
+        elif probs['negative'] >= probs['positive'] and probs['negative'] >= probs['neutral']:
+            label = "NEGATIVE"
+        else:
+            label = "NEUTRAL"
+
+        report = {
+            "pos_prob": probs["positive"],
+            "neu_prob": probs["neutral"],
+            "neg_prob": probs["negative"],
+            "positive_score": positive_score,
+        }
+        return positive_score, label, report
 
     def _init_translator(self) -> None:
         model_id = (config.TRANSLATION_MODEL or '').strip()
@@ -109,16 +206,3 @@ class SentimentAnalyzer:
         if not translated:
             raise RuntimeError('Translation returned empty text.')
         return translated
-
-    def _ensure_resource(self, resource: str) -> None:
-        candidates = [resource, f"{resource}.zip"]
-        for candidate in candidates:
-            try:
-                nltk.data.find(candidate)
-                return
-            except LookupError:
-                continue
-        raise RuntimeError(
-            f"Missing NLTK resource '{resource}'. "
-            "Run scripts/cache_models.py and set NLTK_DATA if needed."
-        )

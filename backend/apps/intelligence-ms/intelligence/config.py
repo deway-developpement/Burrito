@@ -7,11 +7,9 @@ BASE_DIR = os.getenv(
 )
 
 HF_HOME = os.getenv('HF_HOME', os.path.join(BASE_DIR, '.cache', 'huggingface'))
-NLTK_DATA = os.getenv('NLTK_DATA', os.path.join(BASE_DIR, '.cache', 'nltk'))
 
 os.environ.setdefault('HF_HOME', HF_HOME)
 os.environ.setdefault('TRANSFORMERS_CACHE', HF_HOME)
-os.environ.setdefault('NLTK_DATA', NLTK_DATA)
 os.environ.setdefault('TRANSFORMERS_OFFLINE', '1')
 os.environ.setdefault('HF_HUB_DISABLE_TELEMETRY', '1')
 
@@ -22,6 +20,13 @@ EMBEDDING_MODEL = os.getenv(
 PARAPHRASE_MODEL = os.getenv(
     'PARAPHRASE_MODEL',
     'google/flan-t5-small',
+)
+SENTIMENT_MODEL_ID = os.getenv(
+    'SENTIMENT_MODEL_ID',
+    'cardiffnlp/twitter-roberta-base-sentiment-latest',
+)
+SENTIMENT_REPORT_ENABLED = (
+    os.getenv('SENTIMENT_REPORT_ENABLED', 'false').lower() == 'true'
 )
 TRANSLATE_BEFORE_SENTIMENT = (
     os.getenv('TRANSLATE_BEFORE_SENTIMENT', 'true').lower() == 'true'
@@ -41,7 +46,10 @@ CLUSTER_MIN_SIZE = int(os.getenv('CLUSTER_MIN_SIZE', '3'))
 CLUSTER_MAX_COUNT = int(os.getenv('CLUSTER_MAX_COUNT', '6'))
 MAX_CLUSTER_EXAMPLES = int(os.getenv('MAX_CLUSTER_EXAMPLES', '8'))
 
-PARAPHRASE_MIN_WORDS = int(os.getenv('PARAPHRASE_MIN_WORDS', '6'))
+PARAPHRASE_MIN_WORDS = int(os.getenv('PARAPHRASE_MIN_WORDS', '4'))
 PARAPHRASE_MAX_WORDS = int(os.getenv('PARAPHRASE_MAX_WORDS', '12'))
 PARAPHRASE_MAX_NEW_TOKENS = int(os.getenv('PARAPHRASE_MAX_NEW_TOKENS', '18'))
-PARAPHRASE_MIN_NEW_TOKENS = int(os.getenv('PARAPHRASE_MIN_NEW_TOKENS', '6'))
+PARAPHRASE_MIN_NEW_TOKENS = int(os.getenv('PARAPHRASE_MIN_NEW_TOKENS', '4'))
+PARAPHRASE_REPORT_ENABLED = (
+    os.getenv('PARAPHRASE_REPORT_ENABLED', 'false').lower() == 'true'
+)

@@ -4,7 +4,7 @@ A Python-based microservice for analyzing survey questions and answers using sen
 
 ## Features
 
-- **Sentiment Analysis**: Uses VADER sentiment, with optional translate-to-English step
+- **Sentiment Analysis**: Uses a transformer sentiment classifier with optional translate-to-English step
 - **Cluster Summaries**: Generates one paraphrased sentence per answer cluster
 - **Statistics**: Provides aggregated sentiment and idea frequency statistics
 - **Database Storage**: Persists analysis results to MongoDB
@@ -15,7 +15,7 @@ A Python-based microservice for analyzing survey questions and answers using sen
 ```
 Main Entry Point (main.py)
     ├── Sentiment Analyzer (sentiment_analyzer.py)
-    │   └── VADER sentiment + optional translation to English
+    │   └── Transformer sentiment classifier + optional translation to English
     ├── Database Manager (database.py)
     │   └── MongoDB for data persistence
     ├── Idea Summarizer (idea_summarizer.py)
@@ -48,7 +48,7 @@ python -m grpc_tools.protoc -I./proto --python_out=./intelligence --grpc_python_
 ```
 
 
-3. Cache models and NLTK data (required for offline runtime):
+3. Cache models (required for offline runtime):
 
 ```bash
 python scripts/cache_models.py
@@ -74,11 +74,14 @@ Edit `.env` file to configure:
 - `PARAPHRASE_MAX_WORDS`: Maximum words in paraphrase (default: 12)
 - `PARAPHRASE_MAX_NEW_TOKENS`: Maximum new tokens for paraphrase generation (default: 18)
 - `PARAPHRASE_MIN_NEW_TOKENS`: Minimum new tokens for paraphrase generation (default: 6)
-- `TRANSLATE_BEFORE_SENTIMENT`: Translate answers to English before VADER (default: false)
+- `SENTIMENT_NEUTRAL_MARGIN`: Neutral band half-width around 0.5 (default: 0.05)
+- `SENTIMENT_REPORT_ENABLED`: Log detailed sentiment report (default: true)
+- `SENTIMENT_MODEL_ID`: Sentiment model ID (default: cardiffnlp/twitter-roberta-base-sentiment-latest)
+- `TRANSLATE_BEFORE_SENTIMENT`: Translate answers to English before sentiment/paraphrasing (default: true)
 - `TRANSLATION_MODEL`: Translation model ID (default: Helsinki-NLP/opus-mt-mul-en)
 - `TRANSLATION_DETECT_LANGUAGE`: Skip translation when text is detected as English (default: true)
 - `HF_HOME`: HuggingFace cache directory (default: ./.cache/huggingface)
-- `NLTK_DATA`: NLTK data directory (default: ./.cache/nltk)
+- `PARAPHRASE_REPORT_ENABLED`: Log paraphrase fallback reasons (default: true)
 
 ## Running the Service
 
@@ -308,7 +311,7 @@ intelligence-ms/
 │   ├── analytics_pb2.py             # Generated proto classes
 │   └── analytics_pb2_grpc.py        # Generated gRPC stubs
 ├── scripts/
-│   └── cache_models.py              # Pre-cache models + NLTK data
+│   └── cache_models.py              # Pre-cache models
 └── README.md                        # This file
 ```
 
@@ -336,7 +339,7 @@ python -m grpc_tools.protoc -I./proto --python_out=./intelligence --grpc_python_
 
 ### Model Cache Missing
 - Run `python scripts/cache_models.py`
-- Ensure `HF_HOME` and `NLTK_DATA` point to the cached directories
+- Ensure `HF_HOME` points to the cached directory
 - If you enable translation, make sure the translation model is cached
 
 ## Future Enhancements

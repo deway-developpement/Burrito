@@ -11,12 +11,16 @@ from collections import Counter
 from typing import Dict, Iterable, List
 
 import numpy as np
+from langdetect import DetectorFactory, LangDetectException, detect
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_distances
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, pipeline
 
 from . import config
+
+
+DetectorFactory.seed = 0
 
 
 class IdeaSummarizer:
@@ -27,7 +31,11 @@ class IdeaSummarizer:
         self._embedding_model = None
         self._paraphraser = None
         self._paraphraser_lock = threading.Lock()
+        self._translator = None
+        self._translator_lock = threading.Lock()
         os.environ.setdefault('TRANSFORMERS_OFFLINE', '1')
+        if config.TRANSLATE_BEFORE_SENTIMENT:
+            self._init_translator()
 
     def summarize_clusters(
         self,
@@ -71,7 +79,8 @@ class IdeaSummarizer:
         for label in sorted(set(labels)):
             indices = np.where(labels == label)[0]
             cluster_count = int(weights[indices].sum())
-            representative = self._representative_sentence(texts, embeddings, weights, indices, label)
+            representative = self._representative_sentence(
+                texts, embeddings, weights, indices, label)
             summary = self._paraphrase_or_fallback(representative)
             summaries.append({'summary': summary, 'count': cluster_count})
 
@@ -142,9 +151,11 @@ class IdeaSummarizer:
             for label in small:
                 if label not in set(labels):
                     continue
-                centroids = self._cluster_centroids(embeddings, weights, labels)
+                centroids = self._cluster_centroids(
+                    embeddings, weights, labels)
                 target = self._nearest_label(centroids, label)
-                labels = np.array([target if value == label else value for value in labels])
+                labels = np.array(
+                    [target if value == label else value for value in labels])
 
     def _cluster_centroids(
         self,
@@ -170,8 +181,10 @@ class IdeaSummarizer:
         source_label: int,
     ) -> int:
         source = centroids[source_label]
-        other_labels = [label for label in centroids.keys() if label != source_label]
-        other_centroids = np.stack([centroids[label] for label in other_labels])
+        other_labels = [label for label in centroids.keys()
+                        if label != source_label]
+        other_centroids = np.stack([centroids[label]
+                                   for label in other_labels])
         distances = cosine_distances([source], other_centroids)[0]
         nearest_index = int(np.argmin(distances))
         return other_labels[nearest_index]
@@ -188,7 +201,8 @@ class IdeaSummarizer:
             return ''
         subset_embeddings = embeddings[indices]
         cluster_weights = weights[indices]
-        centroid = np.average(subset_embeddings, axis=0, weights=cluster_weights)
+        centroid = np.average(subset_embeddings, axis=0,
+                              weights=cluster_weights)
         norm = np.linalg.norm(centroid)
         if norm > 0:
             centroid = centroid / norm
@@ -206,15 +220,20 @@ class IdeaSummarizer:
         cleaned = self._clean_sentence(sentence)
         if not cleaned:
             return ''
-        paraphrased = self._paraphrase_sentence(cleaned)
+        paraphrase_input = cleaned
+        if self._translator and self._should_translate(cleaned):
+            paraphrase_input = self._translate(cleaned)
+        paraphrased = self._paraphrase_sentence(paraphrase_input)
         paraphrased = self._normalize_paraphrase(paraphrased)
-        if self._paraphrase_valid(paraphrased, cleaned):
+        valid, reason = self._paraphrase_check(paraphrased, paraphrase_input)
+        if valid:
             if self._logger.isEnabledFor(logging.DEBUG):
                 self._logger.debug("Cluster paraphrase: %s", paraphrased)
             return paraphrased
         if self._logger.isEnabledFor(logging.DEBUG):
-            self._logger.debug("Cluster paraphrase fallback: %s", cleaned)
-        return cleaned
+            self._logger.debug(
+                "Cluster paraphrase fallback: %s", paraphrase_input)
+        return paraphrase_input
 
     def _paraphrase_sentence(self, sentence: str) -> str:
         paraphraser = self._get_paraphraser()
@@ -247,7 +266,8 @@ class IdeaSummarizer:
         text = text.strip()
         if not text:
             return ''
-        text = re.sub(r"^(paraphrase|summary|assistant)[:\-]\s*", "", text, flags=re.I)
+        text = re.sub(
+            r"^(paraphrase|summary|assistant)[:\-]\s*", "", text, flags=re.I)
         text = re.sub(r"^[\"'\-\s]+", "", text)
         text = re.split(r"(?<=[.!?])\s+", text)[0]
         if text and not text.endswith((".", "!", "?")):
@@ -256,23 +276,22 @@ class IdeaSummarizer:
             text = text[0].upper() + text[1:]
         return text
 
-    def _paraphrase_valid(self, paraphrased: str, original: str) -> bool:
+    def _paraphrase_check(self, paraphrased: str, original: str) -> tuple[bool, str]:
         if not paraphrased:
-            return False
+            return False, "empty"
         word_count = len(re.findall(r"[A-Za-z0-9]+", paraphrased))
-        if (
-            word_count < config.PARAPHRASE_MIN_WORDS
-            or word_count > config.PARAPHRASE_MAX_WORDS
-        ):
-            return False
+        if word_count < config.PARAPHRASE_MIN_WORDS:
+            return False, f"too_short({word_count})"
+        if word_count > config.PARAPHRASE_MAX_WORDS:
+            return False, f"too_long({word_count})"
         if paraphrased.strip().lower() == original.strip().lower():
-            return False
+            return False, "unchanged"
         if re.search(
             r"\bdata\s+structures?\s+is\s+a\s+data\s+structures?\b",
             paraphrased.lower(),
         ):
-            return False
-        return True
+            return False, "bad_pattern"
+        return True, "ok"
 
     def _truncate_text(self, text: str, max_len: int = 80) -> str:
         if len(text) <= max_len:
@@ -326,9 +345,61 @@ class IdeaSummarizer:
                 tokenizer=tokenizer,
                 device=-1,
             )
-            if self._paraphraser.generation_config is not None:
-                self._paraphraser.generation_config.max_length = None
-                self._paraphraser.generation_config.min_length = None
-                self._paraphraser.generation_config.max_new_tokens = None
-                self._paraphraser.generation_config.min_new_tokens = None
+            paraphraser_config = getattr(
+                self._paraphraser, 'generation_config', None)
+            if paraphraser_config is not None:
+                paraphraser_config.max_length = None
+                paraphraser_config.min_length = None
+                paraphraser_config.max_new_tokens = None
+                paraphraser_config.min_new_tokens = None
         return self._paraphraser
+
+    def _init_translator(self) -> None:
+        model_id = (config.TRANSLATION_MODEL or '').strip()
+        if not model_id or model_id.lower() == 'none':
+            raise RuntimeError(
+                'Translation is enabled but TRANSLATION_MODEL is not set.'
+            )
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(
+                model_id,
+                cache_dir=config.HF_HOME,
+                local_files_only=True,
+                use_fast=False,
+            )
+            model = AutoModelForSeq2SeqLM.from_pretrained(
+                model_id,
+                cache_dir=config.HF_HOME,
+                local_files_only=True,
+            )
+        except Exception as exc:
+            raise RuntimeError(
+                'Translation model unavailable. Run scripts/cache_models.py.'
+            ) from exc
+
+        self._translator = pipeline(
+            'translation',
+            model=model,
+            tokenizer=tokenizer,
+            device=-1,
+        )
+        self._logger.info('Translation enabled for paraphrasing.')
+
+    def _should_translate(self, text: str) -> bool:
+        if not config.TRANSLATION_DETECT_LANGUAGE:
+            return True
+        try:
+            language = detect(text)
+        except LangDetectException:
+            return True
+        return language != 'en'
+
+    def _translate(self, text: str) -> str:
+        with self._translator_lock:
+            result = self._translator(text, truncation=True)
+        if not result:
+            raise RuntimeError('Translation returned empty result.')
+        translated = (result[0].get('translation_text') or '').strip()
+        if not translated:
+            raise RuntimeError('Translation returned empty text.')
+        return translated
