@@ -19,7 +19,7 @@ export function getApiBaseUrl(): string {
     return normalizeBaseUrl(process.env['API_BASE_URL'].trim());
   }
 
-  if (typeof globalThis.location !== 'undefined') {
+  if (globalThis.location !== undefined) {
     const hostname = globalThis.location.hostname;
     if (hostname === 'localhost' || hostname === '127.0.0.1') {
       return LOCALHOST_API_BASE_URL;
