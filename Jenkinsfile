@@ -224,6 +224,7 @@ pipeline {
                   set -e
                   echo "Building Service: ${serviceName}"
                   buildctl \
+                    --no-cache \
                     --addr "${env.BUILDKIT_HOST}" \
                     build \
                     --frontend dockerfile.v0 \
@@ -242,6 +243,7 @@ pipeline {
                   set -e
                   echo "Building Service: intelligence-ms"
                   buildctl \
+                    --no-cache \
                     --addr "${env.BUILDKIT_HOST}" \
                     build \
                     --frontend dockerfile.v0 \
@@ -259,6 +261,7 @@ pipeline {
                   set -e
                   echo "Building Service: frontend"
                   buildctl \
+                    --no-cache \
                     --addr "${env.BUILDKIT_HOST}" \
                     build \
                     --frontend dockerfile.v0 \
