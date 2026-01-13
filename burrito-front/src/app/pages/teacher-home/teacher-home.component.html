@@ -78,7 +78,7 @@
             <td class="course-col">{{ eval.courseName }}</td>
             <td class="text-muted">{{ eval.submittedDate | date:'mediumDate' }}</td>
             <td>
-              <span class="mini-rating">★ {{ eval.rating }}/5</span>
+              <span class="mini-rating">★ {{ eval.rating }}/10</span>
             </td>
             <td class="text-right">
               <button class="btn-text" (click)="viewEvaluation(eval.id)">
@@ -121,7 +121,7 @@
                 <span *ngFor="let star of [1,2,3,4,5]" 
                       [class.filled]="star <= selectedEvaluation.rating">★</span>
               </div>
-              <span class="rating-text">{{ selectedEvaluation.rating }}/5</span>
+              <span class="rating-text">{{ selectedEvaluation.rating }}/10</span>
             </div>
           </div>
         }

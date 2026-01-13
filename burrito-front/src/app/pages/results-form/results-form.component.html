@@ -136,7 +136,7 @@
                         {{ teacher.nps.score.toFixed(0) }}
                       </span>
                     </td>
-                    <td>{{ teacher.averageRating.toFixed(1) }}/5</td>
+                    <td>{{ teacher.averageRating.toFixed(1) }}/10</td>
                     <td class="action-cell">
                       <button class="btn-view" (click)="navigateToTeacherResults(teacher.teacherId)">
                         View Results →
@@ -179,7 +179,7 @@
                     <div class="rating-stats">
                       <div class="stat-box">
                         <span class="stat-label">Average</span>
-                        <span class="stat-value">{{ question.rating.avg.toFixed(2) }}/5</span>
+                        <span class="stat-value">{{ question.rating.avg.toFixed(2) }}/10</span>
                       </div>
                     </div>
 
