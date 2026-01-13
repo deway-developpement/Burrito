@@ -65,17 +65,37 @@ pipeline {
                   if git cat-file -e "${commit}^{commit}" 2>/dev/null; then
                     return 0
                   fi
-                  if ! git remote get-url origin >/dev/null 2>&1; then
-                    return 1
+                  local origin_url=""
+                  origin_url=$(git remote get-url origin 2>/dev/null || true)
+                  if [ -z "$origin_url" ] && [ -n "$GIT_URL" ]; then
+                    origin_url="$GIT_URL"
                   fi
-                  for depth in 10 25 50 100 200; do
-                    echo "Fetching additional history (depth ${depth}) to find ${commit}..."
-                    git fetch --deepen="${depth}" origin >/dev/null 2>&1 || true
-                    if git cat-file -e "${commit}^{commit}" 2>/dev/null; then
-                      return 0
-                    fi
-                  done
-                  git fetch origin "${commit}" >/dev/null 2>&1 || true
+                  if [ -z "$origin_url" ] && [ -n "$GIT_URL_1" ]; then
+                    origin_url="$GIT_URL_1"
+                  fi
+                  if [ -n "$origin_url" ]; then
+                    git remote add origin "$origin_url" >/dev/null 2>&1 || git remote set-url origin "$origin_url" >/dev/null 2>&1 || true
+                  fi
+
+                  if [ "$(git rev-parse --is-shallow-repository 2>/dev/null || echo false)" = "true" ]; then
+                    for depth in 10 25 50 100 200; do
+                      echo "Fetching additional history (depth ${depth}) to find ${commit}..."
+                      if [ -n "$origin_url" ]; then
+                        git fetch --deepen="${depth}" origin >/dev/null 2>&1 || git fetch --deepen="${depth}" "$origin_url" >/dev/null 2>&1 || true
+                      else
+                        git fetch --deepen="${depth}" origin >/dev/null 2>&1 || true
+                      fi
+                      if git cat-file -e "${commit}^{commit}" 2>/dev/null; then
+                        return 0
+                      fi
+                    done
+                  fi
+
+                  if [ -n "$origin_url" ]; then
+                    git fetch origin "${commit}" >/dev/null 2>&1 || git fetch "$origin_url" "${commit}" >/dev/null 2>&1 || true
+                  else
+                    git fetch origin "${commit}" >/dev/null 2>&1 || true
+                  fi
                   git cat-file -e "${commit}^{commit}" 2>/dev/null
                 }
                 if [ "$FORCE_BUILD_ALL" = "true" ]; then
