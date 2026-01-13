@@ -19,7 +19,7 @@ export class AddUserModalComponent {
 
   @Input() userType: UserType = 'STUDENT'; 
   
-  @Output() close = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
   addForm: FormGroup;
@@ -36,7 +36,7 @@ export class AddUserModalComponent {
 
   onCancel() {
     this.addForm.reset();
-    this.close.emit();
+    this.closed.emit();
   }
 
   onSubmit() {
@@ -52,7 +52,7 @@ export class AddUserModalComponent {
         this.isSubmitting = false;
         this.addForm.reset();
         this.saved.emit(); 
-        this.close.emit(); 
+        this.closed.emit(); 
       },
       error: (err) => {
         // Fix for NG0100: Defer the state updates

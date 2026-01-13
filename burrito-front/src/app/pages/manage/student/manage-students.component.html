@@ -20,14 +20,14 @@
 
   <app-edit-user-modal
     [user]="selectedUser"
-    (close)="closeEditModal()"
+    (closed)="closeEditModal()"
     (saved)="refreshData()">
   </app-edit-user-modal>
 
   @if (showAddModal) {
     <app-add-user-modal 
       userType="STUDENT"
-      (close)="closeAddModal()" 
+      (closed)="closeAddModal()" 
       (saved)="refreshData()">
     </app-add-user-modal>
   }
@@ -42,7 +42,7 @@
     [showCancel]="alertDialogShowCancel"
     [intent]="alertDialogIntent"
     (confirm)="confirmAlertDialog()"
-    (cancel)="closeAlertDialog()"
+    (cancelClick)="closeAlertDialog()"
   ></app-alert-dialog>
 
 </app-background-div>

@@ -20,13 +20,13 @@ export class AlertDialogComponent {
   @Input() intent: AlertDialogIntent = 'primary';
 
   @Output() confirm = new EventEmitter<void>();
-  @Output() cancel = new EventEmitter<void>();
+  @Output() cancelClick = new EventEmitter<void>();
 
   onConfirm(): void {
     this.confirm.emit();
   }
 
-  onCancel(): void {
-    this.cancel.emit();
+  onCancelClick(): void {
+    this.cancelClick.emit();
   }
 }
