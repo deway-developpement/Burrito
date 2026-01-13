@@ -26,6 +26,7 @@ pipeline {
     // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
     BUILDKIT_HOST = 'tcp://buildkit:1234'
     REGISTRY_HOST = 'registry.burrito.deway.fr'
+    REGISTRY_PUSH_HOST = 'registry.jenkins.svc.cluster.local:5000'
   }
 
   stages {
@@ -86,7 +87,7 @@ pipeline {
                 --local dockerfile=. \
                 --opt filename=Dockerfile \
                 --opt "build-arg:SERVICE_NAME=${svc}" \
-                --output type=image,\\"name=${REGISTRY_HOST}/burrito-${svc}:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-${svc}:latest\\",push=true
+                --output type=image,\\"name=${REGISTRY_PUSH_HOST}/burrito-${svc}:${BUILD_NUMBER},${REGISTRY_PUSH_HOST}/burrito-${svc}:latest\\",push=true,registry.insecure=true
             done
 
             echo "-------------------------------------------------"
@@ -100,7 +101,7 @@ pipeline {
               --local context=apps/intelligence-ms \
               --local dockerfile=apps/intelligence-ms \
               --opt filename=Dockerfile \
-              --output type=image,\\"name=${REGISTRY_HOST}/burrito-intelligence-ms:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-intelligence-ms:latest\\",push=true
+              --output type=image,\\"name=${REGISTRY_PUSH_HOST}/burrito-intelligence-ms:${BUILD_NUMBER},${REGISTRY_PUSH_HOST}/burrito-intelligence-ms:latest\\",push=true,registry.insecure=true
 
             cd ..
 
@@ -115,7 +116,7 @@ pipeline {
               --local context=burrito-front \
               --local dockerfile=burrito-front \
               --opt filename=Dockerfile \
-              --output type=image,\\"name=${REGISTRY_HOST}/burrito-frontend:${BUILD_NUMBER},${REGISTRY_HOST}/burrito-frontend:latest\\",push=true
+              --output type=image,\\"name=${REGISTRY_PUSH_HOST}/burrito-frontend:${BUILD_NUMBER},${REGISTRY_PUSH_HOST}/burrito-frontend:latest\\",push=true,registry.insecure=true
           '''
         }
       }

@@ -304,6 +304,25 @@ resource "kubernetes_service" "buildkitd" {
   }
 }
 
+resource "kubernetes_persistent_volume_claim" "registry" {
+  metadata {
+    name      = "registry-pvc"
+    namespace = kubernetes_namespace.jenkins.metadata[0].name
+  }
+
+  spec {
+    access_modes = ["ReadWriteOnce"]
+
+    resources {
+      requests = {
+        storage = "30Gi"
+      }
+    }
+  }
+
+  wait_until_bound = false
+}
+
 resource "kubernetes_deployment" "registry" {
   metadata {
     name      = "registry"
@@ -334,6 +353,41 @@ resource "kubernetes_deployment" "registry" {
           name  = "registry"
           image = "registry:2"
 
+          resources {
+            requests = {
+              cpu    = "250m"
+              memory = "512Mi"
+            }
+            limits = {
+              cpu    = "1"
+              memory = "1Gi"
+            }
+          }
+
+          readiness_probe {
+            http_get {
+              path = "/v2/"
+              port = 5000
+            }
+
+            initial_delay_seconds = 10
+            period_seconds        = 10
+            timeout_seconds       = 5
+            failure_threshold     = 3
+          }
+
+          liveness_probe {
+            http_get {
+              path = "/v2/"
+              port = 5000
+            }
+
+            initial_delay_seconds = 10
+            period_seconds        = 10
+            timeout_seconds       = 5
+            failure_threshold     = 3
+          }
+
           port {
             container_port = 5000
             name           = "registry"
@@ -348,7 +402,9 @@ resource "kubernetes_deployment" "registry" {
         volume {
           name = "registry-storage"
 
-          empty_dir {}
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim.registry.metadata[0].name
+          }
         }
       }
     }
