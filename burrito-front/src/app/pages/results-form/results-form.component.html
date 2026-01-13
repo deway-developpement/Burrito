@@ -319,7 +319,7 @@
         } @else if (textError()) {
           <div class="modal-error">{{ textError() }}</div>
         } @else if (textResponses().length > 0) {
-          <div class="text-responses">
+          <div class="text-responses" (scroll)="onTextModalScroll($event)">
             @for (resp of textResponses(); track resp.id) {
               <div class="text-response">
                 <div class="tr-meta">
@@ -327,6 +327,13 @@
                   <span class="muted">{{ formatDate(resp.createdAt) }}</span>
                 </div>
                 <p class="tr-text">{{ resp.text }}</p>
+              </div>
+            }
+            
+            @if (textLoadingMore()) {
+              <div class="modal-loading-more">
+                <div class="spinner-small"></div>
+                <span>Loading more...</span>
               </div>
             }
           </div>

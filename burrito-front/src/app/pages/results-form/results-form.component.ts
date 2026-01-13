@@ -145,8 +145,8 @@ const GET_FORM_TITLE = gql`
 `;
 
 const GET_EVALUATIONS = gql`
-  query Evaluations($filter: EvaluationFilter) {
-    evaluations(filter: $filter) {
+  query Evaluations($filter: EvaluationFilter, $paging: CursorPaging) {
+    evaluations(filter: $filter, paging: $paging) {
       edges {
         node {
           id
@@ -159,6 +159,10 @@ const GET_EVALUATIONS = gql`
             text
           }
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
       }
     }
   }
@@ -199,6 +203,11 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   textLoading = signal<boolean>(false);
   textError = signal<string | null>(null);
   currentQuestionId = signal<string | null>(null);
+  
+  // Pagination state for text responses
+  textPageCursor = signal<string | null>(null);
+  textHasNextPage = signal<boolean>(false);
+  textLoadingMore = signal<boolean>(false);
 
   // Time window options for template
   readonly timeWindowOptions: TimeWindow[] = ['all', '30d', '7d', 'custom'];
@@ -369,7 +378,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   ): Promise<TeacherBreakdown[]> {
     try {
       // Fetch all evaluations for this form
-      const evaluations = await this.fetchEvaluationsForForm(window);
+      const { evaluations } = await this.fetchEvaluationsForForm(window);
 
       // Group evaluations by teacher
       const teacherMap = new Map<string, Evaluation[]>();
@@ -408,15 +417,28 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  private fetchEvaluationsForForm(window?: AnalyticsWindow): Promise<Evaluation[]> {
+  private fetchEvaluationsForForm(
+    window?: AnalyticsWindow,
+    after?: string | null
+  ): Promise<{ evaluations: Evaluation[]; pageInfo: { endCursor: string | null; hasNextPage: boolean } }> {
     const filter: any = {
       formId: { eq: this.formId() },
     };
 
+    const paging: any = { first: 100 };
+    if (after) {
+      paging.after = after;
+    }
+
     return firstValueFrom(
-      this.apollo.query<{ evaluations: { edges: Array<{ node: Evaluation }> } }>({
+      this.apollo.query<{ 
+        evaluations: { 
+          edges: Array<{ node: Evaluation }>;
+          pageInfo: { endCursor: string; hasNextPage: boolean };
+        } 
+      }>({
         query: GET_EVALUATIONS,
-        variables: { filter },
+        variables: { filter, paging },
         fetchPolicy: 'network-only'
       })
     ).then((response) => {
@@ -438,9 +460,12 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
           });
         }
         
-        return evaluations;
+        return {
+          evaluations,
+          pageInfo: response.data.evaluations.pageInfo || { endCursor: null, hasNextPage: false }
+        };
       }
-      return [];
+      return { evaluations: [], pageInfo: { endCursor: null, hasNextPage: false } };
     });
   }
 
@@ -595,6 +620,8 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     this.textLoading.set(true);
     this.textError.set(null);
     this.textResponses.set([]);
+    this.textPageCursor.set(null);
+    this.textHasNextPage.set(false);
 
     // Prevent body scroll
     if (isPlatformBrowser(this.platformId)) {
@@ -603,7 +630,10 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
 
     try {
       const window = this.getAnalyticsWindow();
-      const evaluations = await this.fetchEvaluationsForForm(window);
+      const { evaluations, pageInfo } = await this.fetchEvaluationsForForm(window);
+
+      this.textPageCursor.set(pageInfo.endCursor);
+      this.textHasNextPage.set(pageInfo.hasNextPage);
 
       const responses: TextResponse[] = [];
       evaluations.forEach((evaluation) => {
@@ -642,6 +672,68 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     // Restore body scroll
     if (isPlatformBrowser(this.platformId)) {
       document.body.style.overflow = '';
+    }
+  }
+
+  async loadMoreTextResponses(): Promise<void> {
+    if (!this.textHasNextPage() || this.textLoadingMore() || !this.currentQuestionId()) {
+      return;
+    }
+
+    this.textLoadingMore.set(true);
+
+    try {
+      const window = this.getAnalyticsWindow();
+      const { evaluations, pageInfo } = await this.fetchEvaluationsForForm(
+        window,
+        this.textPageCursor()
+      );
+
+      this.textPageCursor.set(pageInfo.endCursor);
+      this.textHasNextPage.set(pageInfo.hasNextPage);
+
+      const questionId = this.currentQuestionId()!;
+      const newResponses: TextResponse[] = [];
+      
+      evaluations.forEach((evaluation) => {
+        evaluation.answers.forEach((answer, idx) => {
+          if (answer.questionId !== questionId) {
+            return;
+          }
+          const text = (answer.text ?? '').trim();
+          if (text.length === 0) {
+            return;
+          }
+          newResponses.push({
+            id: `${evaluation.id}-${answer.questionId}-${idx}`,
+            questionId: answer.questionId,
+            questionLabel: this.getQuestionLabel(answer.questionId),
+            text,
+            createdAt: evaluation.createdAt ?? new Date().toISOString(),
+            teacherId: evaluation.teacherId,
+          });
+        });
+      });
+
+      // Append and re-sort
+      const allResponses = [...this.textResponses(), ...newResponses];
+      allResponses.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      this.textResponses.set(allResponses);
+    } catch (err) {
+      console.error('Failed to load more text responses', err);
+    } finally {
+      this.textLoadingMore.set(false);
+    }
+  }
+
+  onTextModalScroll(event: Event): void {
+    const element = event.target as HTMLElement;
+    const scrollPosition = element.scrollTop + element.clientHeight;
+    const scrollHeight = element.scrollHeight;
+    
+    // Trigger load more when user is 200px from bottom
+    if (scrollHeight - scrollPosition < 200 && this.textHasNextPage() && !this.textLoadingMore()) {
+      this.loadMoreTextResponses();
     }
   }
 
