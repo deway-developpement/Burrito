@@ -780,4 +780,8 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
         return 'All Time';
     }
   }
+
+  navigateToFormResults(formId: string): void {
+    this.router.navigate(['/results/form', formId]);
+  }
 }

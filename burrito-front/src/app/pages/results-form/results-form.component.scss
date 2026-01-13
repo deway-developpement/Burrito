@@ -227,9 +227,9 @@
             color: theme.$text-dark;
           }
 
-          &.promoters { background: rgba(76, 175, 80, 0.12); color: theme.$error-green-dark; }
-          &.passives  { background: rgba(255, 152, 0, 0.12);  color: theme.$warning-dark; }
-          &.detractors{ background: rgba(244, 67, 54, 0.12);  color: theme.$error-red-dark; }
+          &.promoters { background: rgba(76, 175, 80, 0.3); color: theme.$error-green-dark; }
+          &.passives  { background: rgba(255, 152, 0, 0.3);  color: theme.$warning-dark; }
+          &.detractors{ background: rgba(244, 67, 54, 0.3);  color: theme.$error-red-dark; }
         }
       }
     }

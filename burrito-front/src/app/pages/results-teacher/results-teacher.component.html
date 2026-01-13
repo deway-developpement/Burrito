@@ -123,7 +123,7 @@
         <h2 class="section-title">Forms Breakdown</h2>
         
         @for (form of analytics()!.formsBreakdown; track form.formId) {
-          <div class="form-card">
+          <div class="form-card" (click)="navigateToFormResults(form.formId)" style="cursor: pointer;">
             <div class="form-card-header">
               <div class="form-title">
                 <h3>{{ form.title }}</h3>
