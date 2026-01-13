@@ -15,8 +15,8 @@ export function getApiBaseUrl(): string {
     return normalizeBaseUrl(env.API_BASE_URL.trim());
   }
 
-  if (typeof process !== 'undefined' && process?.env?.API_BASE_URL) {
-    return normalizeBaseUrl(process.env.API_BASE_URL.trim());
+  if (typeof process !== 'undefined' && process?.env?.['API_BASE_URL']) {
+    return normalizeBaseUrl(process.env['API_BASE_URL'].trim());
   }
 
   if (typeof window !== 'undefined') {
