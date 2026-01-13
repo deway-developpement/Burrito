@@ -69,7 +69,7 @@ export class GlobalReportsComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private lastCursor: string | null = null;
   private loadMoreObserver?: IntersectionObserver;
-  private localeId = inject(LOCALE_ID);
+  private readonly localeId = inject(LOCALE_ID);
 
   @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLDivElement>;
 

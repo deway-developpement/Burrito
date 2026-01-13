@@ -16,7 +16,8 @@ const defaultApiBaseUrl =
   process.env['NODE_ENV'] === 'production'
     ? 'https://api.burrito.deway.fr'
     : 'http://localhost:3000';
-const apiBaseUrl = (process.env['API_BASE_URL'] || defaultApiBaseUrl).replace(/\/+$/, '');
+const rawApiBaseUrl = process.env['API_BASE_URL'] || defaultApiBaseUrl;
+const apiBaseUrl = rawApiBaseUrl.endsWith('/') ? rawApiBaseUrl.slice(0, -1) : rawApiBaseUrl;
 const supportedLocales = ['fr', 'de', 'es'];
 
 (globalThis as { __env?: { API_BASE_URL?: string } }).__env = {

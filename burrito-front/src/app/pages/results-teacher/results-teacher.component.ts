@@ -260,7 +260,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly apollo: Apollo,
     private readonly authService: AuthService,
-    @Inject(LOCALE_ID) private localeId: string,
+    @Inject(LOCALE_ID) private readonly localeId: string,
   ) {}
 
 

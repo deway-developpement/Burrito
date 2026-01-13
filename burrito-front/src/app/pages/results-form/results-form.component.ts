@@ -224,7 +224,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     private readonly apollo: Apollo,
     private readonly authService: AuthService,
     @Inject(PLATFORM_ID) private readonly platformId: Object,
-    @Inject(LOCALE_ID) private localeId: string,
+    @Inject(LOCALE_ID) private readonly localeId: string,
   ) {}
 
   ngOnInit(): void {

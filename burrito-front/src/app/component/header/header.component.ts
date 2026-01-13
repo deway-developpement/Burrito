@@ -17,9 +17,9 @@ export class HeaderComponent {
   readonly userService = inject(UserService);
   readonly authService = inject(AuthService);
   readonly router = inject(Router);
-  private document = inject(DOCUMENT);
-  private platformId = inject(PLATFORM_ID);
-  private localeId = inject(LOCALE_ID);
+  private readonly document = inject(DOCUMENT);
+  private readonly platformId = inject(PLATFORM_ID);
+  private readonly localeId = inject(LOCALE_ID);
 
   // UI state for resend action
   isResending = signal(false);
