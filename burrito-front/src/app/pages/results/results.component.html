@@ -3,12 +3,12 @@
 <div class="results-container">
   <div class="nav-bar">
     <app-go-back></app-go-back>
-    <h1>Evaluation Results</h1>
+    <h1 i18n="@@results.title">Evaluation Results</h1>
   </div>
 
   @if (loading()) {
     <div class="card notice">
-      <p>Loading evaluation results…</p>
+      <p i18n="@@results.loading">Loading evaluation results...</p>
     </div>
   }
 
@@ -22,26 +22,38 @@
     <div class="card summary">
       <div class="summary-header">
         <div>
-          <p class="eyebrow">Form</p>
-          <h2>{{ form()?.title || 'Evaluation' }}</h2>
-          <p class="muted">{{ form()?.description || 'Form details unavailable.' }}</p>
+          <p class="eyebrow" i18n="@@results.formLabel">Form</p>
+          <h2>
+            @if (form()?.title) {
+              {{ form()?.title }}
+            } @else {
+              <span i18n="@@results.fallbackTitle">Evaluation</span>
+            }
+          </h2>
+          <p class="muted">
+            @if (form()?.description) {
+              {{ form()?.description }}
+            } @else {
+              <span i18n="@@results.noDescription">Form details unavailable.</span>
+            }
+          </p>
         </div>
         <div class="meta">
-          <p class="eyebrow">Submitted on</p>
+          <p class="eyebrow" i18n="@@results.submittedOn">Submitted on</p>
           <p>{{ evaluation()!.createdAt | date: 'medium' }}</p>
         </div>
       </div>
 
       @if (formLoading()) {
-        <p class="muted">Loading form details…</p>
+        <p class="muted" i18n="@@results.loadingForm">Loading form details...</p>
       }
     </div>
 
     <div class="card answers">
       <div class="section-header">
-        <h3>Answers</h3>
-        <p class="muted">
-          Showing {{ evaluation()!.answers.length || 0 }} answer{{ evaluation()!.answers.length === 1 ? '' : 's' }}
+        <h3 i18n="@@results.answersTitle">Answers</h3>
+        <p class="muted" i18n="@@results.answersCount">
+          {evaluation()!.answers.length, plural, =0 {Showing 0 answers} =1 {Showing 1 answer} other {Showing # answers}}
         </p>
       </div>
 
@@ -52,9 +64,9 @@
               <p class="question">{{ questionLabel(answer.questionId) }}</p>
               <p class="answer">
                 @if (questionType(answer.questionId) === 'RATING') {
-                  <span class="pill">Rating</span>
+                  <span class="pill" i18n="@@results.ratingPill">Rating</span>
                 } @else {
-                  <span class="pill neutral">Response</span>
+                  <span class="pill neutral" i18n="@@results.responsePill">Response</span>
                 }
                 {{ displayAnswer(answer) }}
               </p>
@@ -62,8 +74,9 @@
           }
         </div>
       } @else {
-        <p class="muted">No answers recorded.</p>
+        <p class="muted" i18n="@@results.noAnswers">No answers recorded.</p>
       }
     </div>
   }
 </div>
+

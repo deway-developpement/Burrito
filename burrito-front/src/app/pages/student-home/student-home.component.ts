@@ -55,19 +55,24 @@ export class StudentHomeComponent implements OnInit {
           this.cdr.detectChanges();
         }, 5000);
       }
-    });    forkJoin({
+    });
+    forkJoin({
       forms: this.evaluationService.getActiveFormsForStudent(),
-      evaluations: this.evaluationService.getStudentEvaluations(),
+      evaluations: this.evaluationService.getEvaluationsList(),
     }).subscribe({
       next: ({ forms, evaluations }) => {
         console.log('1. API Retourne :', forms);
 
-        const submittedByForm = new Map(
-          evaluations.map((evaluation) => [
-            evaluation.formId,
-            evaluation.createdAt,
-          ]),
-        );
+        const submittedByForm = new Map<string, string>();
+        evaluations.forEach((evaluation) => {
+          if (!evaluation.formId || !evaluation.createdAt) {
+            return;
+          }
+          const existing = submittedByForm.get(evaluation.formId);
+          if (!existing || new Date(evaluation.createdAt) > new Date(existing)) {
+            submittedByForm.set(evaluation.formId, evaluation.createdAt);
+          }
+        });
 
         // Separate into pending and completed
         const pending = forms.filter((form) => !form.userResponded);
@@ -76,7 +81,8 @@ export class StudentHomeComponent implements OnInit {
         this.pendingEvaluations = pending.map((form) => ({
           id: form.id,
           courseName: form.title,
-          teacherName: form.teacher?.fullName || 'Enseignant non assigne',
+          teacherName:
+            form.teacher?.fullName || $localize`:@@studentHome.unassignedTeacher:Unassigned teacher`,
           deadline: form.endDate ? new Date(form.endDate) : undefined,
           status: 'Pending',
         }));
@@ -86,7 +92,8 @@ export class StudentHomeComponent implements OnInit {
           return {
             id: form.id,
             courseName: form.title,
-            teacherName: form.teacher?.fullName || 'Enseignant non assigne',
+            teacherName:
+              form.teacher?.fullName || $localize`:@@studentHome.unassignedTeacher:Unassigned teacher`,
             submittedDate: submittedAt ? new Date(submittedAt) : undefined,
             status: 'Completed',
           };

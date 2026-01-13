@@ -48,7 +48,11 @@ export class AddUserModalComponent {
 
     this.userService.createUser(payload, this.userType).subscribe({
       next: (res) => {
-        this.toast.show(`${this.userType} created successfully!`, 'success');
+        const userLabel = this.getUserTypeLabel(this.userType);
+        this.toast.show(
+          $localize`:@@addUser.success:${userLabel} created successfully!`,
+          'success',
+        );
         this.isSubmitting = false;
         this.addForm.reset();
         this.saved.emit(); 
@@ -60,7 +64,8 @@ export class AddUserModalComponent {
           this.isSubmitting = false;
 
           // Extract message
-          let friendlyMessage = 'An unexpected error occurred.';
+          let friendlyMessage =
+            $localize`:@@addUser.unexpectedError:An unexpected error occurred.`;
           if (err.graphQLErrors && err.graphQLErrors.length > 0) {
             friendlyMessage = err.graphQLErrors[0].message;
           } else if (err.message) {
@@ -75,5 +80,16 @@ export class AddUserModalComponent {
         console.error('Creation failed:', err);
       }
     });
+  }
+
+  private getUserTypeLabel(type: UserType): string {
+    switch (type) {
+      case 'TEACHER':
+        return $localize`:@@addUser.teacherLabel:Teacher`;
+      case 'ADMIN':
+        return $localize`:@@addUser.adminLabel:Admin`;
+      default:
+        return $localize`:@@addUser.studentLabel:Student`;
+    }
   }
 }

@@ -5,13 +5,19 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 
 const browserDistFolder = join(import.meta.dirname, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
-const apiBaseUrl = (process.env['API_BASE_URL'] || 'https://api.burrito.deway.fr').replace(/\/+$/, '');
+const defaultApiBaseUrl =
+  process.env['NODE_ENV'] === 'production'
+    ? 'https://api.burrito.deway.fr'
+    : 'http://localhost:3000';
+const apiBaseUrl = (process.env['API_BASE_URL'] || defaultApiBaseUrl).replace(/\/+$/, '');
+const supportedLocales = ['fr', 'de', 'es'];
 
 (globalThis as { __env?: { API_BASE_URL?: string } }).__env = {
   ...(globalThis as { __env?: { API_BASE_URL?: string } }).__env,
@@ -38,6 +44,28 @@ app.get('/env.js', (_req, res) => {
 
 app.get('/health', (_req, res) => {
   res.status(200).send('ok');
+});
+
+supportedLocales.forEach((locale) => {
+  const localeDistFolder = join(browserDistFolder, locale);
+  const localeIndexPath = join(localeDistFolder, 'index.html');
+  const localeRoute = new RegExp(`^/${locale}(?:/.*)?$`);
+
+  app.use(
+    `/${locale}`,
+    express.static(localeDistFolder, {
+      maxAge: '1y',
+      index: false,
+      redirect: false,
+    }),
+  );
+
+  app.get(localeRoute, (_req, res, next) => {
+    if (!existsSync(localeIndexPath)) {
+      return next();
+    }
+    return res.sendFile(localeIndexPath);
+  });
 });
 
 /**

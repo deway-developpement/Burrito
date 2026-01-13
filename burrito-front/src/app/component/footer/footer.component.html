@@ -2,21 +2,23 @@
   <div class="footer__inner">
 
     <div class="footer__brand">
-      <span class="footer__name">Made by</span>
+      <span class="footer__name" i18n="@@footer.madeBy">Made by</span>
       <span class="footer__logo">🌯</span>
-      <span class="footer__name">for students</span>
+      <span class="footer__name" i18n="@@footer.forStudents">for students</span>
     </div>
 
     <nav class="footer__links">
-      <a routerLink="/legal/privacy" class="footer__link">Privacy Policy</a>
-      <a routerLink="/legal/terms" class="footer__link">Terms of Service</a>
-      <a routerLink="/legal/mentions" class="footer__link">Legal Mentions</a>
-      <a routerLink="/legal/cookies" class="footer__link">Cookies</a>
-      <a routerLink="/contact" class="footer__link">Contact</a>
+      <a routerLink="/legal/privacy" class="footer__link" i18n="@@footer.privacy">Privacy Policy</a>
+      <a routerLink="/legal/terms" class="footer__link" i18n="@@footer.terms">Terms of Service</a>
+      <a routerLink="/legal/mentions" class="footer__link" i18n="@@footer.legal">Legal Mentions</a>
+      <a routerLink="/legal/cookies" class="footer__link" i18n="@@footer.cookies">Cookies</a>
+      <a routerLink="/contact" class="footer__link" i18n="@@footer.contact">Contact</a>
     </nav>
 
     <div class="footer__copy">
-      © {{ currentYear }} Burrito — All rights reserved.
+      <span i18n="@@footer.copyright">(c) {{ currentYear }} Burrito - All rights reserved.</span>
     </div>
   </div>
 </footer>
+
+

@@ -70,7 +70,7 @@ export class TeacherHomeComponent implements OnInit {
       this.feedbackModalOpen.set(true);
       this.feedbackLoading.set(false);
     } else {
-      this.feedbackError.set('Evaluation not found');
+      this.feedbackError.set($localize`:@@teacherHome.notFound:Evaluation not found`);
       this.feedbackLoading.set(false);
     }
   }

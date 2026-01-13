@@ -272,10 +272,10 @@
 }
 
 .card-actions {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
   gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: space-between;
   width: 100%;
 }
 
@@ -284,19 +284,21 @@
 .card-actions__right {
   display: flex;
   gap: 0.75rem;
-  flex: 1;
 }
 
 .card-actions__left {
   justify-content: flex-start;
+  justify-self: start;
 }
 
 .card-actions__middle {
   justify-content: center;
+  justify-self: center;
 }
 
 .card-actions__right {
   justify-content: flex-end;
+  justify-self: end;
 }
 
 .loading-container,
@@ -338,5 +340,17 @@
   .card-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .card-actions {
+    grid-template-columns: 1fr;
+    justify-items: stretch;
+  }
+
+  .card-actions__left,
+  .card-actions__middle,
+  .card-actions__right {
+    justify-content: center;
+    justify-self: stretch;
   }
 }

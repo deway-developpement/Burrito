@@ -5,10 +5,24 @@
   </div>
 
   <div class="home__actions">
-    
+    <div class="home__locale">
+      <select
+        class="home__locale-select"
+        [value]="activeLocale"
+        (change)="onLocaleChange($any($event.target).value)"
+        i18n-aria-label="@@header.languageSelector"
+        aria-label="Language"
+      >
+        <option value="en" [selected]="activeLocale === 'en'">EN</option>
+        <option value="fr" [selected]="activeLocale === 'fr'">FR</option>
+        <option value="de" [selected]="activeLocale === 'de'">DE</option>
+        <option value="es" [selected]="activeLocale === 'es'">ES</option>
+      </select>
+    </div>
+
     @if (userService.currentUser(); as user) {
       
-      <span class="home__welcome">
+      <span class="home__welcome" i18n="@@header.welcome">
         Welcome, <strong>{{ user.fullName }}</strong>
       </span>
 
@@ -17,7 +31,7 @@
         (click)="logout()"
         (keydown.enter)="logout()"
       >
-        Logout
+        <span i18n="@@header.logout">Logout</span>
       </app-button>
 
     } @else {
@@ -26,7 +40,7 @@
         variant="outline"
         [routerLink]="'/sign-in'"
       >
-        Sign in
+        <span i18n="@@header.signIn">Sign in</span>
       </app-button>
     }
 
@@ -35,7 +49,7 @@
 @if (userService.currentUser(); as user) {
   @if (!user.emailVerified && !bannerDismissed()) {
     <div class="verify-banner" role="alert">
-      <span>Please verify your email to access all features.</span>
+      <span i18n="@@header.verifyEmail">Please verify your email to access all features.</span>
       <app-button
         variant="primary"
         size="small"
@@ -43,7 +57,11 @@
         (click)="resendVerification()"
         (keydown.enter)="resendVerification()"
       >
-        {{ isResending() ? 'Sending…' : 'Resend verification email' }}
+        @if (isResending()) {
+          <span i18n="@@header.sending">Sending...</span>
+        } @else {
+          <span i18n="@@header.resendVerificationButton">Resend verification email</span>
+        }
       </app-button>
       <button class="verify-banner__close" (click)="dismissBanner()" aria-label="Dismiss banner">
         ✕

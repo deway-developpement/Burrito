@@ -5,9 +5,11 @@ import {
   OnDestroy,
   OnInit,
   ViewChild,
+  inject,
   signal,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate as formatCommonDate } from '@angular/common';
+import { LOCALE_ID } from '@angular/core';
 import { Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
@@ -67,6 +69,7 @@ export class GlobalReportsComponent implements OnInit, AfterViewInit, OnDestroy 
 
   private lastCursor: string | null = null;
   private loadMoreObserver?: IntersectionObserver;
+  private localeId = inject(LOCALE_ID);
 
   @ViewChild('loadMoreTrigger') loadMoreTrigger?: ElementRef<HTMLDivElement>;
 
@@ -173,15 +176,18 @@ export class GlobalReportsComponent implements OnInit, AfterViewInit, OnDestroy 
 
   formatDate(date: Date | string): string {
     const d = new Date(date);
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatCommonDate(d, 'MMM d, y', this.localeId);
   }
 
   getStatusBadge(status: FormStatus): string {
-    return status;
+    switch (status) {
+      case 'PUBLISHED':
+        return $localize`:@@globalReports.statusPublished:PUBLISHED`;
+      case 'CLOSED':
+        return $localize`:@@globalReports.statusClosed:CLOSED`;
+      default:
+        return $localize`:@@globalReports.statusDraft:DRAFT`;
+    }
   }
 
   getStatusClass(status: FormStatus): string {

@@ -66,7 +66,11 @@ export class EditUserModalComponent implements OnChanges, OnInit {
         this.allGroups = groups;
         this.cdr.detectChanges();
       },
-      error: () => this.toast.show('Failed to load available groups.', 'error')
+      error: () =>
+        this.toast.show(
+          $localize`:@@editUser.loadGroupsError:Failed to load available groups.`,
+          'error',
+        )
     });
   }
 
@@ -101,7 +105,10 @@ export class EditUserModalComponent implements OnChanges, OnInit {
     const trimmedName = name?.trim();
 
     if (!trimmedName || trimmedName.length < 2) {
-      this.toast.show('Group name must be at least 2 characters long.', 'error');
+      this.toast.show(
+        $localize`:@@editUser.groupNameTooShort:Group name must be at least 2 characters long.`,
+        'error',
+      );
       return;
     }
 
@@ -117,12 +124,18 @@ export class EditUserModalComponent implements OnChanges, OnInit {
         this.isCreatingGroup = false; 
         this.cdr.detectChanges();
         
-        this.toast.show(`Group "${newGroup.name}" created.`, 'success');
+        this.toast.show(
+          $localize`:@@editUser.groupCreated:Group "${newGroup.name}" created.`,
+          'success',
+        );
       },
       error: (err) => {
         this.isCreatingGroupLoading = false;
         this.cdr.detectChanges();
-        this.toast.show('Could not create group. It might already exist.', 'error');
+        this.toast.show(
+          $localize`:@@editUser.groupCreateError:Could not create group. It might already exist.`,
+          'error',
+        );
       }
     });
   }
@@ -172,7 +185,10 @@ async onSubmit() {
           await firstValueFrom(this.groupService.removeUserFromGroup(groupId, this.user!.id));
         }
 
-        this.toast.show('User profile and groups updated.', 'success');
+        this.toast.show(
+          $localize`:@@editUser.updateSuccess:User profile and groups updated.`,
+          'success',
+        );
         
         this.isSubmitting = false;
         this.cdr.detectChanges();
@@ -181,7 +197,10 @@ async onSubmit() {
         this.closed.emit();
       } catch (err) {
         console.error('Group sync error:', err);
-        this.toast.show('Profile saved, but there was an error updating groups.', 'error');
+        this.toast.show(
+          $localize`:@@editUser.groupsUpdateError:Profile saved, but there was an error updating groups.`,
+          'error',
+        );
         this.isSubmitting = false;
         this.cdr.detectChanges();
       }
@@ -189,7 +208,10 @@ async onSubmit() {
     error: (err) => {
       this.isSubmitting = false;
       this.cdr.detectChanges();
-      this.toast.show('Failed to update user profile.', 'error');
+      this.toast.show(
+        $localize`:@@editUser.updateError:Failed to update user profile.`,
+        'error',
+      );
     }
   });
 }

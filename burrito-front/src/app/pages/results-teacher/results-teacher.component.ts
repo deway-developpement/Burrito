@@ -5,8 +5,10 @@ import {
   OnInit,
   ViewChild,
   signal,
+  LOCALE_ID,
+  Inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate as formatCommonDate } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { Subject, firstValueFrom } from 'rxjs';
@@ -222,6 +224,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   timeWindow = signal<TimeWindow>('all');
   customFromDate = signal<Date | null>(null);
   customToDate = signal<Date | null>(null);
+  isTeacherView = signal<boolean>(false);
 
   analytics = signal<TeacherAnalyticsSnapshot | null>(null);
   remarks = signal<EvaluationRemark[]>([]);
@@ -256,8 +259,10 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly apollo: Apollo,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    @Inject(LOCALE_ID) private localeId: string,
   ) {}
+
 
   ngOnInit(): void {
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
@@ -266,6 +271,15 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       this.loadTeacherAnalytics();
       this.loadRemarks();
     });
+
+    const user = this.authService.getCurrentUser();
+
+    // If user is a teacher (not admin), they're viewing their own results
+    if (user && user.userType !== 'ADMIN') {
+      this.isTeacherView.set(true);
+    } else {
+      this.isTeacherView.set(false);
+    }
   }
 
   ngOnDestroy(): void {
@@ -348,7 +362,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       if (!forms || forms.length === 0) {
         this.analytics.set({
           teacherId: this.teacherId(),
-          teacherName: 'Unknown',
+          teacherName: $localize`:@@resultsTeacher.unknown:Unknown`,
           generatedAt: new Date(),
           staleAt: new Date(),
           totalResponsesAcrossAllForms: 0,
@@ -373,7 +387,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
         // Still show the forms with empty analytics
         this.analytics.set({
           teacherId: this.teacherId(),
-          teacherName: 'Teacher',
+          teacherName: $localize`:@@resultsTeacher.teacherFallback:Teacher`,
           generatedAt: new Date(),
           staleAt: new Date(),
           totalResponsesAcrossAllForms: 0,
@@ -387,7 +401,9 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
             averageRating: 0
           })),
         });
-        this.error.set('Analytics service unavailable - showing forms without data');
+        this.error.set(
+          $localize`:@@resultsTeacher.analyticsUnavailable:Analytics service unavailable - showing forms without data`,
+        );
         return;
       }
 
@@ -396,38 +412,63 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       this.analytics.set(aggregated);
       this.error.set(null);
     } catch (err) {
-      this.error.set('Failed to load teacher analytics');
+      this.error.set(
+        $localize`:@@resultsTeacher.loadError:Failed to load teacher analytics`,
+      );
       console.error('Analytics fetch error:', err);
     }
   }
 
-  private fetchFormsForTeacher(): Promise<Form[]> {
+private fetchFormsForTeacher(): Promise<Form[]> {
     return firstValueFrom(
       this.apollo.query<{
-        evaluations: { edges: { node: { formId: string } }[] };
-        forms: { edges: { node: Form }[] };
+        user: {
+          groups: {
+            forms: Form[]
+          }[]
+        }
       }>({
-        query: GET_FORMS_WITH_EVALUATIONS,
+        query: gql`
+          query GetTeacherForms($teacherId: ID!) {
+            user(id: $teacherId) {
+              id
+              groups {
+                id
+                forms {
+                  id
+                  title
+                  status
+                  description
+                  # Dates removed to prevent DateTime serialization crash
+                }
+              }
+            }
+          }
+        `,
         variables: { teacherId: this.teacherId() },
         fetchPolicy: 'network-only'
       })
     ).then((response) => {
-      if (!response.data?.forms?.edges || !response.data?.evaluations?.edges) {
-        return [];
-      }
+      const groups = response.data?.user?.groups || [];
+      
+      // Flatten forms from all groups
+      const allForms = groups.flatMap(group => group.forms);
 
-      // Get unique form IDs from evaluations for this teacher
-      const teacherFormIds = new Set(
-        response.data.evaluations.edges.map(edge => edge.node.formId)
-      );
+      // Deduplicate by ID
+      const uniqueFormsMap = new Map<string, Form>();
+      allForms.forEach(form => {
+        uniqueFormsMap.set(form.id, form);
+      });
 
-      // Filter forms to only those the teacher has evaluations for
-      return response.data.forms.edges
-        .map(edge => edge.node)
-        .filter(form => teacherFormIds.has(form.id));
+      const result = Array.from(uniqueFormsMap.values());
+      
+      return result;
+    })
+    .catch(err => {
+      console.error('Fetch failed even without dates:', err);
+      return [];
     });
   }
-
   private fetchFormAnalytics(
     formId: string,
     forceSync: boolean
@@ -498,7 +539,7 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
       totalRatingCount > 0 ? totalRatingSum / totalRatingCount : 0;
 
     // Fetch teacher name
-    let teacherName = 'Unknown Teacher';
+    let teacherName = $localize`:@@resultsTeacher.unknownTeacher:Unknown Teacher`;
     try {
       const userResponse = await firstValueFrom(
         this.apollo.query<{ user: { id: string; fullName: string } | null }>({
@@ -752,23 +793,19 @@ export class ResultsTeacherComponent implements OnInit, OnDestroy {
   }
 
   formatDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
+    return formatCommonDate(date, 'MMM d, y', this.localeId);
   }
 
   getTimeWindowLabel(window: TimeWindow): string {
     switch (window) {
       case '30d':
-        return 'Last 30 days';
+        return $localize`:@@resultsTeacher.last30Days:Last 30 days`;
       case '7d':
-        return 'Last 7 days';
+        return $localize`:@@resultsTeacher.last7Days:Last 7 days`;
       case 'custom':
-        return 'Custom Range';
+        return $localize`:@@resultsTeacher.customRange:Custom Range`;
       default:
-        return 'All Time';
+        return $localize`:@@resultsTeacher.allTime:All Time`;
     }
   }
 

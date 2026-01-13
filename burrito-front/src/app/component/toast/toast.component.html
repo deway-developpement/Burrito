@@ -10,6 +10,6 @@
       <span class="message">{{ toastService.message() }}</span>
     </div>
     
-    <button class="close-btn" (click)="toastService.close()">×</button>
+    <button class="close-btn" (click)="toastService.close()" i18n-aria-label="@@toast.close" aria-label="Close notification">×</button>
   </div>
 }

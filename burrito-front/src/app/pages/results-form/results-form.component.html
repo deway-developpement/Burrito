@@ -4,14 +4,14 @@
   <!-- Navigation Bar -->
   <div class="nav-bar">
     <app-go-back></app-go-back>
-    <h1 class="page-title">Form Results</h1>
+    <h1 class="page-title" i18n="@@resultsForm.title">Form Results</h1>
   </div>
 
   <!-- Loading State -->
   @if (loading()) {
     <div class="loading-state">
       <div class="spinner"></div>
-      <p>Loading analytics...</p>
+      <p i18n="@@resultsForm.loading">Loading analytics...</p>
     </div>
   }
 
@@ -20,7 +20,7 @@
     <div class="error-banner">
       <span class="error-icon">⚠️</span>
       <span>{{ error() }}</span>
-      <button class="btn-retry" (click)="onRefreshAnalytics()">Retry</button>
+      <button class="btn-retry" (click)="onRefreshAnalytics()"><span i18n="@@resultsForm.retry">Retry</span></button>
     </div>
   }
 
@@ -50,7 +50,7 @@
         @if (timeWindow() === 'custom') {
           <div class="custom-date-picker">
             <div class="date-input-group">
-              <label for="from-date">From</label>
+              <label for="from-date" i18n="@@resultsForm.fromLabel">From</label>
               <input
                 id="from-date"
                 type="date"
@@ -60,7 +60,7 @@
               />
             </div>
             <div class="date-input-group">
-              <label for="to-date">To</label>
+              <label for="to-date" i18n="@@resultsForm.toLabel">To</label>
               <input
                 id="to-date"
                 type="date"
@@ -76,19 +76,20 @@
       <!-- Response Summary (Hero Section) -->
       <div class="response-summary">
         <div class="summary-stats">
+
           <div class="stat satisfaction-breakdown-stat">
-            <div class="stat-label">Satisfaction Breakdown</div>
+            <div class="stat-label" i18n="@@resultsForm.satisfactionBreakdown">Satisfaction Breakdown</div>
             <div class="satisfaction-breakdown">
               <div class="breakdown-item promoters">
-                <span class="breakdown-label">Promoters</span>
+                <span class="breakdown-label" i18n="@@resultsForm.promoters">Promoters</span>
                 <span class="breakdown-value">{{ analytics()!.nps.promotersPct.toFixed(1) }}% ({{ analytics()!.nps.promotersCount }})</span>
               </div>
               <div class="breakdown-item passives">
-                <span class="breakdown-label">Passives</span>
+                <span class="breakdown-label" i18n="@@resultsForm.passives">Passives</span>
                 <span class="breakdown-value">{{ analytics()!.nps.passivesPct.toFixed(1) }}% ({{ analytics()!.nps.passivesCount }})</span>
               </div>
               <div class="breakdown-item detractors">
-                <span class="breakdown-label">Detractors</span>
+                <span class="breakdown-label" i18n="@@resultsForm.detractors">Detractors</span>
                 <span class="breakdown-value">{{ analytics()!.nps.detractorsPct.toFixed(1) }}% ({{ analytics()!.nps.detractorsCount }})</span>
               </div>
             </div>
@@ -111,10 +112,9 @@
 
           <div class="stat">
             <div class="stat-value">{{ analytics()!.totalResponses }}</div>
-            <div class="stat-label">Total Responses</div>
+            <div class="stat-label" i18n="@@resultsForm.totalResponses">Total Responses</div>
           </div>
-
-        </div>
+          </div>
       </div>
 
       
@@ -122,16 +122,16 @@
       <!-- Teachers Breakdown (Admin Only) -->
       @if (isAdmin()) {
         <div class="teachers-breakdown">
-          <h2 class="section-title">Teachers Breakdown</h2>
+          <h2 class="section-title" i18n="@@resultsForm.teachersBreakdown">Teachers Breakdown</h2>
           <div class="teachers-table-container">
             <table class="teachers-table">
               <thead>
                 <tr>
-                  <th>Teacher Name</th>
-                  <th>Responses</th>
-                  <th>NPS</th>
-                  <th>Avg Rating</th>
-                  <th>Action</th>
+                  <th i18n="@@resultsForm.teacherName">Teacher Name</th>
+                  <th i18n="@@resultsForm.responses">Responses</th>
+                  <th i18n="@@resultsForm.nps">NPS</th>
+                  <th i18n="@@resultsForm.avgRating">Avg Rating</th>
+                  <th i18n="@@resultsForm.action">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,7 +147,7 @@
                     <td>{{ teacher.averageRating.toFixed(1) }}/10</td>
                     <td class="action-cell">
                       <button class="btn-view" (click)="navigateToTeacherResults(teacher.teacherId)" (keydown.enter)="navigateToTeacherResults(teacher.teacherId)">
-                        View Results →
+                        <span i18n="@@resultsForm.viewResults">View Results</span> →
                       </button>
                     </td>
                   </tr>
@@ -160,7 +160,7 @@
 
       <!-- Per-Question Breakdown -->
       <div class="questions-breakdown">
-        <h2 class="section-title">Per-Question Breakdown</h2>
+        <h2 class="section-title" i18n="@@resultsForm.perQuestion">Per-Question Breakdown</h2>
 
         @for (question of analytics()!.questions; track question.questionId) {
           <div class="question-card">
@@ -178,7 +178,7 @@
                 <h3>{{ question.label }}</h3>
               </div>
               <div class="question-meta">
-                <span class="answered-count">{{ question.answeredCount }} answered</span>
+                <span class="answered-count" i18n="@@resultsForm.answeredCount">{{ question.answeredCount }} answered</span>
               </div>
             </button>
 
@@ -189,13 +189,13 @@
                   <div class="rating-breakdown">
                     <div class="rating-stats">
                       <div class="stat-box">
-                        <span class="stat-label">Average</span>
+                        <span class="stat-label" i18n="@@resultsForm.average">Average</span>
                         <span class="stat-value">{{ question.rating.avg.toFixed(2) }}/10</span>
                       </div>
                     </div>
 
                     <div class="rating-distribution">
-                      <h4>Distribution</h4>
+                      <h4 i18n="@@resultsForm.distribution">Distribution</h4>
                       @for (bucket of question.rating.distribution; track bucket.rating) {
                         <div class="distribution-item">
                           <span class="rating-label">{{ bucket.rating }} ⭐</span>
@@ -219,7 +219,7 @@
                     @if (question.text.analysisStatus === 'DISABLED') {
                       <div class="analysis-unavailable">
                         <span class="icon">⚠️</span>
-                        <p>Text analysis is disabled for this question.</p>
+                        <p i18n="@@resultsForm.analysisDisabled">Text analysis is disabled for this question.</p>
                       </div>
                     }
 
@@ -227,7 +227,7 @@
                     @if (question.text.analysisStatus === 'FAILED') {
                       <div class="analysis-failed">
                         <span class="icon">❌</span>
-                        <p>Text analysis failed. Unable to generate summary for this question.</p>
+                        <p i18n="@@resultsForm.analysisFailed">Text analysis failed. Unable to generate summary for this question.</p>
                       </div>
                     }
 
@@ -235,7 +235,7 @@
                     @if (question.text.analysisStatus === 'PENDING') {
                       <div class="analysis-pending">
                         <span class="icon">⏳</span>
-                        <p>Text analysis is in progress. Summary will be available soon.</p>
+                        <p i18n="@@resultsForm.analysisPending">Text analysis is in progress. Summary will be available soon.</p>
                       </div>
                     }
 
@@ -244,24 +244,24 @@
                       <!-- Sentiment Analysis -->
                       @if (question.text.sentiment) {
                         <div class="sentiment-analysis">
-                          <h4>Sentiment</h4>
+                          <h4 i18n="@@resultsForm.sentiment">Sentiment</h4>
                           <div class="sentiment-breakdown">
                             <div class="sentiment-item positive">
-                              <span class="sentiment-label">Positive</span>
+                              <span class="sentiment-label" i18n="@@resultsForm.positive">Positive</span>
                               <span class="sentiment-bar">
                                 <div class="bar-fill" [style.width.%]="question.text.sentiment.positivePct"></div>
                               </span>
                               <span class="sentiment-pct">{{ question.text.sentiment.positivePct.toFixed(1) }}%</span>
                             </div>
                             <div class="sentiment-item neutral">
-                              <span class="sentiment-label">Neutral</span>
+                              <span class="sentiment-label" i18n="@@resultsForm.neutral">Neutral</span>
                               <span class="sentiment-bar">
                                 <div class="bar-fill" [style.width.%]="question.text.sentiment.neutralPct"></div>
                               </span>
                               <span class="sentiment-pct">{{ question.text.sentiment.neutralPct.toFixed(1) }}%</span>
                             </div>
                             <div class="sentiment-item negative">
-                              <span class="sentiment-label">Negative</span>
+                              <span class="sentiment-label" i18n="@@resultsForm.negative">Negative</span>
                               <span class="sentiment-bar">
                                 <div class="bar-fill" [style.width.%]="question.text.sentiment.negativePct"></div>
                               </span>
@@ -274,7 +274,7 @@
                       <!-- Top Ideas -->
                       @if (question.text.topIdeas && question.text.topIdeas.length > 0) {
                         <div class="top-ideas">
-                          <h4>Top Ideas</h4>
+                          <h4 i18n="@@resultsForm.topIdeas">Top Ideas</h4>
                           @for (idea of question.text.topIdeas; track idea.idea) {
                             <div class="idea-item">
                               <span class="idea-text">{{ idea.idea }}</span>
@@ -287,12 +287,7 @@
 
                     <!-- Show Details Button (always visible) -->
                     <div class="text-stats">
-                      <button 
-                        class="btn-show-answers"
-                        (click)="openTextResponses(question.questionId)"
-                      >
-                        Show details
-                      </button>
+                      <button class="btn-show-answers" (click)="openTextResponses(question.questionId)" i18n="@@resultsForm.showDetails">Show details</button>
                       <span class="stat-value">{{ question.text.responseCount }}</span>
                     </div>
                   </div>
@@ -305,12 +300,12 @@
 
       <!-- Refresh Info -->
       <div class="refresh-info">
-        <span class="refresh-timestamp">Last updated {{ formatDate(analytics()!.generatedAt) }}</span>
+        <span class="refresh-timestamp" i18n="@@resultsForm.lastUpdated">Last updated {{ formatDate(analytics()!.generatedAt) }}</span>
         <button (click)="onRefreshAnalytics()" class="btn-refresh">
           @if (loading()) {
             <span class="spinner-small"></span>
           } @else {
-            🔄 Refresh
+            🔄 <span i18n="@@resultsForm.refresh">Refresh</span>
           }
         </button>
       </div>
@@ -321,12 +316,12 @@
     <div class="modal-overlay" (click)="closeTextResponses()" (keydown.escape)="closeTextResponses()">
       <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="modal-header">
-          <h3>{{ currentQuestionId() ? getQuestionLabel(currentQuestionId()!) : 'Text responses' }}</h3>
-          <button class="close-btn" (click)="closeTextResponses()" (keydown.enter)="closeTextResponses()">✕</button>
+          <h3>{{ currentQuestionId() ? getQuestionLabel(currentQuestionId()!) : textResponsesTitle }}</h3>
+          <button class="close-btn" (click)="closeTextResponses()" (keydown.enter)="closeTextResponses()" i18n-aria-label="@@resultsForm.closeLabel" aria-label="Close">✕</button>
         </div>
 
         @if (textLoading()) {
-          <div class="modal-loading">Loading text responses…</div>
+          <div class="modal-loading" i18n="@@resultsForm.loadingTextResponses">Loading text responses...</div>
         } @else if (textError()) {
           <div class="modal-error">{{ textError() }}</div>
         } @else if (textResponses().length > 0) {
@@ -349,10 +344,13 @@
             }
           </div>
         } @else {
-          <div class="modal-empty">No text responses found for this window.</div>
+          <div class="modal-empty" i18n="@@resultsForm.noTextResponses">No text responses found for this window.</div>
         }
       </div>
     </div>
   }
 </div>
 </app-background-div>
+
+
+

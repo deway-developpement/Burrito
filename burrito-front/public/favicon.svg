@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- Simple colorful burrito favicon optimized for small sizes -->
+  <!-- Tortilla body -->
+  <rect x="16" y="8" width="32" height="48" rx="16" ry="16" fill="#F5D7A1" stroke="#D2B48C" stroke-width="2" />
+  <!-- Diagonal wrap lines -->
+  <path d="M20 22 L44 32" stroke="#C9A37A" stroke-width="3" stroke-linecap="round" />
+  <path d="M20 30 L44 20" stroke="#C9A37A" stroke-width="3" stroke-linecap="round" />
+  <!-- Fillings near top opening -->
+  <circle cx="24" cy="20" r="3.8" fill="#E74C3C" />
+  <circle cx="32" cy="18" r="3.8" fill="#27AE60" />
+  <circle cx="40" cy="20" r="3.8" fill="#F1C40F" />
+  <!-- Subtle highlight -->
+  <path d="M26 12 a12 12 0 0 1 20 8" fill="none" stroke="#FFF8E7" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+</svg>
