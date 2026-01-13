@@ -70,7 +70,7 @@ export class EvaluateFormComponent implements OnInit {
       const validators = question.required ? [Validators.required] : [];
       
       if (question.type === 'RATING') {
-        validators.push(Validators.min(1), Validators.max(5));
+        validators.push(Validators.min(1), Validators.max(10));
       }
       
       group[question.id] = ['', validators];
@@ -124,7 +124,7 @@ export class EvaluateFormComponent implements OnInit {
   }
 
   getRatingArray(): number[] {
-    return [1, 2, 3, 4, 5];
+    return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
   }
 
   isFieldInvalid(questionId: string): boolean {
