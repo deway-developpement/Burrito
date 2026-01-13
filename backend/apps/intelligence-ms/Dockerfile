@@ -10,8 +10,15 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements
 COPY requirements.txt .
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install Python dependencies (prefer CPU wheels and higher timeouts to avoid slow downloads)
+ENV PIP_DEFAULT_TIMEOUT=120 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+RUN pip install \
+    --no-cache-dir \
+    --default-timeout=${PIP_DEFAULT_TIMEOUT} \
+    --retries=5 \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    -r requirements.txt
 
 # Copy application files
 COPY . .
