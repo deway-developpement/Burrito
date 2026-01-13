@@ -8,6 +8,18 @@ import { EditUserModalComponent } from '../../../component/shared/edit-user-moda
 import { AddUserModalComponent } from '../../../component/shared/add-user-modal/add-user-modal.component';
 import { UserService, UserProfile } from '../../../services/user.service';
 import { Observable, map, tap, take } from 'rxjs';
+import { AlertDialogComponent } from '../../../component/shared/alert-dialog/alert-dialog.component';
+
+type AlertDialogIntent = 'primary' | 'danger';
+
+interface AlertDialogConfig {
+  title: string;
+  message: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  showCancel?: boolean;
+  intent?: AlertDialogIntent;
+}
 
 @Component({
   selector: 'app-manage-students',
@@ -19,7 +31,8 @@ import { Observable, map, tap, take } from 'rxjs';
     AdminPageHeaderComponent, 
     AdminTableComponent,
     EditUserModalComponent,
-    AddUserModalComponent
+    AddUserModalComponent,
+    AlertDialogComponent
   ],
   templateUrl: './manage-students.component.html',
   styleUrls: ['./manage-students.component.scss']
@@ -40,6 +53,15 @@ export class ManageStudentsComponent {
   // State for Modals
   selectedUser: UserProfile | null = null; // For Edit
   showAddModal = false;                    // For Add
+
+  alertDialogOpen = false;
+  alertDialogTitle = 'Confirm action';
+  alertDialogMessage = '';
+  alertDialogConfirmLabel = 'Confirm';
+  alertDialogCancelLabel = 'Cancel';
+  alertDialogShowCancel = true;
+  alertDialogIntent: AlertDialogIntent = 'primary';
+  private alertDialogAction: (() => void) | null = null;
 
   constructor() {
     this.students$ = this.loadStudents();
@@ -72,20 +94,32 @@ export class ManageStudentsComponent {
 
   // --- DELETE LOGIC ---
   onDelete(id: any) {
-    if(confirm('Are you sure you want to unenroll this student?')) {
-      
-      // Convert ID to String to ensure it matches GraphQL expectation
-      this.userService.deleteUser(String(id)).subscribe({
-        next: () => {
-          console.log('Student deleted successfully');
-          this.refreshData(); // Updates the UI
-        },
-        error: (err) => {
-          console.error('Error deleting student:', err);
-          alert('Failed to delete student');
-        }
-      });
-    }
+    this.openAlertDialog(
+      {
+        title: 'Unenroll student',
+        message: 'Are you sure you want to unenroll this student?',
+        confirmLabel: 'Unenroll',
+        intent: 'danger',
+      },
+      () => {
+        // Convert ID to String to ensure it matches GraphQL expectation
+        this.userService.deleteUser(String(id)).subscribe({
+          next: () => {
+            console.log('Student deleted successfully');
+            this.refreshData(); // Updates the UI
+          },
+          error: (err) => {
+            console.error('Error deleting student:', err);
+            this.openAlertDialog({
+              title: 'Unenroll failed',
+              message: 'Failed to delete student.',
+              confirmLabel: 'Ok',
+              showCancel: false,
+            });
+          }
+        });
+      },
+    );
   }
 
   // --- EDIT MODAL LOGIC ---
@@ -116,5 +150,29 @@ export class ManageStudentsComponent {
     this.selectedUser = null;
     this.showAddModal = false;
     this.students$ = this.loadStudents();
+  }
+
+  openAlertDialog(config: AlertDialogConfig, action?: () => void): void {
+    this.alertDialogTitle = config.title;
+    this.alertDialogMessage = config.message;
+    this.alertDialogConfirmLabel = config.confirmLabel ?? 'Confirm';
+    this.alertDialogCancelLabel = config.cancelLabel ?? 'Cancel';
+    this.alertDialogShowCancel = config.showCancel ?? true;
+    this.alertDialogIntent = config.intent ?? 'primary';
+    this.alertDialogAction = action ?? null;
+    this.alertDialogOpen = true;
+  }
+
+  confirmAlertDialog(): void {
+    const action = this.alertDialogAction;
+    this.closeAlertDialog();
+    if (action) {
+      action();
+    }
+  }
+
+  closeAlertDialog(): void {
+    this.alertDialogOpen = false;
+    this.alertDialogAction = null;
   }
 }

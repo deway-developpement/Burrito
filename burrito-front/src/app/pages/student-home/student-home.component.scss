@@ -183,6 +183,11 @@
   }
 }
 
+.history-table th.text-right,
+.history-table td.text-right {
+  text-align: right;
+}
+
 // Visual Styles for Table
 .course-col {
   font-weight: 600;

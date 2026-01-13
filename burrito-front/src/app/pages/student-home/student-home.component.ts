@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core'; // 1. Importe ChangeDetectorRef
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
 import { AdminPageHeaderComponent } from '../../component/shared/admin-page-header/admin-page-header.component';
 import { EvaluationService } from '../../services/evaluation.service';
@@ -54,40 +55,52 @@ export class StudentHomeComponent implements OnInit {
           this.cdr.detectChanges();
         }, 5000);
       }
-    });
-    this.evaluationService.getActiveFormsForStudent().subscribe({
-      next: (forms) => {
+    });    forkJoin({
+      forms: this.evaluationService.getActiveFormsForStudent(),
+      evaluations: this.evaluationService.getStudentEvaluations(),
+    }).subscribe({
+      next: ({ forms, evaluations }) => {
         console.log('1. API Retourne :', forms);
 
+        const submittedByForm = new Map(
+          evaluations.map((evaluation) => [
+            evaluation.formId,
+            evaluation.createdAt,
+          ]),
+        );
+
         // Separate into pending and completed
-        const pending = forms.filter(f => !f.userResponded);
-        const completed = forms.filter(f => f.userResponded);
+        const pending = forms.filter((form) => !form.userResponded);
+        const completed = forms.filter((form) => form.userResponded);
 
-        this.pendingEvaluations = pending.map(form => ({
+        this.pendingEvaluations = pending.map((form) => ({
           id: form.id,
-          courseName: form.title, 
-          teacherName: form.teacher?.fullName || 'Enseignant non assigné',
+          courseName: form.title,
+          teacherName: form.teacher?.fullName || 'Enseignant non assigne',
           deadline: form.endDate ? new Date(form.endDate) : undefined,
-          status: 'Pending'
+          status: 'Pending',
         }));
 
-        this.completedEvaluations = completed.map(form => ({
-          id: form.id,
-          courseName: form.title, 
-          teacherName: form.teacher?.fullName || 'Enseignant non assigné',
-          submittedDate: undefined, // We could get this from user evaluations if needed
-          status: 'Completed'
-        }));
-
-        console.log('2. Variable mise à jour :', { 
-          pending: this.pendingEvaluations, 
-          completed: this.completedEvaluations 
+        this.completedEvaluations = completed.map((form) => {
+          const submittedAt = submittedByForm.get(form.id);
+          return {
+            id: form.id,
+            courseName: form.title,
+            teacherName: form.teacher?.fullName || 'Enseignant non assigne',
+            submittedDate: submittedAt ? new Date(submittedAt) : undefined,
+            status: 'Completed',
+          };
         });
 
-        // 3. LA CLEF DU PROBLÈME : On dit à Angular "J'ai changé des trucs, mets à jour le HTML !"
-        this.cdr.detectChanges(); 
+        console.log('2. Variable mise a jour :', {
+          pending: this.pendingEvaluations,
+          completed: this.completedEvaluations,
+        });
+
+        // 3. LA CLEF DU PROBLEME : On dit a Angular "J'ai change des trucs, mets a jour le HTML !"
+        this.cdr.detectChanges();
       },
-      error: (err) => console.error('Erreur :', err)
+      error: (err) => console.error('Erreur :', err),
     });
   }
 

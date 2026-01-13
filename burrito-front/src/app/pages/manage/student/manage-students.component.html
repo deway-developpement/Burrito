@@ -33,4 +33,16 @@
   }
   </div>
 
+  <app-alert-dialog
+    [open]="alertDialogOpen"
+    [title]="alertDialogTitle"
+    [message]="alertDialogMessage"
+    [confirmLabel]="alertDialogConfirmLabel"
+    [cancelLabel]="alertDialogCancelLabel"
+    [showCancel]="alertDialogShowCancel"
+    [intent]="alertDialogIntent"
+    (confirm)="confirmAlertDialog()"
+    (cancel)="closeAlertDialog()"
+  ></app-alert-dialog>
+
 </app-background-div>
