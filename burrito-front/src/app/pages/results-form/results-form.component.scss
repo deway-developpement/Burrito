@@ -148,6 +148,55 @@
         text-transform: uppercase;
       }
     }
+
+    // Color the NPS value based on class applied in template
+    .stat.nps-stat {
+      .stat-value.nps-green { color: theme.$success-green; }
+      .stat-value.nps-yellow { color: theme.$warning; }
+      .stat-value.nps-red { color: theme.$alert-red; }
+    }
+
+    // Satisfaction breakdown inside summary stats
+    .stat.satisfaction-breakdown-stat {
+      text-align: left;
+      .stat-label {
+        margin-bottom: 0.5rem;
+      }
+
+      // Span wider to accommodate 3 items when space allows
+      grid-column: span 2;
+
+      .satisfaction-breakdown {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(120px, 1fr));
+        gap: 0.6rem;
+
+        .breakdown-item {
+          padding: 0.6rem 0.7rem;
+          border-radius: 6px;
+          display: flex;
+          flex-direction: column;
+          gap: 0.2rem;
+          font-weight: 500;
+
+          .breakdown-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.02em;
+            color: theme.$text-muted;
+          }
+
+          .breakdown-value {
+            font-size: 0.95rem;
+            color: theme.$text-dark;
+          }
+
+          &.promoters { background: rgba(76, 175, 80, 0.12); color: theme.$error-green-dark; }
+          &.passives  { background: rgba(255, 152, 0, 0.12);  color: theme.$warning-dark; }
+          &.detractors{ background: rgba(244, 67, 54, 0.12);  color: theme.$error-red-dark; }
+        }
+      }
+    }
   }
 
   .completion-bar {
@@ -882,6 +931,19 @@
     flex-direction: column;
     align-items: flex-start;
   }
+
+  // Make satisfaction breakdown stack nicely on tablets
+  .response-summary {
+    .summary-stats {
+      .stat.satisfaction-breakdown-stat {
+        grid-column: span 2;
+
+        .satisfaction-breakdown {
+          grid-template-columns: 1fr 1fr 1fr;
+        }
+      }
+    }
+  }
 }
 
 @media (max-width: 480px) {
@@ -892,6 +954,19 @@
   .satisfaction-card .satisfaction-content {
     display: flex;
     flex-direction: column;
+  }
+
+  // On small screens, make the satisfaction breakdown take full width and stack
+  .response-summary {
+    .summary-stats {
+      .stat.satisfaction-breakdown-stat {
+        grid-column: 1 / -1;
+
+        .satisfaction-breakdown {
+          grid-template-columns: 1fr;
+        }
+      }
+    }
   }
 
   .question-header {
