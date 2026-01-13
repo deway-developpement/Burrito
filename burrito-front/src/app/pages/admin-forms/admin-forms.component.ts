@@ -107,7 +107,7 @@ export class AdminFormsComponent implements OnInit, AfterViewInit, OnDestroy {
   error = signal<string>('');
 
   private lastCursor: string | null = null;
-  private pageSize = 12;
+  private readonly pageSize = 12;
   statusFilter: StatusFilter = 'ALL';
   statusOptions: SelectOption[] = [
     { label: 'All statuses', value: 'ALL' },

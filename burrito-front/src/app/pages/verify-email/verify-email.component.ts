@@ -1,11 +1,9 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, signal, inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from '../../services/user.service';
-import { isPlatformBrowser } from '@angular/common';
-import { PLATFORM_ID } from '@angular/core';
 
 const VERIFY_EMAIL_MUTATION = gql`
   mutation VerifyEmail($input: VerifyEmailInput!) {
@@ -98,11 +96,11 @@ const VERIFY_EMAIL_MUTATION = gql`
   ]
 })
 export class VerifyEmailComponent implements OnInit {
-  private route = inject(ActivatedRoute);
-  private router = inject(Router);
-  private apollo = inject(Apollo);
-  private userService = inject(UserService);
-  private platformId = inject(PLATFORM_ID);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly apollo = inject(Apollo);
+  private readonly userService = inject(UserService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   status = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
   private hasAttempted = false;
@@ -138,7 +136,7 @@ export class VerifyEmailComponent implements OnInit {
 
       const updatedUser = response.data?.verifyEmail;
 
-      if (updatedUser && updatedUser.emailVerified) {
+      if (updatedUser?.emailVerified) {
         // Update front-end user state so banner disappears
         this.userService.currentUser.set({
           id: updatedUser.id,
@@ -157,6 +155,7 @@ export class VerifyEmailComponent implements OnInit {
         this.router.navigate(['/404']);
       }
     } catch (err: any) {
+      console.error('Email verification failed:', err);
       this.router.navigate(['/404']);
     }
   }

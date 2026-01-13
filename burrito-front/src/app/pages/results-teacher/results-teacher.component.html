@@ -123,13 +123,11 @@
         <h2 class="section-title">Forms Breakdown</h2>
         
         @for (form of analytics()!.formsBreakdown; track form.formId) {
-          <div 
-            class="form-card" 
-            role="button"
-            tabindex="0"
-            (click)="navigateToFormResults(form.formId)" 
-            (keydown.enter)="navigateToFormResults(form.formId)"
-            style="cursor: pointer;">
+          <button
+            type="button"
+            class="form-card"
+            (click)="navigateToFormResults(form.formId)"
+          >
             <div class="form-card-header">
               <div class="form-title">
                 <h3>{{ form.title }}</h3>
@@ -140,7 +138,7 @@
                 <span class="stat-item">⭐ {{ form.averageRating.toFixed(1) }}/10</span>
               </div>
             </div>
-          </div>
+          </button>
         }
       </div>
 

@@ -21,10 +21,10 @@ import { UserService } from '../../services/user.service';
 })
 export class TeacherHomeComponent implements OnInit {
 
-  private router = inject(Router);
-  private evaluationService = inject(EvaluationService);
-  private userService = inject(UserService);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly router = inject(Router);
+  private readonly evaluationService = inject(EvaluationService);
+  private readonly userService = inject(UserService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
   unreadEvaluations: TeacherEvaluationUI[] = []; // Gardé pour ne pas casser le typage si besoin
   readEvaluations: TeacherEvaluationUI[] = [];
@@ -35,10 +35,10 @@ export class TeacherHomeComponent implements OnInit {
   feedbackError = signal('');
 
   ngOnInit() {
-    const currentUser = this.userService.currentUser();
+    const currentUserId = this.userService.currentUser()?.id;
 
-    if (currentUser && currentUser.id) {
-      this.loadEvaluations(currentUser.id);
+    if (currentUserId) {
+      this.loadEvaluations(currentUserId);
     } else {
       console.error('No teacher ID found. Are you logged in?');
     }
