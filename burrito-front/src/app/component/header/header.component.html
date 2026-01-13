@@ -15,6 +15,7 @@
       <app-button 
         variant="outline" 
         (click)="logout()"
+        (keydown.enter)="logout()"
       >
         Logout
       </app-button>
@@ -40,6 +41,7 @@
         size="small"
         [disabled]="isResending()"
         (click)="resendVerification()"
+        (keydown.enter)="resendVerification()"
       >
         {{ isResending() ? 'Sending…' : 'Resend verification email' }}
       </app-button>
@@ -51,13 +53,13 @@
 }
 
 @if (showSuccessModal()) {
-  <div class="modal-overlay" (click)="closeModal()">
-    <div class="modal" (click)="$event.stopPropagation()">
-      <button class="modal__close" (click)="closeModal()" aria-label="Close modal">✕</button>
+  <div class="modal-overlay" (click)="closeModal()" (keydown.escape)="closeModal()">
+    <div class="modal" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+      <button class="modal__close" (click)="closeModal()" (keydown.enter)="closeModal()" aria-label="Close modal">✕</button>
       <div class="modal__icon">✓</div>
       <h2 class="modal__title">Email sent!</h2>
       <p class="modal__message">We've sent a verification link to your email. Please check your inbox and spam folder.</p>
-      <app-button variant="primary" (click)="closeModal()">Got it</app-button>
+      <app-button variant="primary" (click)="closeModal()" (keydown.enter)="closeModal()">Got it</app-button>
     </div>
   </div>
 }
