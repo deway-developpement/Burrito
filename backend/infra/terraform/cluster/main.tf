@@ -111,6 +111,40 @@ resource "kubernetes_manifest" "letsencrypt_issuer" {
   }
 }
 
+resource "kubernetes_manifest" "jenkins_https_redirect" {
+  manifest = {
+    apiVersion = "traefik.io/v1alpha1"
+    kind       = "Middleware"
+    metadata = {
+      name      = "https-redirect"
+      namespace = kubernetes_namespace.jenkins.metadata[0].name
+    }
+    spec = {
+      redirectScheme = {
+        scheme    = "https"
+        permanent = true
+      }
+    }
+  }
+}
+
+resource "kubernetes_manifest" "monitoring_https_redirect" {
+  manifest = {
+    apiVersion = "traefik.io/v1alpha1"
+    kind       = "Middleware"
+    metadata = {
+      name      = "https-redirect"
+      namespace = kubernetes_namespace.monitoring.metadata[0].name
+    }
+    spec = {
+      redirectScheme = {
+        scheme    = "https"
+        permanent = true
+      }
+    }
+  }
+}
+
 resource "helm_release" "jenkins" {
   name       = "jenkins"
   repository = "https://charts.jenkins.io"
@@ -155,6 +189,9 @@ resource "helm_release" "jenkins" {
           ingressClassName = "traefik"
           annotations = {
             "cert-manager.io/cluster-issuer" = "letsencrypt"
+            "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
+            "traefik.ingress.kubernetes.io/router.middlewares" = "jenkins-https-redirect@kubernetescrd"
+            "traefik.ingress.kubernetes.io/router.tls"         = "true"
           }
           tls = [
             {
@@ -190,6 +227,9 @@ resource "helm_release" "kube_prometheus_stack" {
           hosts            = [var.grafana_domain]
           annotations = {
             "cert-manager.io/cluster-issuer" = "letsencrypt"
+            "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
+            "traefik.ingress.kubernetes.io/router.middlewares" = "monitoring-https-redirect@kubernetescrd"
+            "traefik.ingress.kubernetes.io/router.tls"         = "true"
           }
           tls = [
             {
@@ -442,6 +482,9 @@ resource "kubernetes_ingress_v1" "registry" {
     namespace = kubernetes_namespace.jenkins.metadata[0].name
     annotations = {
       "cert-manager.io/cluster-issuer" = "letsencrypt"
+      "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
+      "traefik.ingress.kubernetes.io/router.middlewares" = "jenkins-https-redirect@kubernetescrd"
+      "traefik.ingress.kubernetes.io/router.tls"         = "true"
     }
   }
 
@@ -488,6 +531,9 @@ resource "kubernetes_ingress_v1" "api_gateway" {
     namespace = kubernetes_namespace.evaluation_system.metadata[0].name
     annotations = {
       "cert-manager.io/cluster-issuer" = "letsencrypt"
+      "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
+      "traefik.ingress.kubernetes.io/router.middlewares" = "evaluation-system-https-redirect@kubernetescrd"
+      "traefik.ingress.kubernetes.io/router.tls"         = "true"
     }
   }
 
