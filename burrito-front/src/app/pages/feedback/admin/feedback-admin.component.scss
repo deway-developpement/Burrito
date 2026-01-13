@@ -164,9 +164,10 @@
   &__actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
+    width: 100%;
   }
 
   &__error {
@@ -179,6 +180,19 @@
     color: theme.$success-alt-dark;
     margin: 0;
     font-weight: 600;
+  }
+}
+
+.builder__cancel {
+  ::ng-deep .btn {
+    background: theme.$danger-red;
+    color: theme.$white;
+    border: 1px solid theme.$danger-red;
+    box-shadow: 0 10px 20px rgba(217, 45, 32, 0.25);
+
+    &:hover {
+      background: darken(theme.$danger-red, 6%);
+    }
   }
 }
 

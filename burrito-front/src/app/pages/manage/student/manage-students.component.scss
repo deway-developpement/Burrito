@@ -10,3 +10,13 @@
   flex-direction: column;
   gap: 1.5rem;
 }
+
+.table-status {
+  text-align: center;
+  color: theme.$text-muted;
+  padding: 0.75rem 0;
+}
+
+.load-more-trigger {
+  height: 1px;
+}

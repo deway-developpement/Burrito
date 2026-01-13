@@ -29,7 +29,6 @@ interface FormQuestion {
   label: string;
   type: QuestionType;
   required: boolean;
-  placeholder?: string;
 }
 
 @Component({
@@ -56,9 +55,8 @@ export class FeedbackAdminComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly viewportScroller = inject(ViewportScroller);
 
-  private readonly defaultTitle = 'Teacher feedback';
-  private readonly defaultDescription =
-    'Gather constructive input from students to help teachers improve.';
+  private readonly defaultTitle = $localize`:@@feedbackAdmin.defaultTitle:Teacher feedback`;
+  private readonly defaultDescription = $localize`:@@feedbackAdmin.defaultDescription:Gather constructive input from students to help teachers improve.`;
 
   formTitle = this.defaultTitle;
   formDescription = this.defaultDescription;
@@ -86,14 +84,31 @@ export class FeedbackAdminComponent implements OnInit {
   formLoadError = '';
 
   readonly questionTypeOptions: SelectOption[] = [
-    { label: 'Rating', value: 'rating' },
-    { label: 'Text', value: 'text' },
+    { label: $localize`:@@feedbackAdmin.ratingOption:Rating`, value: 'rating' },
+    { label: $localize`:@@feedbackAdmin.textOption:Text`, value: 'text' },
   ];
 
   teacherOptions: SelectOption[] = [];
   groupOptions: SelectOption[] = [];
   selectedGroupIds: string[] = [];
   questions: FormQuestion[] = [];
+
+  get pageTitle(): string {
+    return this.isEditing
+      ? $localize`:@@feedbackAdmin.editTitle:Edit a feedback form`
+      : $localize`:@@feedbackAdmin.createTitle:Create a feedback form`;
+  }
+
+  get saveButtonLabel(): string {
+    if (this.isSaving) {
+      return this.isEditing
+        ? $localize`:@@feedbackAdmin.updating:Updating...`
+        : $localize`:@@feedbackAdmin.saving:Saving...`;
+    }
+    return this.isEditing
+      ? $localize`:@@feedbackAdmin.updateForm:Update form`
+      : $localize`:@@feedbackAdmin.saveForm:Save form`;
+  }
 
   goBack(): void {
     this.router.navigate(['/admin/forms']);
@@ -112,7 +127,6 @@ export class FeedbackAdminComponent implements OnInit {
       label: '',
       type,
       required: false,
-      placeholder: '',
     };
     this.questions = [...this.questions, base];
   }
@@ -157,13 +171,13 @@ export class FeedbackAdminComponent implements OnInit {
         }));
         this.isLoadingTeachers = false;
         if (teachers.length === 0) {
-          this.teachersError = 'No teachers found.';
+          this.teachersError = $localize`:@@feedbackAdmin.noTeachers:No teachers found.`;
         }
         this.cdr.detectChanges();
       },
       error: () => {
         this.isLoadingTeachers = false;
-        this.teachersError = 'Failed to load teachers.';
+        this.teachersError = $localize`:@@feedbackAdmin.loadTeachersError:Failed to load teachers.`;
         this.cdr.detectChanges();
       },
     });
@@ -180,13 +194,13 @@ export class FeedbackAdminComponent implements OnInit {
         }));
         this.isLoadingGroups = false;
         if (groups.length === 0) {
-          this.groupsError = 'No groups found.';
+          this.groupsError = $localize`:@@feedbackAdmin.noGroups:No groups found.`;
         }
         this.cdr.detectChanges();
       },
       error: () => {
         this.isLoadingGroups = false;
-        this.groupsError = 'Failed to load groups.';
+        this.groupsError = $localize`:@@feedbackAdmin.loadGroupsError:Failed to load groups.`;
         this.cdr.detectChanges();
       },
     });
@@ -224,7 +238,7 @@ export class FeedbackAdminComponent implements OnInit {
       next: (form) => {
         if (!form) {
           this.isLoadingForm = false;
-          this.formLoadError = 'Form not found.';
+          this.formLoadError = $localize`:@@feedbackAdmin.formNotFound:Form not found.`;
           this.isEditing = false;
           this.editingFormId = '';
           this.originalStatus = null;
@@ -235,7 +249,7 @@ export class FeedbackAdminComponent implements OnInit {
       },
       error: () => {
         this.isLoadingForm = false;
-        this.formLoadError = 'Failed to load the selected form.';
+        this.formLoadError = $localize`:@@feedbackAdmin.formLoadError:Failed to load the selected form.`;
         this.cdr.detectChanges();
       },
     });
@@ -260,7 +274,6 @@ export class FeedbackAdminComponent implements OnInit {
       label: question.label,
       type: question.type === 'RATING' ? 'rating' : 'text',
       required: question.required,
-      placeholder: '',
     }));
     this.publishAttempted = false;
     this.savedMessage = '';
@@ -387,6 +400,18 @@ export class FeedbackAdminComponent implements OnInit {
     return match?.label ?? groupId;
   }
 
+  getGroupRemoveLabel(groupId: string): string {
+    const label = this.getGroupLabel(groupId);
+    return $localize`:@@feedbackAdmin.removeGroupLabel:Remove group ${label}`;
+  }
+
+  getQuestionCardLabel(type: QuestionType): string {
+    if (type === 'rating') {
+      return $localize`:@@feedbackAdmin.ratingCard:Rating card`;
+    }
+    return $localize`:@@feedbackAdmin.textCard:Text card`;
+  }
+
   onGroupSelect(value: string | number | null) {
     if (!value) {
       return;
@@ -416,7 +441,7 @@ export class FeedbackAdminComponent implements OnInit {
       return;
     }
     if (this.isEditing && !this.editingFormId) {
-      this.saveError = 'Missing form id for update.';
+      this.saveError = $localize`:@@feedbackAdmin.missingFormId:Missing form id for update.`;
       return;
     }
 
@@ -445,7 +470,7 @@ export class FeedbackAdminComponent implements OnInit {
       .pipe(
         concatMap((saved) => {
           if (!saved?.id) {
-            throw new Error('Form save failed.');
+            throw new Error($localize`:@@feedbackAdmin.saveFailed:Form save failed.`);
           }
           return this.syncGroupRelation(saved.id).pipe(
             concatMap(() => {
@@ -467,8 +492,8 @@ export class FeedbackAdminComponent implements OnInit {
           this.originalGroupIds = [...this.selectedGroupIds];
           this.toast.show(
             this.isEditing
-              ? 'Form updated successfully.'
-              : 'Form created successfully.',
+              ? $localize`:@@feedbackAdmin.updateSuccess:Form updated successfully.`
+              : $localize`:@@feedbackAdmin.createSuccess:Form created successfully.`,
             'success',
           );
           this.router.navigate(['/admin/forms']);
@@ -476,7 +501,7 @@ export class FeedbackAdminComponent implements OnInit {
         },
         error: () => {
           this.isSaving = false;
-          this.saveError = 'Failed to save the form. Please try again.';
+          this.saveError = $localize`:@@feedbackAdmin.saveError:Failed to save the form. Please try again.`;
           this.cdr.detectChanges();
         },
       });

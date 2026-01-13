@@ -26,6 +26,27 @@
   gap: 0.75rem;  // spacing between buttons
 }
 
+.home__locale {
+  display: flex;
+  align-items: center;
+}
+
+.home__locale-select {
+  border: 1px solid rgba(theme.$primary-color, 0.4);
+  background: theme.$white;
+  color: theme.$text-dark;
+  border-radius: 999px;
+  padding: 0.35rem 0.6rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  outline: none;
+
+  &:focus {
+    box-shadow: 0 0 0 2px rgba(theme.$primary-color, 0.2);
+  }
+}
+
 .home__logo-icon {
   font-size: 1.4rem;
 }

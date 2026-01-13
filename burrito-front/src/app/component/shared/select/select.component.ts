@@ -25,7 +25,7 @@ export class SelectComponent {
   @Input() disabled = false;
 
   /** placeholder shown as first disabled option */
-  @Input() placeholder = 'Select an option';
+  @Input() placeholder = $localize`:@@select.placeholder:Select an option`;
 
   /** options to display */
   @Input() options: SelectOption[] = [];

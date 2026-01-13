@@ -8,7 +8,14 @@
   >
     <div class="alert-header">
       <h2>{{ title }}</h2>
-      <button class="close-btn" type="button" (click)="onCancelClick()" (keydown.enter)="onCancelClick()" aria-label="Close dialog">
+      <button
+        class="close-btn"
+        type="button"
+        (click)="onCancelClick()"
+        i18n-aria-label="@@alertDialog.close"
+        (keydown.enter)="onCancelClick()"
+        aria-label="Close dialog"
+      >
         &times;
       </button>
     </div>

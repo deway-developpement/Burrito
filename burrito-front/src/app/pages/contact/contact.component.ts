@@ -20,7 +20,10 @@ export class ContactComponent {
     // Simulation de l'envoi...
 
     // 1. Show Success Toast
-    this.toast.show('Message sent successfully! We will get back to you soon.', 'success');
+    this.toast.show(
+      $localize`:@@contact.successToast:Message sent successfully! We will get back to you soon.`,
+      'success',
+    );
 
     // 2. Redirect to Home with a small delay
     // Le délai permet à l'utilisateur de voir le message avant que la page ne change

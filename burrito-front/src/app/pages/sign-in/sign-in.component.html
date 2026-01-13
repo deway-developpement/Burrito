@@ -2,13 +2,13 @@
 
   <main class="auth__main">
     <section class="auth__card">
-      <h1 class="auth__title">Sign in to Burrito</h1>
+      <h1 class="auth__title" i18n="@@signIn.title">Sign in to Burrito</h1>
       <form
         class="auth__form"
         (ngSubmit)="onSubmit()"
       >
         <label class="auth__field">
-          <span class="auth__label">Email</span>
+          <span class="auth__label" i18n="@@signIn.emailLabel">Email</span>
           <input
             class="auth__input"
             type="email"
@@ -19,7 +19,7 @@
         </label>
 
         <label class="auth__field">
-          <span class="auth__label">Password</span>
+          <span class="auth__label" i18n="@@signIn.passwordLabel">Password</span>
           <input
             class="auth__input"
             type="password"
@@ -34,7 +34,7 @@
             type="submit"
             variant="primary"
           >
-            Sign in
+            <span i18n="@@signIn.submit">Sign in</span>
           </app-button>
         </div>
       </form>

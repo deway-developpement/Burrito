@@ -5,8 +5,8 @@
   
   <header class="page-header">
     <div class="header-content">
-      <h1>Global Reports</h1>
-      <p class="subtitle">View analytics for all evaluation forms</p>
+      <h1 i18n="@@globalReports.title">Global Reports</h1>
+      <p class="subtitle" i18n="@@globalReports.subtitle">View analytics for all evaluation forms</p>
     </div>
   </header>
 
@@ -36,7 +36,7 @@
           <div class="card-footer">
             <div class="meta-info">
               <span class="meta-item">
-                <span class="label">Created</span>
+                <span class="label" i18n="@@globalReports.createdLabel">Created</span>
                 <span class="value">{{ formatDate(form.createdAt) }}</span>
               </span>
             </div>
@@ -47,24 +47,27 @@
 
       <!-- Loading State -->
       <div class="loading-container" *ngIf="loading() && forms().length === 0">
-        <p>Loading forms...</p>
+        <p i18n="@@globalReports.loading">Loading forms...</p>
       </div>
 
       <!-- Empty State -->
       <div class="empty-state" *ngIf="!loading() && forms().length === 0">
         <span class="icon">📋</span>
-        <p>No forms available</p>
+        <p i18n="@@globalReports.empty">No forms available</p>
       </div>
 
       <!-- Load More Button -->
       <div class="load-more-container" *ngIf="hasMore() && forms().length > 0">
-        <button class="btn-load-more" 
-                (click)="loadMoreForms()" 
-                [disabled]="loadMoreDisabled()">
-          {{ loadMoreDisabled() ? 'Loading...' : 'Load More Forms' }}
+        <button class="btn-load-more" (click)="loadMoreForms()" [disabled]="loadMoreDisabled()">
+          @if (loadMoreDisabled()) {
+            <span i18n="@@globalReports.loadingMore">Loading...</span>
+          } @else {
+            <span i18n="@@globalReports.loadMore">Load More Forms</span>
+          }
         </button>
       </div>
       <div #loadMoreTrigger class="load-more-trigger" aria-hidden="true"></div>
     </section>
   </div>
 </app-background-div>
+

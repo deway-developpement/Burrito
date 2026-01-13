@@ -24,12 +24,12 @@ const VERIFY_EMAIL_MUTATION = gql`
   template: `
     <div *ngIf="status() === 'loading'" class="verify-loading">
       <div class="loading-spinner"></div>
-      <p>Verifying your email…</p>
+      <p i18n="@@verifyEmail.loading">Verifying your email…</p>
     </div>
     <div *ngIf="status() === 'success'" class="verify-success">
       <div class="success-icon">✓</div>
-      <h1>Email verified!</h1>
-      <p>Redirecting you now…</p>
+      <h1 i18n="@@verifyEmail.success">Email verified!</h1>
+      <p i18n="@@verifyEmail.redirect">Redirecting you now…</p>
     </div>
   `,
   styles: [
@@ -103,6 +103,8 @@ export class VerifyEmailComponent implements OnInit {
   private readonly platformId = inject(PLATFORM_ID);
 
   status = signal<'idle' | 'loading' | 'success' | 'error'>('idle');
+  invalidTokenMessage = $localize`:@@verifyEmail.invalidToken:Invalid or expired token.`;
+  missingTokenMessage = $localize`:@@verifyEmail.missingToken:Missing token.`;
   private hasAttempted = false;
 
   async ngOnInit() {
@@ -160,3 +162,4 @@ export class VerifyEmailComponent implements OnInit {
     }
   }
 }
+

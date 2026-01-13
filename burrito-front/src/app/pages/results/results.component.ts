@@ -109,13 +109,13 @@ export class ResultsComponent implements OnInit {
             this.evaluation.set(result.data.evaluation);
             this.loadForm(result.data.evaluation.formId);
           } else {
-            this.error.set('Evaluation not found');
+            this.error.set($localize`:@@results.notFound:Evaluation not found`);
           }
           this.loading.set(false);
         },
         error: (err) => {
           console.error('Failed to load evaluation:', err);
-          this.error.set('Failed to load evaluation results');
+          this.error.set($localize`:@@results.loadError:Failed to load evaluation results`);
           this.loading.set(false);
         },
       });
@@ -145,7 +145,7 @@ export class ResultsComponent implements OnInit {
 
   questionLabel(questionId: string): string {
     const question = this.form()?.questions.find((q) => q.id === questionId);
-    return question?.label ?? 'Question';
+    return question?.label ?? $localize`:@@results.questionFallback:Question`;
   }
 
   questionType(questionId: string): QuestionType | undefined {
@@ -156,6 +156,9 @@ export class ResultsComponent implements OnInit {
     if (answer.rating !== undefined && answer.rating !== null) {
       return `${answer.rating}/10`;
     }
-    return answer.text || 'No response provided';
+    return (
+      answer.text ||
+      $localize`:@@results.noResponse:No response provided`
+    );
   }
 }

@@ -1,48 +1,52 @@
 <app-background-div>
   
-  <app-admin-page-header 
-    title="Course Feedback" 
-    subtitle="Review anonymous feedback from your students.">
+  <app-admin-page-header
+    i18n-title="@@teacherHome.title"
+    title="Course Feedback"
+    i18n-subtitle="@@teacherHome.subtitle"
+    subtitle="Review anonymous feedback from your students."
+  >
   </app-admin-page-header>
 
   <section class="section-container">
     <div class="section-header">
-      <h2 class="section-title">My Analytics</h2>
+      <h2 class="section-title" i18n="@@teacherHome.analyticsTitle">My Analytics</h2>
     </div>
     <a class="btn-action view-results-btn" 
        [routerLink]="['/results/teacher', teacherId]"
        [class.disabled]="!teacherId">
-      📊 View My Results Dashboard
+      📊 <span i18n="@@teacherHome.viewResults">View My Results Dashboard</span>
     </a>
   </section>
 
   <section class="section-container history-section">
-    <h2 class="section-title">Feedback History</h2>
+    <h2 class="section-title" i18n="@@teacherHome.historyTitle">Read History</h2>
     
     <div class="history-container">
       <table class="history-table">
         <thead>
           <tr>
-            <th>Course</th>
-            <th>Received On</th>
-            <th>Rating</th>
-            <th class="text-right">Actions</th>
+            <th i18n="@@teacherHome.courseHeader">Course</th>
+            <th i18n="@@teacherHome.receivedOnHeader">Received On</th>
+            <th class="rating-col" i18n="@@teacherHome.ratingHeader">Rating</th>
           </tr>
         </thead>
         <tbody>
           <tr
             *ngFor="let eval of readEvaluations"
             class="history-row"
+            role="button"
+            tabindex="0"
+            (click)="viewEvaluation(eval.id)"
+            (keydown.enter)="viewEvaluation(eval.id)"
+            (keydown.space)="viewEvaluation(eval.id)"
+            i18n-aria-label="@@teacherHome.viewDetailsLabel"
+            aria-label="View evaluation details"
           >
             <td class="course-col">{{ eval.courseName }}</td>
             <td class="text-muted">{{ eval.submittedDate | date:'mediumDate' }}</td>
-            <td>
+            <td class="rating-col">
               <span class="mini-rating">★ {{ eval.rating }}/10</span>
-            </td>
-            <td class="text-right">
-              <button class="btn-text" (click)="viewEvaluation(eval.id)">
-                View details
-              </button>
             </td>
           </tr>
         </tbody>
@@ -58,13 +62,13 @@
     <div class="modal-overlay" (click)="closeFeedbackModal()" (keydown.escape)="closeFeedbackModal()">
       <div class="modal-content" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>Evaluation Details</h2>
-          <button class="btn-close" (click)="closeFeedbackModal()" (keydown.enter)="closeFeedbackModal()" aria-label="Close">×</button>
+          <h2 i18n="@@teacherHome.detailsTitle">Evaluation Details</h2>
+          <button class="btn-close" (click)="closeFeedbackModal()" i18n-aria-label="@@teacherHome.closeLabel" (keydown.enter)="closeFeedbackModal()" aria-label="Close">×</button>
         </div>
         
         @if (feedbackLoading()) {
           <div class="modal-body">
-            <div class="loading-state">Loading feedback…</div>
+            <div class="loading-state" i18n="@@teacherHome.loadingFeedback">Loading feedback...</div>
           </div>
         } @else if (feedbackError()) {
           <div class="modal-body">
@@ -74,11 +78,11 @@
           <div class="modal-body">
             <div class="feedback-header">
               <h3>{{ selectedEvaluation.courseName }}</h3>
-              <p class="feedback-date">Submitted: {{ selectedEvaluation.submittedDate | date:'MMM d, yyyy' }}</p>
+              <p class="feedback-date" i18n="@@teacherHome.submittedLabel">Submitted: {{ selectedEvaluation.submittedDate | date:'MMM d, yyyy' }}</p>
             </div>
 
             <div class="feedback-rating">
-              <span class="label">Overall Rating:</span>
+              <span class="label" i18n="@@teacherHome.overallRating">Overall Rating:</span>
               <div class="stars">
                 <span *ngFor="let star of [1,2,3,4,5,6,7,8,9,10]" 
                       [class.filled]="star <= selectedEvaluation.rating">★</span>
@@ -89,10 +93,11 @@
         }
 
         <div class="modal-footer">
-          <button class="btn-primary" (click)="closeFeedbackModal()" (keydown.enter)="closeFeedbackModal()">Close</button>
+          <button class="btn-primary" (click)="closeFeedbackModal()" (keydown.enter)="closeFeedbackModal()"><span i18n="@@teacherHome.close">Close</span></button>
         </div>
       </div>
     </div>
   }
 
 </app-background-div>
+
