@@ -211,8 +211,8 @@ interface MeResponse {
   providedIn: 'root'
 })
 export class UserService {
-  private apollo = inject(Apollo);
-  private authService = inject(AuthService);
+  private readonly apollo = inject(Apollo);
+  private readonly authService = inject(AuthService);
   currentUser = signal<UserProfile | null>(null);
 
   getCurrentUser() {

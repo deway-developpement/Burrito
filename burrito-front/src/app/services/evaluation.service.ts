@@ -254,7 +254,7 @@ export interface DashboardMetrics {
   providedIn: 'root'
 })
 export class EvaluationService {
-  private apollo = inject(Apollo);
+  private readonly apollo = inject(Apollo);
 
   getActiveForms(): Observable<EvaluationForm[]> {
     return this.apollo.query<FormsResponse>({
@@ -408,7 +408,6 @@ export class EvaluationService {
       fetchPolicy: 'network-only'
     }).pipe(
       map(result => {
-        const students = result.data?.students?.edges || [];
         const evaluations = result.data?.evaluations?.edges.map((e: any) => e.node) || [];
 
         const oneWeekAgo = new Date();
