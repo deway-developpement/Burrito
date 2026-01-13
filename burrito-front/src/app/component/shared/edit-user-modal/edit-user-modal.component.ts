@@ -22,7 +22,7 @@ export class EditUserModalComponent implements OnChanges, OnInit {
   private cdr = inject(ChangeDetectorRef);
 
   @Input() user: UserProfile | null = null;
-  @Output() close = new EventEmitter<void>();
+  @Output() closed = new EventEmitter<void>();
   @Output() saved = new EventEmitter<void>();
 
   editForm: FormGroup;
@@ -128,7 +128,7 @@ export class EditUserModalComponent implements OnChanges, OnInit {
   }
 
   onCancel() {
-    this.close.emit();
+    this.closed.emit();
   }
 
   // --- Submission Logic ---
@@ -178,7 +178,7 @@ async onSubmit() {
         this.cdr.detectChanges();
         
         this.saved.emit();
-        this.close.emit();
+        this.closed.emit();
       } catch (err) {
         console.error('Group sync error:', err);
         this.toast.show('Profile saved, but there was an error updating groups.', 'error');
