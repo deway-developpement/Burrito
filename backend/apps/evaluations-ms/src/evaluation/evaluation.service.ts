@@ -4,6 +4,11 @@ import { isValidObjectId, Model } from 'mongoose';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { QueryService } from '@nestjs-query/core';
+import type {
+  AggregateQuery,
+  AggregateResponse,
+  Filter,
+} from '@nestjs-query/core';
 import { MongooseQueryService } from '@nestjs-query/query-mongoose';
 import { Evaluation } from './entities/evaluation.entity';
 import type { IGroupForm, IMembership } from '@app/common';
@@ -24,6 +29,14 @@ export class EvaluationService extends MongooseQueryService<Evaluation> {
     private readonly notificationsClient: ClientProxy,
   ) {
     super(evaluationModel);
+  }
+
+  async aggregate(
+    filter: Filter<Evaluation>,
+    aggregateQuery: AggregateQuery<Evaluation>,
+  ): Promise<AggregateResponse<Evaluation>[]> {
+    const normalizedFilter = this.normalizeAggregateFilter(filter);
+    return super.aggregate(normalizedFilter, aggregateQuery);
   }
 
   async createOne(dto: Partial<Evaluation>): Promise<Evaluation> {
@@ -91,6 +104,70 @@ export class EvaluationService extends MongooseQueryService<Evaluation> {
     if ((error as { code?: number })?.code === 11000) {
       throw new RpcException({ status: 409, message: 'Duplicate key error' });
     }
+  }
+
+  private normalizeAggregateFilter(filter: Filter<Evaluation>) {
+    const normalized: Filter<Evaluation> = { ...filter };
+    if (filter.and) {
+      normalized.and = filter.and.map((child) =>
+        this.normalizeAggregateFilter(child),
+      );
+    }
+    if (filter.or) {
+      normalized.or = filter.or.map((child) =>
+        this.normalizeAggregateFilter(child),
+      );
+    }
+    if (filter.createdAt && typeof filter.createdAt === 'object') {
+      normalized.createdAt = this.normalizeDateComparison(
+        filter.createdAt as Record<string, unknown>,
+      ) as Filter<Evaluation>['createdAt'];
+    }
+    return normalized;
+  }
+
+  private normalizeDateComparison(comparison: Record<string, unknown>) {
+    const normalized: Record<string, unknown> = { ...comparison };
+    for (const [operator, value] of Object.entries(comparison)) {
+      if (operator === 'between' || operator === 'notBetween') {
+        if (value && typeof value === 'object') {
+          const range = value as { lower?: unknown; upper?: unknown };
+          normalized[operator] = {
+            ...range,
+            lower: this.normalizeDateValue(range.lower),
+            upper: this.normalizeDateValue(range.upper),
+          };
+        }
+        continue;
+      }
+      if (operator === 'in' || operator === 'notIn') {
+        if (Array.isArray(value)) {
+          normalized[operator] = value.map((entry) =>
+            this.normalizeDateValue(entry),
+          );
+        }
+        continue;
+      }
+      if (operator === 'is' || operator === 'isNot') {
+        normalized[operator] = value;
+        continue;
+      }
+      normalized[operator] = this.normalizeDateValue(value);
+    }
+    return normalized;
+  }
+
+  private normalizeDateValue(value: unknown) {
+    if (value instanceof Date) {
+      return value;
+    }
+    if (typeof value === 'string' || typeof value === 'number') {
+      const date = new Date(value);
+      if (!Number.isNaN(date.getTime())) {
+        return date;
+      }
+    }
+    return value;
   }
 
   async userRespondedToForm(formId: string, userId: string): Promise<boolean> {
