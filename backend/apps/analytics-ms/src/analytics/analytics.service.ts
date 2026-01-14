@@ -134,11 +134,7 @@ export class AnalyticsService {
     'true';
   private readonly intelligenceAsyncTimeoutMs = Math.max(
     1000,
-    parseInt(
-      process.env.ANALYTICS_INTELLIGENCE_TIMEOUT_MS ||
-        process.env.ANALYTICS_INTELLIGENCE_ASYNC_TIMEOUT_MS ||
-        '60000',
-    ),
+    parseInt(process.env.ANALYTICS_INTELLIGENCE_TIMEOUT_MS || '300000'),
   );
 
   private intelligenceClient?: IntelligenceClient;
@@ -697,9 +693,19 @@ export class AnalyticsService {
           this.intelligenceAsyncTimeoutMs,
         );
         if (response?.success === false) {
+          const errorMessage = response.error_message || 'unknown error';
           this.logger.warn(
-            `Intelligence returned error for question ${input.questionId}: ${response.error_message || 'unknown error'}`,
+            `Intelligence returned error for question ${input.questionId}: ${errorMessage}`,
           );
+          await this.markTextEnrichmentFailed(
+            snapshot._id,
+            input,
+            errorMessage,
+          ).catch((updateError) => {
+            this.logger.warn(
+              `Failed to update analysis status for question ${input.questionId}: ${this.describeError(updateError)}`,
+            );
+          });
           continue;
         }
         const enrichment = this.buildTextEnrichment(response);
@@ -726,9 +732,19 @@ export class AnalyticsService {
           update,
         );
       } catch (error) {
+        const errorMessage = this.describeError(error);
         this.logger.warn(
-          `Intelligence enrichment failed for question ${input.questionId}: ${this.describeError(error)}`,
+          `Intelligence enrichment failed for question ${input.questionId}: ${errorMessage}`,
         );
+        await this.markTextEnrichmentFailed(
+          snapshot._id,
+          input,
+          errorMessage,
+        ).catch((updateError) => {
+          this.logger.warn(
+            `Failed to update analysis status for question ${input.questionId}: ${this.describeError(updateError)}`,
+          );
+        });
       } finally {
         this.inFlightEnrichments.delete(enrichmentKey);
       }
@@ -759,6 +775,23 @@ export class AnalyticsService {
           },
         ),
       ),
+    );
+  }
+
+  private async markTextEnrichmentFailed(
+    snapshotId: Types.ObjectId | string,
+    input: TextInput,
+    errorMessage: string,
+  ) {
+    await this.snapshotModel.updateOne(
+      { _id: snapshotId, 'questions.questionId': input.questionId },
+      {
+        $set: {
+          'questions.$.text.analysisStatus': TEXT_ANALYSIS_STATUS.failed,
+          'questions.$.text.analysisHash': input.hash,
+          'questions.$.text.analysisError': errorMessage || 'Unknown error',
+        },
+      },
     );
   }
 
