@@ -20,6 +20,6 @@ export class EvaluationDto implements IEvaluation {
   @Field(() => [EvaluationAnswerDto])
   answers: EvaluationAnswerDto[];
 
-  @Field()
+  @FilterableField()
   createdAt: Date;
 }
