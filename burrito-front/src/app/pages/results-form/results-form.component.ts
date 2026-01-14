@@ -1,8 +1,16 @@
-import { Component, OnInit, OnDestroy, signal, PLATFORM_ID, Inject, LOCALE_ID } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  signal,
+  PLATFORM_ID,
+  Inject,
+  LOCALE_ID,
+} from '@angular/core';
 import { CommonModule, isPlatformBrowser, formatDate as formatCommonDate } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Apollo, gql } from 'apollo-angular';
-import { Subject, firstValueFrom } from 'rxjs';
+import { Subject, firstValueFrom, Subscription } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
@@ -70,12 +78,15 @@ interface QuestionAnalytics {
   text?: {
     responseCount: number;
     analysisStatus: 'DISABLED' | 'FAILED' | 'PENDING' | 'READY';
-    topIdeas: Array<{ idea: string; count: number }>;
-    sentiment: {
+    topIdeas?: Array<{ idea: string; count: number }>;
+    sentiment?: {
       positivePct: number;
       neutralPct: number;
       negativePct: number;
     };
+    analysisHash?: string;
+    analysisError?: string;
+    lastEnrichedAt?: Date | string;
   };
 }
 
@@ -89,6 +100,22 @@ interface FormAnalyticsSnapshot {
   nps: NpsSummary;
   questions: QuestionAnalytics[];
   teachersBreakdown: TeacherBreakdown[];
+}
+
+interface AnalyticsTextAnalysisUpdate {
+  formId: string;
+  questionId: string;
+  windowKey: string;
+  analysisStatus: 'DISABLED' | 'FAILED' | 'PENDING' | 'READY';
+  analysisHash?: string;
+  analysisError?: string;
+  lastEnrichedAt?: Date | string;
+  topIdeas?: Array<{ idea: string; count: number }>;
+  sentiment?: {
+    positivePct: number;
+    neutralPct: number;
+    negativePct: number;
+  };
 }
 
 type TimeWindow = 'all' | '30d' | '7d' | 'custom';
@@ -119,18 +146,47 @@ const GET_ANALYTICS_SNAPSHOT = gql`
           median
           min
           max
-          distribution { rating count }
+          distribution {
+            rating
+            count
+          }
         }
         text {
           responseCount
           analysisStatus
-          topIdeas { idea count }
+          topIdeas {
+            idea
+            count
+          }
           sentiment {
             positivePct
             neutralPct
             negativePct
           }
         }
+      }
+    }
+  }
+`;
+
+const ANALYTICS_TEXT_ANALYSIS_STATUS_SUBSCRIPTION = gql`
+  subscription AnalyticsTextAnalysisStatusChanged($formId: String!, $window: AnalyticsWindowInput) {
+    analyticsTextAnalysisStatusChanged(formId: $formId, window: $window) {
+      formId
+      questionId
+      windowKey
+      analysisStatus
+      analysisHash
+      analysisError
+      lastEnrichedAt
+      topIdeas {
+        idea
+        count
+      }
+      sentiment {
+        positivePct
+        neutralPct
+        negativePct
       }
     }
   }
@@ -206,7 +262,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   textError = signal<string | null>(null);
   currentQuestionId = signal<string | null>(null);
   textResponsesTitle = $localize`:@@resultsForm.textResponsesTitle:Text responses`;
-  
+
   // Pagination state for text responses
   textPageCursor = signal<string | null>(null);
   textHasNextPage = signal<boolean>(false);
@@ -217,6 +273,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
+  private analyticsSubscription?: Subscription;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -224,7 +281,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     private readonly apollo: Apollo,
     private readonly authService: AuthService,
     @Inject(PLATFORM_ID) private readonly platformId: Object,
-    @Inject(LOCALE_ID) private readonly localeId: string,
+    @Inject(LOCALE_ID) private readonly localeId: string
   ) {}
 
   ngOnInit(): void {
@@ -247,6 +304,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.analyticsSubscription?.unsubscribe();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -273,9 +331,9 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     this.loadFormAnalytics();
   }
 
-  onRefreshAnalytics(): void {
+  onRefreshAnalytics(forceSync = false): void {
     this.loading.set(true);
-    this.fetchFormAnalytics(true).finally(() => this.loading.set(false));
+    this.fetchFormAnalytics(forceSync).finally(() => this.loading.set(false));
   }
 
   toggleQuestionExpanded(questionId: string): void {
@@ -296,7 +354,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     // Clear Apollo cache to avoid stale queries
     this.apollo.client.cache.evict({ fieldName: 'evaluations' });
     this.apollo.client.cache.gc();
-    
+
     this.loading.set(true);
     this.fetchFormAnalytics(false).finally(() => this.loading.set(false));
   }
@@ -304,11 +362,12 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   private async fetchFormAnalytics(forceSync: boolean): Promise<void> {
     try {
       const window = this.getAnalyticsWindow();
-      
+
       // Step 1: Fetch form analytics snapshot
       const formData = await this.fetchFormSnapshot(forceSync, window);
-      
+
       if (!formData) {
+        this.analyticsSubscription?.unsubscribe();
         this.error.set($localize`:@@resultsForm.loadError:Failed to load form analytics`);
         return;
       }
@@ -324,18 +383,16 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
         ...formData,
         teachersBreakdown,
       });
-      
+      this.startAnalyticsSubscription(window);
       this.error.set(null);
     } catch (err) {
+      this.analyticsSubscription?.unsubscribe();
       this.error.set($localize`:@@resultsForm.loadError:Failed to load form analytics`);
       console.error('Analytics fetch error:', err);
     }
   }
 
-  private fetchFormSnapshot(
-    forceSync: boolean,
-    window?: AnalyticsWindow
-  ): Promise<any> {
+  private fetchFormSnapshot(forceSync: boolean, window?: AnalyticsWindow): Promise<any> {
     return firstValueFrom(
       this.apollo.query<{ analyticsSnapshot: any }>({
         query: GET_ANALYTICS_SNAPSHOT,
@@ -344,15 +401,15 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
           window,
           forceSync,
         },
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
       })
     ).then(async (response) => {
       if (response.data?.analyticsSnapshot) {
         const snapshot = response.data.analyticsSnapshot;
-        
+
         // Fetch form title
         const formTitle = await this.fetchFormTitle(this.formId());
-        
+
         return {
           formId: snapshot.formId,
           formTitle,
@@ -368,13 +425,92 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  private startAnalyticsSubscription(window?: AnalyticsWindow): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    this.analyticsSubscription?.unsubscribe();
+    const formId = this.formId();
+    if (!formId) {
+      return;
+    }
+
+    this.analyticsSubscription = this.apollo
+      .subscribe<{
+        analyticsTextAnalysisStatusChanged: AnalyticsTextAnalysisUpdate;
+      }>({
+        query: ANALYTICS_TEXT_ANALYSIS_STATUS_SUBSCRIPTION,
+        variables: { formId, window },
+      })
+      .subscribe({
+        next: ({ data }) => {
+          const update = data?.analyticsTextAnalysisStatusChanged;
+          console.log('Received analytics text analysis update:', data);
+          if (update) {
+            this.applyTextAnalysisUpdate(update);
+          }
+        },
+        error: (err) => {
+          console.warn('Analytics text analysis subscription error:', err);
+        },
+      });
+  }
+
+  private applyTextAnalysisUpdate(update: AnalyticsTextAnalysisUpdate): void {
+    console.log('Received text analysis update:', update);
+    const current = this.analytics();
+    if (!current || update.formId !== current.formId) {
+      return;
+    }
+
+    const questions = current.questions.map((question) => {
+      if (question.questionId !== update.questionId) {
+        return question;
+      }
+
+      const existingText = question.text ?? {
+        responseCount: 0,
+        analysisStatus: update.analysisStatus,
+        topIdeas: [],
+      };
+
+      const nextText = {
+        ...existingText,
+        analysisStatus: update.analysisStatus,
+      };
+
+      if (update.analysisHash !== undefined) {
+        nextText.analysisHash = update.analysisHash;
+      }
+      if (update.topIdeas !== undefined) {
+        nextText.topIdeas = update.topIdeas;
+      }
+      if (update.sentiment !== undefined) {
+        nextText.sentiment = update.sentiment;
+      }
+      if (update.lastEnrichedAt !== undefined) {
+        nextText.lastEnrichedAt = update.lastEnrichedAt;
+      }
+      if (update.analysisError !== undefined) {
+        nextText.analysisError = update.analysisError;
+      } else if (update.analysisStatus !== 'FAILED') {
+        nextText.analysisError = undefined;
+      }
+
+      return { ...question, text: nextText };
+    });
+
+    this.analytics.set({ ...current, questions });
+  }
+
   private async fetchFormTitle(formId: string): Promise<string> {
     try {
       const response = await firstValueFrom(
         this.apollo.query<{ form: { title: string } }>({
           query: GET_FORM_TITLE,
           variables: { id: formId },
-          fetchPolicy: 'cache-first'
+          fetchPolicy: 'cache-first',
         })
       );
       if (response.data?.form?.title) {
@@ -386,9 +522,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async calculateTeacherBreakdown(
-    window?: AnalyticsWindow
-  ): Promise<TeacherBreakdown[]> {
+  private async calculateTeacherBreakdown(window?: AnalyticsWindow): Promise<TeacherBreakdown[]> {
     try {
       // Fetch all evaluations for this form
       const { evaluations } = await this.fetchEvaluationsForForm(window);
@@ -414,8 +548,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
         breakdown.push({
           teacherId,
           teacherName:
-            teacherNames.get(teacherId) ||
-            $localize`:@@resultsForm.unknownTeacher:Unknown`,
+            teacherNames.get(teacherId) || $localize`:@@resultsForm.unknownTeacher:Unknown`,
           totalResponses: evals.length,
           nps: metrics.nps,
           averageRating: metrics.averageRating,
@@ -435,7 +568,10 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   private fetchEvaluationsForForm(
     window?: AnalyticsWindow,
     after?: string | null
-  ): Promise<{ evaluations: Evaluation[]; pageInfo: { endCursor: string | null; hasNextPage: boolean } }> {
+  ): Promise<{
+    evaluations: Evaluation[];
+    pageInfo: { endCursor: string | null; hasNextPage: boolean };
+  }> {
     const filter: any = {
       formId: { eq: this.formId() },
     };
@@ -451,25 +587,25 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     }
 
     return firstValueFrom(
-      this.apollo.query<{ 
-        evaluations: { 
+      this.apollo.query<{
+        evaluations: {
           edges: Array<{ node: Evaluation }>;
           pageInfo: { endCursor: string; hasNextPage: boolean };
-        } 
+        };
       }>({
         query: GET_EVALUATIONS,
         variables: { filter, paging },
-        fetchPolicy: 'network-only'
+        fetchPolicy: 'network-only',
       })
     ).then((response) => {
       if (response.data?.evaluations?.edges) {
-        let evaluations = response.data.evaluations.edges.map(edge => edge.node);
-        
+        let evaluations = response.data.evaluations.edges.map((edge) => edge.node);
+
         // Filter by date window client-side
         if (window?.from || window?.to) {
           evaluations = evaluations.filter((item) => {
             const evalDate = item.createdAt ? new Date(item.createdAt).getTime() : 0;
-            
+
             if (window.from && evalDate < new Date(window.from).getTime()) {
               return false;
             }
@@ -479,10 +615,10 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
             return true;
           });
         }
-        
+
         return {
           evaluations,
-          pageInfo: response.data.evaluations.pageInfo || { endCursor: null, hasNextPage: false }
+          pageInfo: response.data.evaluations.pageInfo || { endCursor: null, hasNextPage: false },
         };
       }
       return { evaluations: [], pageInfo: { endCursor: null, hasNextPage: false } };
@@ -492,7 +628,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   private async fetchTeacherNames(teacherIds: string[]): Promise<Map<string, string>> {
     try {
       const nameMap = new Map<string, string>();
-      
+
       // Fetch each teacher individually
       await Promise.all(
         teacherIds.map(async (teacherId) => {
@@ -501,10 +637,10 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
               this.apollo.query<{ user: User | null }>({
                 query: GET_USER,
                 variables: { id: teacherId },
-                fetchPolicy: 'network-only'
+                fetchPolicy: 'network-only',
               })
             );
-            
+
             if (response.data?.user) {
               nameMap.set(response.data.user.id, response.data.user.fullName);
             }
@@ -513,7 +649,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
           }
         })
       );
-      
+
       return nameMap;
     } catch {
       return new Map();
@@ -618,7 +754,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   getNpsGradient(score: number): string {
     // NPS ranges from -100 to 100
     // We'll create a gradient from red (-100) through yellow (0) to green (100)
-    
+
     if (score >= 50) {
       // Excellent: 50 to 100 - gradient from light green to dark green
       const intensity = (score - 50) / 50; // 0 to 1
@@ -662,10 +798,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
 
   getQuestionLabel(questionId: string): string {
     const q = this.analytics()?.questions.find((item) => item.questionId === questionId);
-    return (
-      q?.label ??
-      $localize`:@@resultsForm.questionFallback:Question ${questionId}`
-    );
+    return q?.label ?? $localize`:@@resultsForm.questionFallback:Question ${questionId}`;
   }
 
   async openTextResponses(questionId: string): Promise<void> {
@@ -715,7 +848,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     } catch (err) {
       console.error('Failed to load text responses', err);
       this.textError.set(
-        $localize`:@@resultsForm.textResponsesError:Failed to load text responses`,
+        $localize`:@@resultsForm.textResponsesError:Failed to load text responses`
       );
     } finally {
       this.textLoading.set(false);
@@ -724,7 +857,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
 
   closeTextResponses(): void {
     this.textModalOpen.set(false);
-    
+
     // Restore body scroll
     if (isPlatformBrowser(this.platformId)) {
       document.body.style.overflow = '';
@@ -750,7 +883,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
 
       const questionId = this.currentQuestionId()!;
       const newResponses: TextResponse[] = [];
-      
+
       evaluations.forEach((evaluation) => {
         evaluation.answers.forEach((answer, idx) => {
           if (answer.questionId !== questionId) {
@@ -773,7 +906,9 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
 
       // Append and re-sort
       const allResponses = [...this.textResponses(), ...newResponses];
-      allResponses.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      allResponses.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
       this.textResponses.set(allResponses);
     } catch (err) {
       console.error('Failed to load more text responses', err);
@@ -786,7 +921,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     const element = event.target as HTMLElement;
     const scrollPosition = element.scrollTop + element.clientHeight;
     const scrollHeight = element.scrollHeight;
-    
+
     // Trigger load more when user is 200px from bottom
     if (scrollHeight - scrollPosition < 200 && this.textHasNextPage() && !this.textLoadingMore()) {
       this.loadMoreTextResponses();

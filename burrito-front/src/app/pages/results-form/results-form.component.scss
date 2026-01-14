@@ -876,14 +876,53 @@
             animation: pulse 2s infinite;
           }
 
+          .pending-message {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+          }
+
           p {
             margin: 0;
             color: theme.$info-blue-light;
             font-weight: 500;
           }
+
+          .charging-bar {
+            position: relative;
+            width: 120px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(65, 176, 232, 0.25);
+            overflow: hidden;
+          }
+
+          .charging-bar::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            width: 40%;
+            background: theme.$info-blue-light;
+            border-radius: inherit;
+            animation: charging-slide 1.3s ease-in-out infinite;
+          }
         }
       }
     }
+  }
+}
+
+@keyframes charging-slide {
+  0% {
+    transform: translateX(-70%);
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(170%);
+    opacity: 0.4;
   }
 }
 

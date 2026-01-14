@@ -22,6 +22,7 @@ import Handlebars from 'handlebars';
 import path from 'path';
 import fs from 'fs/promises';
 import { createHash } from 'crypto';
+import { UserType } from '@app/common';
 import type {
   IGroupForm,
   IMembership,
@@ -52,6 +53,7 @@ type Recipient = {
   email: string;
   fullName?: string;
   preferences?: INotificationPreferences;
+  userType?: UserType;
 };
 
 type TemplateContext = {
@@ -146,6 +148,20 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
 
   async handleFormClosed(event: FormEvent): Promise<void> {
     await this.handleFormEvent(NotificationType.FORM_CLOSED, event);
+
+    const form = await this.fetchForm(event.formId);
+    if (!form?.targetTeacherId) {
+      this.logger.warn(`Form ${event.formId} has no targetTeacherId`);
+      return;
+    }
+
+    const recipients = await this.fetchUsers([form.targetTeacherId]);
+    await this.dispatchNotifications(
+      NotificationType.FORM_ANALYTICS_AVAILABLE,
+      event,
+      form,
+      recipients,
+    );
   }
 
   async handleFormCompleted(event: FormEvent): Promise<void> {
@@ -259,6 +275,11 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       filteredRecipients = await this.filterPendingRecipients(
         event.formId,
         recipients,
+      );
+    }
+    if (type === NotificationType.FORM_PUBLISHED) {
+      filteredRecipients = recipients.filter(
+        (recipient) => recipient.userType === UserType.STUDENT,
       );
     }
     console.log(
@@ -512,6 +533,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
         email: user.email,
         fullName: user.fullName,
         preferences: user.notificationPreferences,
+        userType: user.userType,
       }));
   }
 
@@ -596,6 +618,23 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
           ctaUrl: formUrl,
           footerNote,
         };
+      case NotificationType.FORM_ANALYTICS_AVAILABLE: {
+        const teacherId =
+          typeof form?.targetTeacherId === 'string'
+            ? form.targetTeacherId
+            : undefined;
+        const analyticsUrl = teacherId
+          ? this.sanitizeCtaUrl(this.buildTeacherResultsUrl(teacherId))
+          : undefined;
+        return {
+          subject: `Analytics ready: ${formTitle}`,
+          headline: 'Analytics are ready',
+          message: `Analytics are now available for ${formTitle}.`,
+          ctaText: analyticsUrl ? 'View analytics' : undefined,
+          ctaUrl: analyticsUrl,
+          footerNote,
+        };
+      }
       case NotificationType.EVALUATION_SUBMITTED:
         return {
           subject: `Evaluation submitted: ${formTitle}`,
@@ -674,6 +713,13 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       return undefined;
     }
     return `${this.webAppUrl}/forms/${formId}`;
+  }
+
+  private buildTeacherResultsUrl(teacherId: string): string {
+    if (this.webAppUrl) {
+      return `${this.webAppUrl}/results/teacher/${teacherId}`;
+    }
+    return `https://burrito.deway.fr/results/teacher/${teacherId}`;
   }
 
   private buildStudentEvaluationUrl(formId: string): string | undefined {

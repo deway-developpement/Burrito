@@ -233,7 +233,10 @@
                       @if (question.text.analysisStatus === 'PENDING') {
                         <div class="analysis-pending">
                           <span class="icon">⏳</span>
-                          <p i18n="@@resultsForm.analysisPending">Text analysis is in progress. Summary will be available soon.</p>
+                          <div class="pending-message">
+                            <p i18n="@@resultsForm.analysisPending">Text analysis is in progress. Summary will be available soon.</p>
+                            <span class="charging-bar" aria-hidden="true"></span>
+                          </div>
                         </div>
                       }
 
@@ -299,7 +302,7 @@
         <!-- Refresh Info -->
         <div class="refresh-info">
           <span class="refresh-timestamp" i18n="@@resultsForm.lastUpdated">Last updated {{ formatDate(analytics()!.generatedAt) }}</span>
-          <button (click)="onRefreshAnalytics()" class="btn-refresh">
+          <button (click)="onRefreshAnalytics(true)" class="btn-refresh">
             @if (loading()) {
               <span class="spinner-small"></span>
             } @else {
@@ -321,7 +324,7 @@
               Once the first responses arrive, the dashboard will populate automatically.
             </p>
             <div class="empty-actions">
-              <button class="btn-primary" (click)="onRefreshAnalytics()" i18n="@@resultsForm.refresh">Refresh</button>
+              <button class="btn-primary" (click)="onRefreshAnalytics(true)" i18n="@@resultsForm.refresh">Refresh</button>
               @if (timeWindow() !== 'all') {
                 <button class="btn-secondary" (click)="onTimeWindowChange('all')" i18n="@@resultsForm.viewAllTime">View all time</button>
               }
@@ -371,5 +374,3 @@
   }
 </div>
 </app-background-div>
-
-

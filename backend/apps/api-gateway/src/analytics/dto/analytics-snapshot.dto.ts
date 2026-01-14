@@ -155,6 +155,39 @@ export class TextStatsDto {
 }
 
 @ObjectType()
+export class AnalyticsTextAnalysisUpdateDto {
+  @Field()
+  formId: string;
+
+  @Field()
+  questionId: string;
+
+  @Field()
+  windowKey: string;
+
+  @Field(() => AnalyticsWindowDto, { nullable: true })
+  window?: AnalyticsWindowDto;
+
+  @Field(() => TextAnalysisStatus)
+  analysisStatus: TextAnalysisStatus;
+
+  @Field({ nullable: true })
+  analysisHash?: string;
+
+  @Field({ nullable: true })
+  analysisError?: string;
+
+  @Field({ nullable: true })
+  lastEnrichedAt?: Date;
+
+  @Field(() => [TextIdeaDto], { nullable: true })
+  topIdeas?: TextIdeaDto[];
+
+  @Field(() => SentimentStatsDto, { nullable: true })
+  sentiment?: SentimentStatsDto;
+}
+
+@ObjectType()
 export class QuestionAnalyticsDto {
   @Field()
   questionId: string;
