@@ -444,10 +444,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       }
 
       const rendered = this.renderTemplate(payload.template);
-      const from = process.env.SMTP_FROM;
-      if (!from) {
-        throw new Error('SMTP_FROM is not configured');
-      }
+      const from = this.getFromAddress(notification.recipientEmail);
 
       await this.transporter.sendMail({
         from,
@@ -751,6 +748,29 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
 
   private buildQueueJobId(idempotencyKey: string): string {
     return createHash('sha256').update(idempotencyKey).digest('hex');
+  }
+
+  private getFromAddress(recipientEmail: string): string {
+    if (this.shouldOverrideSender(recipientEmail)) {
+      return 'paul.mairesse@efrei.net';
+    }
+    const from = process.env.SMTP_FROM;
+    if (!from) {
+      throw new Error('SMTP_FROM is not configured');
+    }
+    return from;
+  }
+
+  private shouldOverrideSender(recipientEmail: string): boolean {
+    const atIndex = recipientEmail.lastIndexOf('@');
+    if (atIndex < 0) {
+      return false;
+    }
+    const domain = recipientEmail
+      .slice(atIndex + 1)
+      .trim()
+      .toLowerCase();
+    return domain === 'efrei.net' || domain.endsWith('.efrei.net');
   }
 
   private deriveEventId(

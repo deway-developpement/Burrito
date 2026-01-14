@@ -134,7 +134,11 @@ export class AnalyticsService {
     'true';
   private readonly intelligenceAsyncTimeoutMs = Math.max(
     1000,
-    parseInt(process.env.ANALYTICS_INTELLIGENCE_ASYNC_TIMEOUT_MS || '60000'),
+    parseInt(
+      process.env.ANALYTICS_INTELLIGENCE_TIMEOUT_MS ||
+        process.env.ANALYTICS_INTELLIGENCE_ASYNC_TIMEOUT_MS ||
+        '60000',
+    ),
   );
 
   private intelligenceClient?: IntelligenceClient;

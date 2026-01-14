@@ -49,8 +49,8 @@ export class UserService extends MongooseQueryService<User> {
     await user.save().catch(() => {
       throw new BadRequestException('Email already used');
     });
-    this.emitVerificationEmail(user, token);
     this.emitWelcomeEmail(user, tempPassword);
+    this.emitVerificationEmail(user, token);
     return user;
   }
 
