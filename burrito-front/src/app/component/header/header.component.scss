@@ -198,6 +198,13 @@
   }
 }
 
+// Responsive: Hide language selector on small screens
+@media (max-width: 768px) {
+  .home__locale {
+    display: none;
+  }
+}
+
 .verify-banner__status {
   font-size: 0.85rem;
 }
