@@ -47,15 +47,6 @@ app.get('/health', (_req, res) => {
   res.status(200).send('ok');
 });
 
-/**
- * Redirect email verification links to the default (en) locale.
- * Email links from the backend don't include a locale prefix, so we need to redirect them.
- */
-app.get('/verify-email', (req, res) => {
-  const query = req.url.split('?')[1] ? `?${req.url.split('?')[1]}` : '';
-  res.redirect(301, `/en/verify-email${query}`);
-});
-
 supportedLocales.forEach((locale) => {
   const localeDistFolder = join(browserDistFolder, locale);
   const localeIndexPath = join(localeDistFolder, 'index.html');

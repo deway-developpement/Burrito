@@ -59,8 +59,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="footer.copyright" datatype="html">
-        <source>(c) <x id="INTERPOLATION" equiv-text="{{ currentYear }}" /> Burrito - All rights reserved.</source>
-        <target>(c) <x id="INTERPOLATION" equiv-text="{{ currentYear }}" /> Burrito - Tous droits réservés.</target>
+        <source>(c) <x id="INTERPOLATION" equiv-text="{{ currentYear }}" /> Burrito - All rights
+          reserved.</source>
+        <target>(c) <x id="INTERPOLATION" equiv-text="{{ currentYear }}" /> Burrito - Tous droits
+          réservés.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/component/footer/footer.component.html</context>
           <context context-type="linenumber">19,20</context>
@@ -75,8 +77,12 @@
         </context-group>
       </trans-unit>
       <trans-unit id="header.welcome" datatype="html">
-        <source> Welcome, <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" /><x id="INTERPOLATION" equiv-text="{{ user.fullName }}" /><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /></source>
-        <target> Accueillir, <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" /><x id="INTERPOLATION" equiv-text="{{ user.fullName }}" /><x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /></target>
+        <source> Welcome, <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" /><x
+            id="INTERPOLATION" equiv-text="{{ user.fullName }}" /><x id="CLOSE_TAG_STRONG"
+            ctype="x-strong" equiv-text="&lt;/strong&gt;" /></source>
+        <target> Accueillir, <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" /><x
+            id="INTERPOLATION" equiv-text="{{ user.fullName }}" /><x id="CLOSE_TAG_STRONG"
+            ctype="x-strong" equiv-text="&lt;/strong&gt;" /></target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/component/header/header.component.html</context>
           <context context-type="linenumber">26,29</context>
@@ -142,7 +148,8 @@
         <source><x id="PH" equiv-text="userLabel" /> created successfully!</source>
         <target><x id="PH" equiv-text="userLabel" /> créé avec succès !</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/add-user-modal/add-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/add-user-modal/add-user-modal.component.ts</context>
           <context context-type="linenumber">53</context>
         </context-group>
       </trans-unit>
@@ -150,7 +157,8 @@
         <source>An unexpected error occurred.</source>
         <target>Une erreur inattendue s'est produite.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/add-user-modal/add-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/add-user-modal/add-user-modal.component.ts</context>
           <context context-type="linenumber">68</context>
         </context-group>
       </trans-unit>
@@ -158,7 +166,8 @@
         <source>Teacher</source>
         <target>Professeur</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/add-user-modal/add-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/add-user-modal/add-user-modal.component.ts</context>
           <context context-type="linenumber">88</context>
         </context-group>
       </trans-unit>
@@ -166,7 +175,8 @@
         <source>Admin</source>
         <target>Administrateur</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/add-user-modal/add-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/add-user-modal/add-user-modal.component.ts</context>
           <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
@@ -174,7 +184,8 @@
         <source>Student</source>
         <target>Étudiant</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/add-user-modal/add-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/add-user-modal/add-user-modal.component.ts</context>
           <context context-type="linenumber">92</context>
         </context-group>
       </trans-unit>
@@ -182,7 +193,8 @@
         <source>No groups</source>
         <target>Aucun groupe</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/admin-table/admin-table.component.html</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/admin-table/admin-table.component.html</context>
           <context context-type="linenumber">23,24</context>
         </context-group>
       </trans-unit>
@@ -190,7 +202,8 @@
         <source>Edit</source>
         <target>Modifier</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/admin-table/admin-table.component.html</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/admin-table/admin-table.component.html</context>
           <context context-type="linenumber">37,38</context>
         </context-group>
       </trans-unit>
@@ -198,7 +211,8 @@
         <source>Delete</source>
         <target>Supprimer</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/admin-table/admin-table.component.html</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/admin-table/admin-table.component.html</context>
           <context context-type="linenumber">38,39</context>
         </context-group>
       </trans-unit>
@@ -206,7 +220,8 @@
         <source>Close dialog</source>
         <target>Fermer la boîte de dialogue</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/alert-dialog/alert-dialog.component.html</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/alert-dialog/alert-dialog.component.html</context>
           <context context-type="linenumber">15,18</context>
         </context-group>
       </trans-unit>
@@ -214,7 +229,8 @@
         <source>Failed to load available groups.</source>
         <target>Échec du chargement des groupes disponibles.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
           <context context-type="linenumber">71</context>
         </context-group>
       </trans-unit>
@@ -222,7 +238,8 @@
         <source>Group name must be at least 2 characters long.</source>
         <target>Le nom du groupe doit comporter au moins 2 caractères.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
           <context context-type="linenumber">109</context>
         </context-group>
       </trans-unit>
@@ -230,7 +247,8 @@
         <source>Group "<x id="PH" equiv-text="newGroup.name" />" created.</source>
         <target>Groupe "<x id="PH" equiv-text="newGroup.name" />" créé.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
           <context context-type="linenumber">128</context>
         </context-group>
       </trans-unit>
@@ -238,7 +256,8 @@
         <source>Could not create group. It might already exist.</source>
         <target>Impossible de créer un groupe. Cela existe peut-être déjà.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
           <context context-type="linenumber">136</context>
         </context-group>
       </trans-unit>
@@ -246,15 +265,18 @@
         <source>User profile and groups updated.</source>
         <target>Profil utilisateur et groupes mis à jour.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
           <context context-type="linenumber">189</context>
         </context-group>
       </trans-unit>
       <trans-unit id="editUser.groupsUpdateError" datatype="html">
         <source>Profile saved, but there was an error updating groups.</source>
-        <target>Profil enregistré, mais une erreur s'est produite lors de la mise à jour des groupes.</target>
+        <target>Profil enregistré, mais une erreur s'est produite lors de la mise à jour des
+          groupes.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
           <context context-type="linenumber">201</context>
         </context-group>
       </trans-unit>
@@ -262,7 +284,8 @@
         <source>Failed to update user profile.</source>
         <target>Échec de la mise à jour du profil utilisateur.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/component/shared/edit-user-modal/edit-user-modal.component.ts</context>
           <context context-type="linenumber">212</context>
         </context-group>
       </trans-unit>
@@ -276,7 +299,7 @@
       </trans-unit>
       <trans-unit id="shared.goBackLabel" datatype="html">
         <source>Back</source>
-        <target>Dos</target>
+        <target>Retour</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/component/shared/go-back/go-back.component.html</context>
           <context context-type="linenumber">2,4</context>
@@ -308,7 +331,8 @@
       </trans-unit>
       <trans-unit id="adminForms.subtitle" datatype="html">
         <source>Browse, update, and publish the evaluation forms used across the platform.</source>
-        <target>Parcourez, mettez à jour et publiez les formulaires d'évaluation utilisés sur la plateforme.</target>
+        <target>Parcourez, mettez à jour et publiez les formulaires d'évaluation utilisés sur la
+          plateforme.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/admin-forms/admin-forms.component.html</context>
           <context context-type="linenumber">11,12</context>
@@ -339,8 +363,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="adminForms.endsLabel" datatype="html">
-        <source> Ends <x id="INTERPOLATION" equiv-text="{{ formatDate(form.endDate) }}" /> </source>
-        <target> Se termine <x id="INTERPOLATION" equiv-text="{{ formatDate(form.endDate) }}" /> </target>
+        <source> Ends <x id="INTERPOLATION" equiv-text="{{ formatDate(form.endDate) }}" />
+        </source>
+        <target> Se termine <x id="INTERPOLATION" equiv-text="{{ formatDate(form.endDate) }}" />
+        </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/admin-forms/admin-forms.component.html</context>
           <context context-type="linenumber">43,44</context>
@@ -847,8 +873,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="contact.intro" datatype="html">
-        <source> Having trouble with the platform? Have a suggestion for the Burito team? Fill out the form below or reach us directly. </source>
-        <target> Vous rencontrez des problèmes avec la plateforme ? Une suggestion pour l'équipe Burito ? Remplissez le formulaire ci-dessous ou contactez-nous directement. </target>
+        <source> Having trouble with the platform? Have a suggestion for the Burito team? Fill out
+          the form below or reach us directly. </source>
+        <target> Vous rencontrez des problèmes avec la plateforme ? Une suggestion pour l'équipe
+          Burito ? Remplissez le formulaire ci-dessous ou contactez-nous directement. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/contact/contact.component.html</context>
           <context context-type="linenumber">12,14</context>
@@ -975,16 +1003,29 @@
         </context-group>
       </trans-unit>
       <trans-unit id="cookie.section1Body" datatype="html">
-        <source> You may have noticed that <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> does not annoy you with a "Accept Cookies" pop-up. This is intentional. We believe in a clean, distraction-free educational environment. </source>
-        <target> Vous avez peut-être remarqué que <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> ne vous ennuie pas avec une fenêtre contextuelle « Accepter les cookies ». C'est intentionnel. Nous croyons en un environnement éducatif propre et sans distraction. </target>
+        <source> You may have noticed that <x id="START_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;/strong&gt;" /> does not annoy you with a "Accept Cookies" pop-up. This
+          is intentional. We believe in a clean, distraction-free educational environment. </source>
+        <target> Vous avez peut-être remarqué que <x id="START_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;/strong&gt;" /> ne vous ennuie pas avec une fenêtre contextuelle
+          « Accepter les cookies ». C'est intentionnel. Nous croyons en un environnement éducatif
+          propre et sans distraction. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/cookie/cookie-policy.component.html</context>
           <context context-type="linenumber">13,15</context>
         </context-group>
       </trans-unit>
       <trans-unit id="cookie.section1Highlight" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />We do not track you.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> We do not use third-party analytics (like Google Analytics), advertising pixels, or marketing trackers. Therefore, we do not require your consent. </source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Nous ne vous suivons pas.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Nous n'utilisons pas d'analyses tierces (comme Google Analytics), de pixels publicitaires ou de trackers marketing. Nous n’avons donc pas besoin de votre consentement. </target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />We do not
+          track you.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> We do
+          not use third-party analytics (like Google Analytics), advertising pixels, or marketing
+          trackers. Therefore, we do not require your consent. </source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Nous ne vous
+          suivons pas.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Nous
+          n'utilisons pas d'analyses tierces (comme Google Analytics), de pixels publicitaires ou de
+          trackers marketing. Nous n’avons donc pas besoin de votre consentement. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/cookie/cookie-policy.component.html</context>
           <context context-type="linenumber">18,20</context>
@@ -999,32 +1040,47 @@
         </context-group>
       </trans-unit>
       <trans-unit id="cookie.section2Body" datatype="html">
-        <source> To make the application work, we only store strictly necessary technical data on your device (Local Storage or Session Cookies). This data is essential for: </source>
-        <target> Pour faire fonctionner l'application, nous stockons uniquement les données techniques strictement nécessaires sur votre appareil (Stockage Local ou Cookies de Session). Ces données sont essentielles pour : </target>
+        <source> To make the application work, we only store strictly necessary technical data on
+          your device (Local Storage or Session Cookies). This data is essential for: </source>
+        <target> Pour faire fonctionner l'application, nous stockons uniquement les données
+          techniques strictement nécessaires sur votre appareil (Stockage Local ou Cookies de
+          Session). Ces données sont essentielles pour : </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/cookie/cookie-policy.component.html</context>
           <context context-type="linenumber">27,30</context>
         </context-group>
       </trans-unit>
       <trans-unit id="cookie.section2Auth" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Authentication:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Keeping you logged in securely while you navigate.</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Authentification:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Vous garder connecté en toute sécurité pendant que vous naviguez.</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
+          Authentication:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Keeping you logged in securely while you navigate.</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
+          Authentification:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Vous garder connecté en toute sécurité pendant que vous naviguez.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/cookie/cookie-policy.component.html</context>
           <context context-type="linenumber">31,32</context>
         </context-group>
       </trans-unit>
       <trans-unit id="cookie.section2Security" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Security:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Preventing Cross-Site Request Forgery (CSRF) attacks.</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Sécurité:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Prévention des attaques CSRF (Cross-Site Request Forgery).</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Security:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Preventing
+          Cross-Site Request Forgery (CSRF) attacks.</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Sécurité:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Prévention des
+          attaques CSRF (Cross-Site Request Forgery).</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/cookie/cookie-policy.component.html</context>
           <context context-type="linenumber">32,33</context>
         </context-group>
       </trans-unit>
       <trans-unit id="cookie.section2Prefs" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Preferences:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Temporarily saving your language choice (e.g., FR/EN).</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Préférences :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Enregistrer temporairement votre choix de langue (par exemple FR/EN).</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Preferences:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Temporarily
+          saving your language choice (e.g., FR/EN).</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
+          Préférences :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Enregistrer temporairement votre choix de langue (par exemple FR/EN).</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/cookie/cookie-policy.component.html</context>
           <context context-type="linenumber">33,35</context>
@@ -1039,8 +1095,15 @@
         </context-group>
       </trans-unit>
       <trans-unit id="cookie.section3Body" datatype="html">
-        <source> Instead of traditional cookies, Burito primarily uses <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Local Storage<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />. This is a modern technology that allows us to save your session token directly in your browser. </source>
-        <target> Au lieu des cookies traditionnels, Burito utilise principalement <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Stockage local<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />. Il s'agit d'une technologie moderne qui nous permet de sauvegarder votre jeton de session directement dans votre navigateur. </target>
+        <source> Instead of traditional cookies, Burito primarily uses <x id="START_TAG_STRONG"
+            ctype="x-strong" equiv-text="&lt;strong&gt;" />Local Storage<x id="CLOSE_TAG_STRONG"
+            ctype="x-strong" equiv-text="&lt;/strong&gt;" />. This is a modern technology that
+          allows us to save your session token directly in your browser. </source>
+        <target> Au lieu des cookies traditionnels, Burito utilise principalement <x
+            id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Stockage local<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />. Il s'agit d'une
+          technologie moderne qui nous permet de sauvegarder votre jeton de session directement dans
+          votre navigateur. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/cookie/cookie-policy.component.html</context>
           <context context-type="linenumber">40,42</context>
@@ -1087,8 +1150,13 @@
         </context-group>
       </trans-unit>
       <trans-unit id="cookie.section4Body" datatype="html">
-        <source> Since we do not use persistent tracking cookies, there is nothing to "opt-out" of. However, you can always clear your browser's Local Storage or cache through your browser settings if you wish to remove all traces of your session immediately. </source>
-        <target> Puisque nous n’utilisons pas de cookies de suivi persistants, il n’y a rien à « refuser ». Cependant, vous pouvez toujours effacer le stockage local ou le cache de votre navigateur via les paramètres de votre navigateur si vous souhaitez supprimer immédiatement toute trace de votre session. </target>
+        <source> Since we do not use persistent tracking cookies, there is nothing to "opt-out" of.
+          However, you can always clear your browser's Local Storage or cache through your browser
+          settings if you wish to remove all traces of your session immediately. </source>
+        <target> Puisque nous n’utilisons pas de cookies de suivi persistants, il n’y a rien à «
+          refuser ». Cependant, vous pouvez toujours effacer le stockage local ou le cache de votre
+          navigateur via les paramètres de votre navigateur si vous souhaitez supprimer
+          immédiatement toute trace de votre session. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/cookie/cookie-policy.component.html</context>
           <context context-type="linenumber">56,59</context>
@@ -1103,26 +1171,41 @@
         </context-group>
       </trans-unit>
       <trans-unit id="cookie.section5Body" datatype="html">
-        <source> If you have technical questions about how we handle session storage, please refer to our <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/legal/privacy&quot;&gt;" />Privacy Policy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;" /> or contact the administrator. </source>
-        <target> Si vous avez des questions techniques sur la façon dont nous gérons le stockage des sessions, veuillez vous référer à notre <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/legal/privacy&quot;&gt;" />politique de confidentialité<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;" /> ou contactez l'administrateur. </target>
+        <source> If you have technical questions about how we handle session storage, please refer
+          to our <x id="START_LINK" ctype="x-a"
+            equiv-text="&lt;a routerLink=&quot;/legal/privacy&quot;&gt;" />Privacy Policy<x
+            id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;" /> or contact the administrator. </source>
+        <target> Si vous avez des questions techniques sur la façon dont nous gérons le stockage des
+          sessions, veuillez vous référer à notre <x id="START_LINK" ctype="x-a"
+            equiv-text="&lt;a routerLink=&quot;/legal/privacy&quot;&gt;" />politique de
+          confidentialité<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;" /> ou contactez
+          l'administrateur. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/cookie/cookie-policy.component.html</context>
           <context context-type="linenumber">65,68</context>
         </context-group>
       </trans-unit>
       <trans-unit id="evaluateForm.teacherLabel" datatype="html">
-        <source> Teacher: <x id="INTERPOLATION" equiv-text="{{ formData.teacher.fullName }}" /> </source>
-        <target> Professeur: <x id="INTERPOLATION" equiv-text="{{ formData.teacher.fullName }}" /> </target>
+        <source> Teacher: <x id="INTERPOLATION" equiv-text="{{ formData.teacher.fullName }}" />
+        </source>
+        <target> Professeur: <x id="INTERPOLATION" equiv-text="{{ formData.teacher.fullName }}" />
+        </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">13,14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="evaluateForm.deadlineLabel" datatype="html">
-        <source> Deadline: <x id="INTERPOLATION" equiv-text="{{ formData.endDate | date: 'medium' }}" /> </source>
-        <target> Date limite: <x id="INTERPOLATION" equiv-text="{{ formData.endDate | date: 'medium' }}" /> </target>
+        <source> Deadline: <x id="INTERPOLATION"
+            equiv-text="{{ formData.endDate | date: 'medium' }}" />
+        </source>
+        <target> Date limite: <x id="INTERPOLATION"
+            equiv-text="{{ formData.endDate | date: 'medium' }}" />
+        </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">16,17</context>
         </context-group>
       </trans-unit>
@@ -1130,7 +1213,8 @@
         <source>Poor</source>
         <target>Pauvre</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">42,43</context>
         </context-group>
       </trans-unit>
@@ -1138,7 +1222,8 @@
         <source>Excellent</source>
         <target>Excellent</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">43,45</context>
         </context-group>
       </trans-unit>
@@ -1146,7 +1231,8 @@
         <source>Enter your response...</source>
         <target>Entrez votre réponse...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">54,56</context>
         </context-group>
       </trans-unit>
@@ -1154,7 +1240,8 @@
         <source>This field is required</source>
         <target>Ce champ est obligatoire</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">60,63</context>
         </context-group>
       </trans-unit>
@@ -1162,7 +1249,8 @@
         <source>Cancel</source>
         <target>Annuler</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">70,72</context>
         </context-group>
       </trans-unit>
@@ -1170,7 +1258,8 @@
         <source>Submitting...</source>
         <target>Soumission...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">74,76</context>
         </context-group>
       </trans-unit>
@@ -1178,7 +1267,8 @@
         <source>Submit Evaluation</source>
         <target>Soumettre l'évaluation</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">76,78</context>
         </context-group>
       </trans-unit>
@@ -1186,7 +1276,8 @@
         <source>Loading form...</source>
         <target>Chargement du formulaire...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">85,88</context>
         </context-group>
       </trans-unit>
@@ -1194,7 +1285,8 @@
         <source>Back to Home</source>
         <target>Retour à la maison</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/evaluate-form/evaluate-form.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/evaluate-form/evaluate-form.component.html</context>
           <context context-type="linenumber">91,93</context>
         </context-group>
       </trans-unit>
@@ -1202,7 +1294,8 @@
         <source>Admin</source>
         <target>Administrateur</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">9,11</context>
         </context-group>
       </trans-unit>
@@ -1210,7 +1303,8 @@
         <source>Form metadata</source>
         <target>Métadonnées du formulaire</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">20,21</context>
         </context-group>
       </trans-unit>
@@ -1218,15 +1312,21 @@
         <source> Students will see this at the top of the form. </source>
         <target> Les étudiants le verront en haut du formulaire. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">22,24</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackAdmin.formTitleLabel" datatype="html">
-        <source> Form title <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
-        <target> Titre du formulaire <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
+        <source> Form title <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
+        <target> Titre du formulaire <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">29,30</context>
         </context-group>
       </trans-unit>
@@ -1234,15 +1334,21 @@
         <source>e.g. Semester feedback</source>
         <target>par ex. Commentaires semestriels</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">34,36</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackAdmin.targetTeacherLabel" datatype="html">
-        <source> Target teacher <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
-        <target> Enseignant cible <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
+        <source> Target teacher <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
+        <target> Enseignant cible <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">43,44</context>
         </context-group>
       </trans-unit>
@@ -1250,15 +1356,21 @@
         <source>Select a teacher</source>
         <target>Sélectionnez un professeur</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">48,50</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackAdmin.groupsLabel" datatype="html">
-        <source> Groups <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
-        <target> Groupes <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
+        <source> Groups <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
+        <target> Groupes <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">58,59</context>
         </context-group>
       </trans-unit>
@@ -1266,7 +1378,8 @@
         <source>select a group</source>
         <target>sélectionner un groupe</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">65,67</context>
         </context-group>
       </trans-unit>
@@ -1274,7 +1387,8 @@
         <source> No groups selected </source>
         <target> Aucun groupe sélectionné </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">77,78</context>
         </context-group>
       </trans-unit>
@@ -1282,7 +1396,8 @@
         <source>Group is required.</source>
         <target>Un groupe est obligatoire.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">94,96</context>
         </context-group>
       </trans-unit>
@@ -1290,7 +1405,8 @@
         <source>Start date</source>
         <target>Date de début</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">100,101</context>
         </context-group>
       </trans-unit>
@@ -1298,7 +1414,8 @@
         <source> Start date is required. </source>
         <target> La date de début est requise. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">113,115</context>
         </context-group>
       </trans-unit>
@@ -1306,7 +1423,8 @@
         <source>End date</source>
         <target>Date de fin</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">120,121</context>
         </context-group>
       </trans-unit>
@@ -1314,15 +1432,21 @@
         <source> End date is required. </source>
         <target> La date de fin est requise. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">133,135</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackAdmin.introTextLabel" datatype="html">
-        <source> Intro text <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
-        <target> Texte d'introduction <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
+        <source> Intro text <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
+        <target> Texte d'introduction <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">141,142</context>
         </context-group>
       </trans-unit>
@@ -1330,7 +1454,8 @@
         <source>Explain what you expect from students</source>
         <target>Expliquez ce que vous attendez des étudiants</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">147,149</context>
         </context-group>
       </trans-unit>
@@ -1338,7 +1463,8 @@
         <source> Description is required. </source>
         <target> Une description est requise. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">154,156</context>
         </context-group>
       </trans-unit>
@@ -1346,7 +1472,8 @@
         <source>Questions *</source>
         <target>Questions*</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">162,163</context>
         </context-group>
       </trans-unit>
@@ -1354,7 +1481,8 @@
         <source> Combine ratings and short answers to keep it actionable. </source>
         <target> Combinez les notes et les réponses courtes pour que cela reste exploitable. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">164,166</context>
         </context-group>
       </trans-unit>
@@ -1362,7 +1490,8 @@
         <source>Required</source>
         <target>Requis</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">182,184</context>
         </context-group>
       </trans-unit>
@@ -1370,15 +1499,21 @@
         <source> Remove </source>
         <target> Retirer </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">185,186</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackAdmin.questionTextLabel" datatype="html">
-        <source> Question text <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
-        <target> Texte de la question <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
+        <source> Question text <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
+        <target> Texte de la question <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">192,193</context>
         </context-group>
       </trans-unit>
@@ -1386,7 +1521,8 @@
         <source>e.g. How clear were the explanations?</source>
         <target>par ex. Dans quelle mesure les explications étaient-elles claires ?</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">197,199</context>
         </context-group>
       </trans-unit>
@@ -1394,7 +1530,8 @@
         <source> Question text is required. </source>
         <target> Le texte de la question est requis. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">204,205</context>
         </context-group>
       </trans-unit>
@@ -1402,7 +1539,8 @@
         <source>Placeholder</source>
         <target>Espace réservé</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">211,213</context>
         </context-group>
       </trans-unit>
@@ -1410,7 +1548,8 @@
         <source>e.g. Add a quick note</source>
         <target>par ex. Ajouter une note rapide</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">215,217</context>
         </context-group>
       </trans-unit>
@@ -1418,7 +1557,8 @@
         <source> Students will select a 1-5 star rating. </source>
         <target> Les étudiants sélectionneront une note de 1 à 5 étoiles. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">224,225</context>
         </context-group>
       </trans-unit>
@@ -1426,7 +1566,8 @@
         <source> Add a question card </source>
         <target> Ajouter une fiche de questions </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">233,235</context>
         </context-group>
       </trans-unit>
@@ -1434,7 +1575,8 @@
         <source>Rating</source>
         <target>Notation</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">237,239</context>
         </context-group>
       </trans-unit>
@@ -1442,7 +1584,8 @@
         <source>Text</source>
         <target>Texte</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">240,242</context>
         </context-group>
       </trans-unit>
@@ -1450,7 +1593,8 @@
         <source>Loading form details...</source>
         <target>Chargement des détails du formulaire...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">251,253</context>
         </context-group>
       </trans-unit>
@@ -1458,7 +1602,8 @@
         <source> Please complete required fields before saving. </source>
         <target> Veuillez remplir les champs obligatoires avant d'enregistrer. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">255,258</context>
         </context-group>
       </trans-unit>
@@ -1466,7 +1611,8 @@
         <source>Cancel</source>
         <target>Annuler</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.html</context>
           <context context-type="linenumber">266,268</context>
         </context-group>
       </trans-unit>
@@ -1474,15 +1620,18 @@
         <source>Teacher feedback</source>
         <target>Commentaires des enseignants</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">59</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackAdmin.defaultDescription" datatype="html">
         <source>Gather constructive input from students to help teachers improve.</source>
-        <target>Recueillez les commentaires constructifs des élèves pour aider les enseignants à s’améliorer.</target>
+        <target>Recueillez les commentaires constructifs des élèves pour aider les enseignants à
+          s’améliorer.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">60</context>
         </context-group>
       </trans-unit>
@@ -1490,7 +1639,8 @@
         <source>Rating</source>
         <target>Notation</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">88</context>
         </context-group>
       </trans-unit>
@@ -1498,7 +1648,8 @@
         <source>Text</source>
         <target>Texte</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">89</context>
         </context-group>
       </trans-unit>
@@ -1506,7 +1657,8 @@
         <source>Edit a feedback form</source>
         <target>Modifier un formulaire de commentaires</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">99</context>
         </context-group>
       </trans-unit>
@@ -1514,7 +1666,8 @@
         <source>Create a feedback form</source>
         <target>Créer un formulaire de commentaires</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">100</context>
         </context-group>
       </trans-unit>
@@ -1522,7 +1675,8 @@
         <source>Updating...</source>
         <target>Mise à jour...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">106</context>
         </context-group>
       </trans-unit>
@@ -1530,7 +1684,8 @@
         <source>Saving...</source>
         <target>Économie...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">107</context>
         </context-group>
       </trans-unit>
@@ -1538,7 +1693,8 @@
         <source>Update form</source>
         <target>Formulaire de mise à jour</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">110</context>
         </context-group>
       </trans-unit>
@@ -1546,7 +1702,8 @@
         <source>Save form</source>
         <target>Enregistrer le formulaire</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">111</context>
         </context-group>
       </trans-unit>
@@ -1554,7 +1711,8 @@
         <source>No teachers found.</source>
         <target>Aucun professeur trouvé.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">176</context>
         </context-group>
       </trans-unit>
@@ -1562,7 +1720,8 @@
         <source>Failed to load teachers.</source>
         <target>Échec du chargement des enseignants.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">182</context>
         </context-group>
       </trans-unit>
@@ -1570,7 +1729,8 @@
         <source>No groups found.</source>
         <target>Aucun groupe trouvé.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">199</context>
         </context-group>
       </trans-unit>
@@ -1578,7 +1738,8 @@
         <source>Failed to load groups.</source>
         <target>Échec du chargement des groupes.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">205</context>
         </context-group>
       </trans-unit>
@@ -1586,7 +1747,8 @@
         <source>Form not found.</source>
         <target>Formulaire introuvable.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">243</context>
         </context-group>
       </trans-unit>
@@ -1594,7 +1756,8 @@
         <source>Failed to load the selected form.</source>
         <target>Échec du chargement du formulaire sélectionné.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">254</context>
         </context-group>
       </trans-unit>
@@ -1602,7 +1765,8 @@
         <source>Remove group <x id="PH" equiv-text="label" /></source>
         <target>Supprimer le groupe <x id="PH" equiv-text="label" /></target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">408</context>
         </context-group>
       </trans-unit>
@@ -1610,7 +1774,8 @@
         <source>Rating card</source>
         <target>Carte de notation</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">413</context>
         </context-group>
       </trans-unit>
@@ -1618,7 +1783,8 @@
         <source>Text card</source>
         <target>Carte texte</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">415</context>
         </context-group>
       </trans-unit>
@@ -1626,7 +1792,8 @@
         <source>Missing form id for update.</source>
         <target>ID de formulaire manquant pour la mise à jour.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">447</context>
         </context-group>
       </trans-unit>
@@ -1634,7 +1801,8 @@
         <source>Form save failed.</source>
         <target>L'enregistrement du formulaire a échoué.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">476</context>
         </context-group>
       </trans-unit>
@@ -1642,7 +1810,8 @@
         <source>Form updated successfully.</source>
         <target>Formulaire mis à jour avec succès.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">498</context>
         </context-group>
       </trans-unit>
@@ -1650,7 +1819,8 @@
         <source>Form created successfully.</source>
         <target>Formulaire créé avec succès.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">499</context>
         </context-group>
       </trans-unit>
@@ -1658,7 +1828,8 @@
         <source>Failed to save the form. Please try again.</source>
         <target>Échec de l'enregistrement du formulaire. Veuillez réessayer.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/admin/feedback-admin.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/admin/feedback-admin.component.ts</context>
           <context context-type="linenumber">513</context>
         </context-group>
       </trans-unit>
@@ -1666,7 +1837,8 @@
         <source>Student feedback</source>
         <target>Commentaires des étudiants</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">5,6</context>
         </context-group>
       </trans-unit>
@@ -1674,23 +1846,31 @@
         <source>Share your learning experience</source>
         <target>Partagez votre expérience d'apprentissage</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">6,7</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackStudent.lead" datatype="html">
-        <source> Complete the active forms below to help teachers improve. Your responses are kept confidential and shared only in aggregate. </source>
-        <target> Remplissez les formulaires actifs ci-dessous pour aider les enseignants à s’améliorer. Vos réponses restent confidentielles et partagées uniquement sous forme globale. </target>
+        <source> Complete the active forms below to help teachers improve. Your responses are kept
+          confidential and shared only in aggregate. </source>
+        <target> Remplissez les formulaires actifs ci-dessous pour aider les enseignants à
+          s’améliorer. Vos réponses restent confidentielles et partagées uniquement sous forme
+          globale. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">8,10</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackStudent.activeForms" datatype="html">
-        <source> <x id="INTERPOLATION" equiv-text="{{ forms.length }}" /> active forms </source>
-        <target> <x id="INTERPOLATION" equiv-text="{{ forms.length }}" /> formes actives </target>
+        <source>
+          <x id="INTERPOLATION" equiv-text="{{ forms.length }}" /> active forms </source>
+        <target>
+          <x id="INTERPOLATION" equiv-text="{{ forms.length }}" /> formes actives </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">12,13</context>
         </context-group>
       </trans-unit>
@@ -1698,7 +1878,8 @@
         <source>Anonymous by design</source>
         <target>Anonyme par conception</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">14,15</context>
         </context-group>
       </trans-unit>
@@ -1706,7 +1887,8 @@
         <source>2-4 minutes</source>
         <target>2 à 4 minutes</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">15,18</context>
         </context-group>
       </trans-unit>
@@ -1714,7 +1896,8 @@
         <source>Next deadline</source>
         <target>Prochaine échéance</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">20,21</context>
         </context-group>
       </trans-unit>
@@ -1722,7 +1905,8 @@
         <source> Submit before the due date to be counted. </source>
         <target> Soumettez avant la date d’échéance pour être pris en compte. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">23,26</context>
         </context-group>
       </trans-unit>
@@ -1730,7 +1914,8 @@
         <source>Selected form</source>
         <target>Formulaire sélectionné</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">27,28</context>
         </context-group>
       </trans-unit>
@@ -1738,7 +1923,8 @@
         <source>Available forms</source>
         <target>Formulaires disponibles</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">37,38</context>
         </context-group>
       </trans-unit>
@@ -1746,7 +1932,8 @@
         <source>Select the evaluation you want to complete.</source>
         <target>Sélectionnez l'évaluation que vous souhaitez effectuer.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">38,41</context>
         </context-group>
       </trans-unit>
@@ -1754,7 +1941,8 @@
         <source>Loading active forms...</source>
         <target>Chargement des formulaires actifs...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">42,44</context>
         </context-group>
       </trans-unit>
@@ -1762,7 +1950,8 @@
         <source>No active feedback yet</source>
         <target>Pas encore de commentaires actifs</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">47,48</context>
         </context-group>
       </trans-unit>
@@ -1770,7 +1959,8 @@
         <source>Check back soon for a new evaluation window.</source>
         <target>Revenez bientôt pour une nouvelle fenêtre d’évaluation.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">48,51</context>
         </context-group>
       </trans-unit>
@@ -1778,11 +1968,13 @@
         <source>No deadline</source>
         <target>Pas de date limite</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">68,70</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">122,124</context>
         </context-group>
       </trans-unit>
@@ -1790,7 +1982,8 @@
         <source>Submitted</source>
         <target>Soumis</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">72,74</context>
         </context-group>
       </trans-unit>
@@ -1798,7 +1991,8 @@
         <source>Open</source>
         <target>Ouvrir</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">74,76</context>
         </context-group>
       </trans-unit>
@@ -1806,7 +2000,8 @@
         <source>Feedback form</source>
         <target>Formulaire de commentaires</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">85,86</context>
         </context-group>
       </trans-unit>
@@ -1814,7 +2009,8 @@
         <source> Answer each question honestly. Required questions are marked. </source>
         <target> Répondez honnêtement à chaque question. Les questions obligatoires sont marquées. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">87,91</context>
         </context-group>
       </trans-unit>
@@ -1822,7 +2018,8 @@
         <source>Loading form...</source>
         <target>Chargement du formulaire...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">92,94</context>
         </context-group>
       </trans-unit>
@@ -1830,7 +2027,8 @@
         <source>Select a form to begin</source>
         <target>Sélectionnez un formulaire pour commencer</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">97,98</context>
         </context-group>
       </trans-unit>
@@ -1838,7 +2036,8 @@
         <source> Your questions will appear here once you choose a form. </source>
         <target> Vos questions apparaîtront ici une fois que vous aurez choisi un formulaire. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">99,102</context>
         </context-group>
       </trans-unit>
@@ -1846,7 +2045,8 @@
         <source> Share your experience with this course. </source>
         <target> Partagez votre expérience avec ce cours. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">112,114</context>
         </context-group>
       </trans-unit>
@@ -1854,15 +2054,21 @@
         <source> Thanks. You already submitted this form. </source>
         <target> Merci. Vous avez déjà soumis ce formulaire. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">132,134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackStudent.teacherIdLabel" datatype="html">
-        <source> Teacher ID <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
-        <target> ID d'enseignant <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
+        <source> Teacher ID <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
+        <target> ID d'enseignant <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span class=&quot;required&quot;&gt;" />*<x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">140,141</context>
         </context-group>
       </trans-unit>
@@ -1870,7 +2076,8 @@
         <source>Enter the teacher ID</source>
         <target>Entrez le numéro d'identification de l'enseignant</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">145,147</context>
         </context-group>
       </trans-unit>
@@ -1878,15 +2085,19 @@
         <source> Teacher ID is required for this form. </source>
         <target> Une pièce d’identité d’enseignant est requise pour ce formulaire. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">153,155</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackStudent.questionNumber" datatype="html">
-        <source> Question <x id="INTERPOLATION" equiv-text="{{ i + 1 }}" /> </source>
-        <target> Question <x id="INTERPOLATION" equiv-text="{{ i + 1 }}" /> </target>
+        <source> Question <x id="INTERPOLATION" equiv-text="{{ i + 1 }}" />
+        </source>
+        <target> Question <x id="INTERPOLATION" equiv-text="{{ i + 1 }}" />
+        </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">165,166</context>
         </context-group>
       </trans-unit>
@@ -1894,7 +2105,8 @@
         <source>Required</source>
         <target>Requis</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">197,199</context>
         </context-group>
       </trans-unit>
@@ -1902,7 +2114,8 @@
         <source>Optional</source>
         <target>Facultatif</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">199,201</context>
         </context-group>
       </trans-unit>
@@ -1910,7 +2123,8 @@
         <source> Please answer this question. </source>
         <target> Veuillez répondre à cette question. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">203,204</context>
         </context-group>
       </trans-unit>
@@ -1918,15 +2132,21 @@
         <source> Please complete required fields before submitting. </source>
         <target> Veuillez remplir les champs obligatoires avant de soumettre. </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">214,216</context>
         </context-group>
       </trans-unit>
       <trans-unit id="feedbackStudent.requiredCount" datatype="html">
-        <source> <x id="INTERPOLATION" equiv-text="{{ answeredRequiredCount }}" />/<x id="INTERPOLATION_1" equiv-text="{{ requiredCount }}" /> required answered </source>
-        <target> <x id="INTERPOLATION" equiv-text="{{ answeredRequiredCount }}" />/<x id="INTERPOLATION_1" equiv-text="{{ requiredCount }}" /> réponse requise </target>
+        <source>
+          <x id="INTERPOLATION" equiv-text="{{ answeredRequiredCount }}" />/<x id="INTERPOLATION_1"
+            equiv-text="{{ requiredCount }}" /> required answered </source>
+        <target>
+          <x id="INTERPOLATION" equiv-text="{{ answeredRequiredCount }}" />/<x id="INTERPOLATION_1"
+            equiv-text="{{ requiredCount }}" /> réponse requise </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">226,227</context>
         </context-group>
       </trans-unit>
@@ -1934,7 +2154,8 @@
         <source>Submitted</source>
         <target>Soumis</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">235,236</context>
         </context-group>
       </trans-unit>
@@ -1942,7 +2163,8 @@
         <source>Submitting...</source>
         <target>Soumission...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">237,239</context>
         </context-group>
       </trans-unit>
@@ -1950,7 +2172,8 @@
         <source>Submit feedback</source>
         <target>Soumettre des commentaires</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.html</context>
           <context context-type="linenumber">239,241</context>
         </context-group>
       </trans-unit>
@@ -1958,11 +2181,13 @@
         <source>No deadlines</source>
         <target>Pas de délais</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">88</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">338</context>
         </context-group>
       </trans-unit>
@@ -1970,7 +2195,8 @@
         <source>Choose a form</source>
         <target>Choisissez un formulaire</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">89</context>
         </context-group>
       </trans-unit>
@@ -1978,7 +2204,8 @@
         <source>Teacher details appear here.</source>
         <target>Les détails de l'enseignant apparaissent ici.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">90</context>
         </context-group>
       </trans-unit>
@@ -1986,7 +2213,8 @@
         <source>Teacher pending</source>
         <target>Enseignant en attente</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">91</context>
         </context-group>
       </trans-unit>
@@ -1994,7 +2222,8 @@
         <source>Thanks. Your feedback has been submitted.</source>
         <target>Merci. Vos commentaires ont été soumis.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">204</context>
         </context-group>
       </trans-unit>
@@ -2002,7 +2231,8 @@
         <source>We could not submit your feedback. Please try again.</source>
         <target>Nous n'avons pas pu soumettre vos commentaires. Veuillez réessayer.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">214</context>
         </context-group>
       </trans-unit>
@@ -2010,7 +2240,8 @@
         <source>Failed to load active forms.</source>
         <target>Échec du chargement des formulaires actifs.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">239</context>
         </context-group>
       </trans-unit>
@@ -2018,7 +2249,8 @@
         <source>Form not found.</source>
         <target>Formulaire introuvable.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">262</context>
         </context-group>
       </trans-unit>
@@ -2026,7 +2258,8 @@
         <source>Failed to load the selected form.</source>
         <target>Échec du chargement du formulaire sélectionné.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">274</context>
         </context-group>
       </trans-unit>
@@ -2034,7 +2267,8 @@
         <source>Rating</source>
         <target>Notation</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">351</context>
         </context-group>
       </trans-unit>
@@ -2042,7 +2276,8 @@
         <source>Text</source>
         <target>Texte</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">353</context>
         </context-group>
       </trans-unit>
@@ -2050,7 +2285,8 @@
         <source>Share a concrete example to help the teacher</source>
         <target>Partager un exemple concret pour aider l'enseignant</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">358</context>
         </context-group>
       </trans-unit>
@@ -2058,7 +2294,8 @@
         <source>Optional note</source>
         <target>Remarque facultative</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/feedback/student/feedback-student.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/feedback/student/feedback-student.component.ts</context>
           <context context-type="linenumber">359</context>
         </context-group>
       </trans-unit>
@@ -2066,7 +2303,8 @@
         <source>Global Reports</source>
         <target>Rapports globaux</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/global-reports/global-reports.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/global-reports/global-reports.component.html</context>
           <context context-type="linenumber">8,9</context>
         </context-group>
       </trans-unit>
@@ -2074,7 +2312,8 @@
         <source>View analytics for all evaluation forms</source>
         <target>Afficher les analyses pour tous les formulaires d'évaluation</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/global-reports/global-reports.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/global-reports/global-reports.component.html</context>
           <context context-type="linenumber">9,13</context>
         </context-group>
       </trans-unit>
@@ -2082,7 +2321,8 @@
         <source>Created</source>
         <target>Créé</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/global-reports/global-reports.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/global-reports/global-reports.component.html</context>
           <context context-type="linenumber">38,39</context>
         </context-group>
       </trans-unit>
@@ -2090,7 +2330,8 @@
         <source>Loading forms...</source>
         <target>Chargement des formulaires...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/global-reports/global-reports.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/global-reports/global-reports.component.html</context>
           <context context-type="linenumber">49,52</context>
         </context-group>
       </trans-unit>
@@ -2098,7 +2339,8 @@
         <source>No forms available</source>
         <target>Aucun formulaire disponible</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/global-reports/global-reports.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/global-reports/global-reports.component.html</context>
           <context context-type="linenumber">55,58</context>
         </context-group>
       </trans-unit>
@@ -2106,7 +2348,8 @@
         <source>Loading...</source>
         <target>Chargement...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/global-reports/global-reports.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/global-reports/global-reports.component.html</context>
           <context context-type="linenumber">62,64</context>
         </context-group>
       </trans-unit>
@@ -2114,7 +2357,8 @@
         <source>Load More Forms</source>
         <target>Charger plus de formulaires</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/global-reports/global-reports.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/global-reports/global-reports.component.html</context>
           <context context-type="linenumber">64,66</context>
         </context-group>
       </trans-unit>
@@ -2122,7 +2366,8 @@
         <source>PUBLISHED</source>
         <target>PUBLIÉ</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/global-reports/global-reports.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/global-reports/global-reports.component.ts</context>
           <context context-type="linenumber">183</context>
         </context-group>
       </trans-unit>
@@ -2130,7 +2375,8 @@
         <source>CLOSED</source>
         <target>FERMÉ</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/global-reports/global-reports.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/global-reports/global-reports.component.ts</context>
           <context context-type="linenumber">185</context>
         </context-group>
       </trans-unit>
@@ -2138,7 +2384,8 @@
         <source>DRAFT</source>
         <target>BROUILLON</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/global-reports/global-reports.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/global-reports/global-reports.component.ts</context>
           <context context-type="linenumber">187</context>
         </context-group>
       </trans-unit>
@@ -2152,7 +2399,8 @@
       </trans-unit>
       <trans-unit id="homeDefault.subtitle" datatype="html">
         <source> Burrito lets students share honest feedback on their teachers so teachers improve. </source>
-        <target> Burrito permet aux étudiants de partager des commentaires honnêtes sur leurs enseignants afin que ceux-ci s'améliorent. </target>
+        <target> Burrito permet aux étudiants de partager des commentaires honnêtes sur leurs
+          enseignants afin que ceux-ci s'améliorent. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/home-default/home-default.component.html</context>
           <context context-type="linenumber">10,12</context>
@@ -2239,32 +2487,50 @@
         </context-group>
       </trans-unit>
       <trans-unit id="legal.section1Body" datatype="html">
-        <source>The website <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> is developed as part of the "Advanced Programming" course (ST2APR) for the 2025-2026 academic year. </source>
-        <target>Le site Internet <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> est développé dans le cadre du parcours « Programmation Avancée » (ST2APR) pour l'année académique 2025-2026. </target>
+        <source>The website <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
+          Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> is
+          developed as part of the "Advanced Programming" course (ST2APR) for the 2025-2026 academic
+          year. </source>
+        <target>Le site Internet <x id="START_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;/strong&gt;" /> est développé dans le cadre du parcours « Programmation
+          Avancée » (ST2APR) pour l'année académique 2025-2026. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">12,14</context>
         </context-group>
       </trans-unit>
       <trans-unit id="legal.section1Institution" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Institution:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> EFREI / Paris Panthéon-Assas University.</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Institution:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> EFREI / Université Paris Panthéon-Assas.</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Institution:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> EFREI / Paris
+          Panthéon-Assas University.</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Institution:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> EFREI /
+          Université Paris Panthéon-Assas.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">16,17</context>
         </context-group>
       </trans-unit>
       <trans-unit id="legal.section1ProjectType" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Project Type:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Educational software engineering project.</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Type de projet :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Projet de génie logiciel pédagogique.</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Project
+          Type:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Educational
+          software engineering project.</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Type de
+          projet :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Projet
+          de génie logiciel pédagogique.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">17,18</context>
         </context-group>
       </trans-unit>
       <trans-unit id="legal.section1Goal" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Goal:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Teacher evaluation and educational quality assessment.</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />But:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Évaluation des enseignants et évaluation de la qualité de l’éducation.</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Goal:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Teacher
+          evaluation and educational quality assessment.</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />But:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Évaluation des
+          enseignants et évaluation de la qualité de l’éducation.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">18,19</context>
@@ -2287,8 +2553,24 @@
         </context-group>
       </trans-unit>
       <trans-unit id="legal.section2Highlight" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Team Representative:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Paul Mairesse<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br&gt;" /><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Contact:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> paul.mairesse@efrei.net<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br&gt;" /><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Address:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> 30-32 Avenue de la République, 94800 Villejuif, France. </source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Représentant de l'équipe :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Paul Mairesse<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br&gt;" /><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Contact:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> paul.mairesse@efrei.net<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br&gt;" /><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Adresse:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> 30-32 Avenue de la République, 94800 Villejuif, France. </target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Team
+          Representative:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Paul Mairesse<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br&gt;" /><x
+            id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Contact:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          paul.mairesse@efrei.net<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br&gt;" /><x
+            id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Address:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> 30-32 Avenue de
+          la République, 94800 Villejuif, France. </source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Représentant
+          de l'équipe :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Paul Mairesse<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br&gt;" /><x
+            id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Contact:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          paul.mairesse@efrei.net<x id="LINE_BREAK" ctype="lb" equiv-text="&lt;br&gt;" /><x
+            id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Adresse:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> 30-32 Avenue de
+          la République, 94800 Villejuif, France. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">28,32</context>
@@ -2311,16 +2593,24 @@
         </context-group>
       </trans-unit>
       <trans-unit id="legal.section3Primary" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Primary Host:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> University Servers / Localhost (Development).</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Hôte principal :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Serveurs universitaires / Localhost (Développement).</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Primary
+          Host:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> University
+          Servers / Localhost (Development).</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Hôte
+          principal :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Serveurs universitaires / Localhost (Développement).</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">40,41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="legal.section3Repo" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Repository Host:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> GitHub / GitLab (Source Code).</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Hôte du référentiel :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> GitHub/GitLab (code source).</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Repository
+          Host:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> GitHub /
+          GitLab (Source Code).</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Hôte du
+          référentiel :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          GitHub/GitLab (code source).</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">41,42</context>
@@ -2335,8 +2625,15 @@
         </context-group>
       </trans-unit>
       <trans-unit id="legal.section4Body" datatype="html">
-        <source>All source code, designs, and architecture produced for Project Burito are subject to the intellectual property regulations of the university. The content is protected by copyright law. Unauthorized reproduction, modification, or commercial use is strictly prohibited without prior consent. </source>
-        <target>Tous les codes sources, conceptions et architectures produits pour le projet Burito sont soumis aux réglementations en matière de propriété intellectuelle de l'université. Le contenu est protégé par la loi sur le droit d'auteur. La reproduction, la modification ou l'utilisation commerciale non autorisée est strictement interdite sans consentement préalable. </target>
+        <source>All source code, designs, and architecture produced for Project Burito are subject
+          to the intellectual property regulations of the university. The content is protected by
+          copyright law. Unauthorized reproduction, modification, or commercial use is strictly
+          prohibited without prior consent. </source>
+        <target>Tous les codes sources, conceptions et architectures produits pour le projet Burito
+          sont soumis aux réglementations en matière de propriété intellectuelle de l'université. Le
+          contenu est protégé par la loi sur le droit d'auteur. La reproduction, la modification ou
+          l'utilisation commerciale non autorisée est strictement interdite sans consentement
+          préalable. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">47,50</context>
@@ -2352,7 +2649,8 @@
       </trans-unit>
       <trans-unit id="legal.section5Body" datatype="html">
         <source>This system is an academic prototype. The publishers cannot be held responsible for: </source>
-        <target>Ce système est un prototype académique. Les éditeurs ne peuvent être tenus responsables : </target>
+        <target>Ce système est un prototype académique. Les éditeurs ne peuvent être tenus
+          responsables : </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">55,58</context>
@@ -2391,8 +2689,15 @@
         </context-group>
       </trans-unit>
       <trans-unit id="legal.section6Body" datatype="html">
-        <source>The collection and processing of personal data on this site are governed by our <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/legal/privacy&quot;&gt;" />Privacy Policy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;" />, in compliance with the GDPR. </source>
-        <target>La collecte et le traitement des données personnelles sur ce site sont régis par notre <x id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/legal/privacy&quot;&gt;" />politique de confidentialité<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;" />, conformément au RGPD. </target>
+        <source>The collection and processing of personal data on this site are governed by our <x
+            id="START_LINK" ctype="x-a" equiv-text="&lt;a routerLink=&quot;/legal/privacy&quot;&gt;" />Privacy
+          Policy<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;" />, in compliance with the
+          GDPR. </source>
+        <target>La collecte et le traitement des données personnelles sur ce site sont régis par
+          notre <x id="START_LINK" ctype="x-a"
+            equiv-text="&lt;a routerLink=&quot;/legal/privacy&quot;&gt;" />politique de
+          confidentialité<x id="CLOSE_LINK" ctype="x-a" equiv-text="&lt;/a&gt;" />, conformément au
+          RGPD. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">66,68</context>
@@ -2407,8 +2712,11 @@
         </context-group>
       </trans-unit>
       <trans-unit id="legal.section7Body" datatype="html">
-        <source>These legal mentions are governed by French law. In the event of a dispute, and in the absence of an amicable agreement, the courts of jurisdiction will be those of Paris, France. </source>
-        <target>Ces mentions légales sont régies par la loi française. En cas de litige, et à défaut d'accord amiable, les tribunaux compétents seront ceux de Paris, France. </target>
+        <source>These legal mentions are governed by French law. In the event of a dispute, and in
+          the absence of an amicable agreement, the courts of jurisdiction will be those of Paris,
+          France. </source>
+        <target>Ces mentions légales sont régies par la loi française. En cas de litige, et à défaut
+          d'accord amiable, les tribunaux compétents seront ceux de Paris, France. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/legal/legal-mentions.component.html</context>
           <context context-type="linenumber">73,76</context>
@@ -2418,7 +2726,8 @@
         <source>Manage Students</source>
         <target>Gérer les étudiants</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.html</context>
           <context context-type="linenumber">9,10</context>
         </context-group>
       </trans-unit>
@@ -2426,7 +2735,8 @@
         <source>View, edit, or onboard new students.</source>
         <target>Affichez, modifiez ou intégrez de nouveaux étudiants.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.html</context>
           <context context-type="linenumber">11,12</context>
         </context-group>
       </trans-unit>
@@ -2434,7 +2744,8 @@
         <source>Add New Student</source>
         <target>Ajouter un nouvel étudiant</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.html</context>
           <context context-type="linenumber">13,15</context>
         </context-group>
       </trans-unit>
@@ -2442,7 +2753,8 @@
         <source>Loading students...</source>
         <target>Chargement des étudiants...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.html</context>
           <context context-type="linenumber">25,28</context>
         </context-group>
       </trans-unit>
@@ -2450,7 +2762,8 @@
         <source>No students found.</source>
         <target>Aucun étudiant trouvé.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.html</context>
           <context context-type="linenumber">29,32</context>
         </context-group>
       </trans-unit>
@@ -2458,7 +2771,8 @@
         <source>Loading more...</source>
         <target>Chargement plus...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.html</context>
           <context context-type="linenumber">33,36</context>
         </context-group>
       </trans-unit>
@@ -2466,7 +2780,8 @@
         <source>Student Name</source>
         <target>Nom de l'étudiant</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
@@ -2474,7 +2789,8 @@
         <source>Email Address</source>
         <target>Adresse email</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
@@ -2482,7 +2798,8 @@
         <source>Assigned Groups</source>
         <target>Groupes assignés</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">66</context>
         </context-group>
       </trans-unit>
@@ -2490,7 +2807,8 @@
         <source>Actions</source>
         <target>Actes</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
@@ -2498,7 +2816,8 @@
         <source>Confirm action</source>
         <target>Confirmer l'action</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">79</context>
         </context-group>
       </trans-unit>
@@ -2506,11 +2825,13 @@
         <source>Confirm</source>
         <target>Confirmer</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">81</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">215</context>
         </context-group>
       </trans-unit>
@@ -2518,11 +2839,13 @@
         <source>Cancel</source>
         <target>Annuler</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">82</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">217</context>
         </context-group>
       </trans-unit>
@@ -2530,7 +2853,8 @@
         <source>Unknown</source>
         <target>Inconnu</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">144</context>
         </context-group>
       </trans-unit>
@@ -2538,7 +2862,8 @@
         <source>N/A</source>
         <target>N / A</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">145</context>
         </context-group>
       </trans-unit>
@@ -2546,7 +2871,8 @@
         <source>Unenroll student</source>
         <target>Désinscrire un étudiant</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">162</context>
         </context-group>
       </trans-unit>
@@ -2554,7 +2880,8 @@
         <source>Are you sure you want to unenroll this student?</source>
         <target>Etes-vous sûr de vouloir désinscrire cet élève ?</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">163</context>
         </context-group>
       </trans-unit>
@@ -2562,7 +2889,8 @@
         <source>Unenroll</source>
         <target>Se désinscrire</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">164</context>
         </context-group>
       </trans-unit>
@@ -2570,7 +2898,8 @@
         <source>Unenroll failed</source>
         <target>Échec de la désinscription</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">176</context>
         </context-group>
       </trans-unit>
@@ -2578,7 +2907,8 @@
         <source>Failed to delete student.</source>
         <target>Échec de la suppression de l'élève.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">177</context>
         </context-group>
       </trans-unit>
@@ -2586,7 +2916,8 @@
         <source>Ok</source>
         <target>D'accord</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/student/manage-students.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/student/manage-students.component.ts</context>
           <context context-type="linenumber">178</context>
         </context-group>
       </trans-unit>
@@ -2594,7 +2925,8 @@
         <source>Manage Teachers</source>
         <target>Gérer les enseignants</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.html</context>
           <context context-type="linenumber">9,10</context>
         </context-group>
       </trans-unit>
@@ -2602,7 +2934,8 @@
         <source>View, edit, or onboard new teaching staff.</source>
         <target>Affichez, modifiez ou intégrez du nouveau personnel enseignant.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.html</context>
           <context context-type="linenumber">11,12</context>
         </context-group>
       </trans-unit>
@@ -2610,7 +2943,8 @@
         <source>Add New Teacher</source>
         <target>Ajouter un nouvel enseignant</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.html</context>
           <context context-type="linenumber">13,15</context>
         </context-group>
       </trans-unit>
@@ -2618,7 +2952,8 @@
         <source>Loading teachers...</source>
         <target>Chargement des enseignants...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.html</context>
           <context context-type="linenumber">25,28</context>
         </context-group>
       </trans-unit>
@@ -2626,7 +2961,8 @@
         <source>No teachers found.</source>
         <target>Aucun professeur trouvé.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.html</context>
           <context context-type="linenumber">29,32</context>
         </context-group>
       </trans-unit>
@@ -2634,7 +2970,8 @@
         <source>Loading more...</source>
         <target>Chargement plus...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.html</context>
           <context context-type="linenumber">33,36</context>
         </context-group>
       </trans-unit>
@@ -2642,7 +2979,8 @@
         <source>Name</source>
         <target>Nom</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">64</context>
         </context-group>
       </trans-unit>
@@ -2650,7 +2988,8 @@
         <source>Contact</source>
         <target>Contact</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">65</context>
         </context-group>
       </trans-unit>
@@ -2658,7 +2997,8 @@
         <source>Assigned Groups</source>
         <target>Groupes assignés</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">66</context>
         </context-group>
       </trans-unit>
@@ -2666,7 +3006,8 @@
         <source>Actions</source>
         <target>Actes</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">67</context>
         </context-group>
       </trans-unit>
@@ -2674,7 +3015,8 @@
         <source>Confirm action</source>
         <target>Confirmer l'action</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">79</context>
         </context-group>
       </trans-unit>
@@ -2682,11 +3024,13 @@
         <source>Confirm</source>
         <target>Confirmer</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">81</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">215</context>
         </context-group>
       </trans-unit>
@@ -2694,11 +3038,13 @@
         <source>Cancel</source>
         <target>Annuler</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">82</context>
         </context-group>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">217</context>
         </context-group>
       </trans-unit>
@@ -2706,7 +3052,8 @@
         <source>Unknown</source>
         <target>Inconnu</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">144</context>
         </context-group>
       </trans-unit>
@@ -2714,7 +3061,8 @@
         <source>N/A</source>
         <target>N / A</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">145</context>
         </context-group>
       </trans-unit>
@@ -2722,7 +3070,8 @@
         <source>Delete teacher</source>
         <target>Supprimer un enseignant</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">162</context>
         </context-group>
       </trans-unit>
@@ -2730,7 +3079,8 @@
         <source>Are you sure you want to delete this teacher?</source>
         <target>Êtes-vous sûr de vouloir supprimer cet enseignant ?</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">163</context>
         </context-group>
       </trans-unit>
@@ -2738,7 +3088,8 @@
         <source>Delete</source>
         <target>Supprimer</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">164</context>
         </context-group>
       </trans-unit>
@@ -2746,7 +3097,8 @@
         <source>Delete failed</source>
         <target>Échec de la suppression</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">176</context>
         </context-group>
       </trans-unit>
@@ -2754,7 +3106,8 @@
         <source>Failed to delete user.</source>
         <target>Échec de la suppression de l'utilisateur.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">177</context>
         </context-group>
       </trans-unit>
@@ -2762,7 +3115,8 @@
         <source>Ok</source>
         <target>D'accord</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/manage/teacher/manage-teachers.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/manage/teacher/manage-teachers.component.ts</context>
           <context context-type="linenumber">178</context>
         </context-group>
       </trans-unit>
@@ -2799,8 +3153,16 @@
         </context-group>
       </trans-unit>
       <trans-unit id="privacy.section1Body" datatype="html">
-        <source> Welcome to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />. We are committed to protecting your personal data and respecting your privacy. This policy explains how we collect, use, and protect your information within the framework of evaluating educational quality at the institution. </source>
-        <target> Bienvenue à <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />. Nous nous engageons à protéger vos données personnelles et à respecter votre vie privée. Cette politique explique comment nous collectons, utilisons et protégeons vos informations dans le cadre de l'évaluation de la qualité éducative de l'établissement. </target>
+        <source> Welcome to <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
+          Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />. We are
+          committed to protecting your personal data and respecting your privacy. This policy
+          explains how we collect, use, and protect your information within the framework of
+          evaluating educational quality at the institution. </source>
+        <target> Bienvenue à <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
+          Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />. Nous nous
+          engageons à protéger vos données personnelles et à respecter votre vie privée. Cette
+          politique explique comment nous collectons, utilisons et protégeons vos informations dans
+          le cadre de l'évaluation de la qualité éducative de l'établissement. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/privacy/privacy-policy.component.html</context>
           <context context-type="linenumber">13,16</context>
@@ -2815,8 +3177,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="privacy.section2Body" datatype="html">
-        <source> In accordance with the General Data Protection Regulation (GDPR), we ensure transparency and security in the processing of educational data. </source>
-        <target> Conformément au Règlement Général sur la Protection des Données (RGPD), nous garantissons la transparence et la sécurité du traitement des données pédagogiques. </target>
+        <source> In accordance with the General Data Protection Regulation (GDPR), we ensure
+          transparency and security in the processing of educational data. </source>
+        <target> Conformément au Règlement Général sur la Protection des Données (RGPD), nous
+          garantissons la transparence et la sécurité du traitement des données pédagogiques. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/privacy/privacy-policy.component.html</context>
           <context context-type="linenumber">22,25</context>
@@ -2831,24 +3195,36 @@
         </context-group>
       </trans-unit>
       <trans-unit id="privacy.section3Item1" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Identifiers:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Name, role (Student, Teacher, Administrator), and institutional IDs.</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Identifiants :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Nom, rôle (étudiant, enseignant, administrateur) et identifiants institutionnels.</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Identifiers:<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Name, role
+          (Student, Teacher, Administrator), and institutional IDs.</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />
+          Identifiants :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Nom, rôle (étudiant, enseignant, administrateur) et identifiants institutionnels.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/privacy/privacy-policy.component.html</context>
           <context context-type="linenumber">30,31</context>
         </context-group>
       </trans-unit>
       <trans-unit id="privacy.section3Item2" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Quantitative Evaluations:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Survey responses and ratings.</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Évaluations quantitatives :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Réponses à l’enquête et évaluations.</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Quantitative
+          Evaluations:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Survey responses and ratings.</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Évaluations
+          quantitatives :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Réponses à l’enquête et évaluations.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/privacy/privacy-policy.component.html</context>
           <context context-type="linenumber">31,32</context>
         </context-group>
       </trans-unit>
       <trans-unit id="privacy.section3Item3" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Qualitative Feedback:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Open comments and suggestions.</source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Commentaires qualitatifs :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Ouvrez les commentaires et les suggestions.</target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Qualitative
+          Feedback:<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Open
+          comments and suggestions.</source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Commentaires
+          qualitatifs :<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Ouvrez les commentaires et les suggestions.</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/privacy/privacy-policy.component.html</context>
           <context context-type="linenumber">32,34</context>
@@ -2871,8 +3247,14 @@
         </context-group>
       </trans-unit>
       <trans-unit id="privacy.section4Highlight" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Student anonymity is strict.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Teachers and administrators cannot, under any circumstances, link a specific response to a student's identity. </source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />L'anonymat des étudiants est strict.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Les enseignants et les administrateurs ne peuvent en aucun cas lier une réponse spécifique à l'identité d'un élève. </target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Student
+          anonymity is strict.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Teachers and administrators cannot, under any circumstances, link a specific response to a
+          student's identity. </source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />L'anonymat
+          des étudiants est strict.<x id="CLOSE_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;/strong&gt;" /> Les enseignants et les administrateurs ne peuvent en
+          aucun cas lier une réponse spécifique à l'identité d'un élève. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/privacy/privacy-policy.component.html</context>
           <context context-type="linenumber">43,45</context>
@@ -2927,8 +3309,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="privacy.section6Body" datatype="html">
-        <source> We implement high-level security and encryption measures to protect sensitive information against unauthorized access. </source>
-        <target> Nous mettons en œuvre des mesures de sécurité et de cryptage de haut niveau pour protéger les informations sensibles contre tout accès non autorisé. </target>
+        <source> We implement high-level security and encryption measures to protect sensitive
+          information against unauthorized access. </source>
+        <target> Nous mettons en œuvre des mesures de sécurité et de cryptage de haut niveau pour
+          protéger les informations sensibles contre tout accès non autorisé. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/privacy/privacy-policy.component.html</context>
           <context context-type="linenumber">62,65</context>
@@ -2943,8 +3327,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="privacy.section7Body" datatype="html">
-        <source> As a user (Student, Teacher, or Administrator), you have the right to access, rectify, and object to the processing of your personal data. </source>
-        <target> En tant qu'utilisateur (Etudiant, Enseignant ou Administrateur), vous disposez d'un droit d'accès, de rectification et d'opposition au traitement de vos données personnelles. </target>
+        <source> As a user (Student, Teacher, or Administrator), you have the right to access,
+          rectify, and object to the processing of your personal data. </source>
+        <target> En tant qu'utilisateur (Etudiant, Enseignant ou Administrateur), vous disposez d'un
+          droit d'accès, de rectification et d'opposition au traitement de vos données personnelles. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/privacy/privacy-policy.component.html</context>
           <context context-type="linenumber">70,73</context>
@@ -2959,8 +3345,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="privacy.section8Body" datatype="html">
-        <source> For any questions regarding this policy, please contact the educational administration. </source>
-        <target> Pour toute question concernant cette politique, veuillez contacter l’administration éducative. </target>
+        <source> For any questions regarding this policy, please contact the educational
+          administration. </source>
+        <target> Pour toute question concernant cette politique, veuillez contacter l’administration
+          éducative. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/privacy/privacy-policy.component.html</context>
           <context context-type="linenumber">78,80</context>
@@ -3215,8 +3603,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="resultsForm.lastUpdated" datatype="html">
-        <source>Last updated <x id="INTERPOLATION" equiv-text="{{ formatDate(analytics()!.generatedAt) }}" /></source>
-        <target>Dernière mise à jour <x id="INTERPOLATION" equiv-text="{{ formatDate(analytics()!.generatedAt) }}" /></target>
+        <source>Last updated <x id="INTERPOLATION"
+            equiv-text="{{ formatDate(analytics()!.generatedAt) }}" /></source>
+        <target>Dernière mise à jour <x id="INTERPOLATION"
+            equiv-text="{{ formatDate(analytics()!.generatedAt) }}" /></target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/results-form/results-form.component.html</context>
           <context context-type="linenumber">292,293</context>
@@ -3346,15 +3736,23 @@
         <source>Teacher Results</source>
         <target>Résultats des enseignants</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">7,10</context>
         </context-group>
       </trans-unit>
       <trans-unit id="resultsTeacher.adminBanner" datatype="html">
-        <source>You are viewing <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" /><x id="INTERPOLATION" equiv-text="{{ analytics()?.teacherName }}" />'s<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> evaluation results</source>
-        <target>Vous regardez <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" /><x id="INTERPOLATION" equiv-text="{{ analytics()?.teacherName }}" />c'est<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> résultats de l'évaluation</target>
+        <source>You are viewing <x id="START_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;strong&gt;" /><x id="INTERPOLATION"
+            equiv-text="{{ analytics()?.teacherName }}" />'s<x id="CLOSE_TAG_STRONG"
+            ctype="x-strong" equiv-text="&lt;/strong&gt;" /> evaluation results</source>
+        <target>Vous regardez <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" /><x
+            id="INTERPOLATION" equiv-text="{{ analytics()?.teacherName }}" />c'est<x
+            id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> résultats de
+          l'évaluation</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">14,15</context>
         </context-group>
       </trans-unit>
@@ -3362,7 +3760,8 @@
         <source>Loading analytics...</source>
         <target>Chargement des analyses...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">23,27</context>
         </context-group>
       </trans-unit>
@@ -3370,15 +3769,22 @@
         <source>Retry</source>
         <target>Réessayer</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">33,35</context>
         </context-group>
       </trans-unit>
       <trans-unit id="resultsTeacher.subtitle" datatype="html">
-        <source>Across <x id="INTERPOLATION" equiv-text="{{ analytics()!.formsBreakdown.length }}" /> forms | Total <x id="INTERPOLATION_1" equiv-text="{{ analytics()!.totalResponsesAcrossAllForms }}" /> responses </source>
-        <target>À travers <x id="INTERPOLATION" equiv-text="{{ analytics()!.formsBreakdown.length }}" /> formulaires | Total <x id="INTERPOLATION_1" equiv-text="{{ analytics()!.totalResponsesAcrossAllForms }}" /> réponses </target>
+        <source>Across <x id="INTERPOLATION" equiv-text="{{ analytics()!.formsBreakdown.length }}" />
+          forms | Total <x id="INTERPOLATION_1"
+            equiv-text="{{ analytics()!.totalResponsesAcrossAllForms }}" /> responses </source>
+        <target>À travers <x id="INTERPOLATION"
+            equiv-text="{{ analytics()!.formsBreakdown.length }}" /> formulaires | Total <x
+            id="INTERPOLATION_1" equiv-text="{{ analytics()!.totalResponsesAcrossAllForms }}" />
+          réponses </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">45,48</context>
         </context-group>
       </trans-unit>
@@ -3386,7 +3792,8 @@
         <source>From</source>
         <target>Depuis</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">66,68</context>
         </context-group>
       </trans-unit>
@@ -3394,7 +3801,8 @@
         <source>To</source>
         <target>À</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">76,78</context>
         </context-group>
       </trans-unit>
@@ -3402,7 +3810,8 @@
         <source>General Satisfaction</source>
         <target>Satisfaction générale</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">90,91</context>
         </context-group>
       </trans-unit>
@@ -3410,7 +3819,8 @@
         <source>Promoters</source>
         <target>Promoteurs</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">104,105</context>
         </context-group>
       </trans-unit>
@@ -3418,7 +3828,8 @@
         <source>Passives</source>
         <target>Passifs</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">110,111</context>
         </context-group>
       </trans-unit>
@@ -3426,7 +3837,8 @@
         <source>Detractors</source>
         <target>Détracteurs</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">116,117</context>
         </context-group>
       </trans-unit>
@@ -3434,7 +3846,8 @@
         <source>Forms Breakdown</source>
         <target>Répartition des formulaires</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">124,126</context>
         </context-group>
       </trans-unit>
@@ -3442,15 +3855,23 @@
         <source><x id="INTERPOLATION" equiv-text="{{ form.totalResponses }}" /> responses</source>
         <target><x id="INTERPOLATION" equiv-text="{{ form.totalResponses }}" /> réponses</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">133,134</context>
         </context-group>
       </trans-unit>
       <trans-unit id="resultsTeacher.npsLabel" datatype="html">
-        <source>NPS: <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span [class]=&quot;getFormBadgeClass(form.nps.score)&quot;&gt;" /><x id="INTERPOLATION" equiv-text="{{ form.nps.score.toFixed(0) }}" /><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
-        <target>NPS : <x id="START_TAG_SPAN" ctype="x-span" equiv-text="&lt;span [class]=&quot;getFormBadgeClass(form.nps.score)&quot;&gt;" /><x id="INTERPOLATION" equiv-text="{{ form.nps.score.toFixed(0) }}" /><x id="CLOSE_TAG_SPAN" ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
+        <source>NPS: <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span [class]=&quot;getFormBadgeClass(form.nps.score)&quot;&gt;" /><x
+            id="INTERPOLATION" equiv-text="{{ form.nps.score.toFixed(0) }}" /><x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></source>
+        <target>NPS : <x id="START_TAG_SPAN" ctype="x-span"
+            equiv-text="&lt;span [class]=&quot;getFormBadgeClass(form.nps.score)&quot;&gt;" /><x
+            id="INTERPOLATION" equiv-text="{{ form.nps.score.toFixed(0) }}" /><x id="CLOSE_TAG_SPAN"
+            ctype="x-span" equiv-text="&lt;/span&gt;" /></target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">134,135</context>
         </context-group>
       </trans-unit>
@@ -3458,7 +3879,8 @@
         <source>Recent Feedback</source>
         <target>Commentaires récents</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">144,147</context>
         </context-group>
       </trans-unit>
@@ -3466,7 +3888,8 @@
         <source>All Forms</source>
         <target>Tous les formulaires</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">153,154</context>
         </context-group>
       </trans-unit>
@@ -3474,7 +3897,8 @@
         <source>No feedback found for this time period.</source>
         <target>Aucun commentaire trouvé pour cette période.</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">164,167</context>
         </context-group>
       </trans-unit>
@@ -3482,7 +3906,8 @@
         <source>Loading...</source>
         <target>Chargement...</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">200,202</context>
         </context-group>
       </trans-unit>
@@ -3490,15 +3915,21 @@
         <source>Load More Comments</source>
         <target>Charger plus de commentaires</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">202,204</context>
         </context-group>
       </trans-unit>
       <trans-unit id="resultsTeacher.lastUpdated" datatype="html">
-        <source> Last updated <x id="INTERPOLATION" equiv-text="{{ formatDate(analytics()!.generatedAt) }}" /> </source>
-        <target> Dernière mise à jour <x id="INTERPOLATION" equiv-text="{{ formatDate(analytics()!.generatedAt) }}" /> </target>
+        <source> Last updated <x id="INTERPOLATION"
+            equiv-text="{{ formatDate(analytics()!.generatedAt) }}" />
+        </source>
+        <target> Dernière mise à jour <x id="INTERPOLATION"
+            equiv-text="{{ formatDate(analytics()!.generatedAt) }}" />
+        </target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">213,215</context>
         </context-group>
       </trans-unit>
@@ -3506,7 +3937,8 @@
         <source>Refresh</source>
         <target>Rafraîchir</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.html</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.html</context>
           <context context-type="linenumber">219,221</context>
         </context-group>
       </trans-unit>
@@ -3514,7 +3946,8 @@
         <source>Unknown</source>
         <target>Inconnu</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.ts</context>
           <context context-type="linenumber">357</context>
         </context-group>
       </trans-unit>
@@ -3522,7 +3955,8 @@
         <source>Teacher</source>
         <target>Professeur</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.ts</context>
           <context context-type="linenumber">382</context>
         </context-group>
       </trans-unit>
@@ -3530,7 +3964,8 @@
         <source>Analytics service unavailable - showing forms without data</source>
         <target>Service d'analyse indisponible - affichage des formulaires sans données</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.ts</context>
           <context context-type="linenumber">397</context>
         </context-group>
       </trans-unit>
@@ -3538,7 +3973,8 @@
         <source>Failed to load teacher analytics</source>
         <target>Échec du chargement des analyses des enseignants</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.ts</context>
           <context context-type="linenumber">408</context>
         </context-group>
       </trans-unit>
@@ -3546,7 +3982,8 @@
         <source>Unknown Teacher</source>
         <target>Enseignant inconnu</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.ts</context>
           <context context-type="linenumber">515</context>
         </context-group>
       </trans-unit>
@@ -3554,7 +3991,8 @@
         <source>Last 30 days</source>
         <target>30 derniers jours</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.ts</context>
           <context context-type="linenumber">777</context>
         </context-group>
       </trans-unit>
@@ -3562,7 +4000,8 @@
         <source>Last 7 days</source>
         <target>7 derniers jours</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.ts</context>
           <context context-type="linenumber">779</context>
         </context-group>
       </trans-unit>
@@ -3570,7 +4009,8 @@
         <source>Custom Range</source>
         <target>Gamme personnalisée</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.ts</context>
           <context context-type="linenumber">781</context>
         </context-group>
       </trans-unit>
@@ -3578,7 +4018,8 @@
         <source>All Time</source>
         <target>Tout le temps</target>
         <context-group purpose="location">
-          <context context-type="sourcefile">src/app/pages/results-teacher/results-teacher.component.ts</context>
+          <context context-type="sourcefile">
+            src/app/pages/results-teacher/results-teacher.component.ts</context>
           <context context-type="linenumber">783</context>
         </context-group>
       </trans-unit>
@@ -3647,16 +4088,26 @@
         </context-group>
       </trans-unit>
       <trans-unit id="results.answersCount" datatype="html">
-        <source> <x id="ICU" equiv-text="{evaluation()!.answers.length, plural, =0 {Showing 0 answers} =1 {Showing 1 answer} other {Showing # answers}}" xid="4349978454685794007" /> </source>
-        <target> <x id="ICU" equiv-text="{evaluation()!.answers.length, plural, =0 {Showing 0 answers} =1 {Showing 1 answer} other {Showing # answers}}" xid="4349978454685794007" /> </target>
+        <source>
+          <x id="ICU"
+            equiv-text="{evaluation()!.answers.length, plural, =0 {Showing 0 answers} =1 {Showing 1 answer} other {Showing # answers}}"
+            xid="4349978454685794007" />
+        </source>
+        <target>
+          <x id="ICU"
+            equiv-text="{evaluation()!.answers.length, plural, =0 {Showing 0 answers} =1 {Showing 1 answer} other {Showing # answers}}"
+            xid="4349978454685794007" />
+        </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/results/results.component.html</context>
           <context context-type="linenumber">56,60</context>
         </context-group>
       </trans-unit>
       <trans-unit id="4349978454685794007" datatype="html">
-        <source>{VAR_PLURAL, plural, =0 {Showing 0 answers} =1 {Showing 1 answer} other {Showing # answers}}</source>
-        <target>{VAR_PLURAL, pluriel, =0 {Affichage de 0 réponses} =1 {Affichage de 1 réponse} other {Affichage de # réponses}}</target>
+        <source>{VAR_PLURAL, plural, =0 {Showing 0 answers} =1 {Showing 1 answer} other {Showing #
+          answers}}</source>
+        <target>{VAR_PLURAL, pluriel, =0 {Affichage de 0 réponses} =1 {Affichage de 1 réponse} other
+          {Affichage de # réponses}}</target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/results/results.component.html</context>
           <context context-type="linenumber">56</context>
@@ -4071,8 +4522,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="teacherHome.submittedLabel" datatype="html">
-        <source>Submitted: <x id="INTERPOLATION" equiv-text="{{ selectedEvaluation.submittedDate | date:'MMM d, yyyy' }}" /></source>
-        <target>Soumis : <x id="INTERPOLATION" equiv-text="{{ selectedEvaluation.submittedDate | date:'MMM d, yyyy' }}" /></target>
+        <source>Submitted: <x id="INTERPOLATION"
+            equiv-text="{{ selectedEvaluation.submittedDate | date:'MMM d, yyyy' }}" /></source>
+        <target>Soumis : <x id="INTERPOLATION"
+            equiv-text="{{ selectedEvaluation.submittedDate | date:'MMM d, yyyy' }}" /></target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/teacher-home/teacher-home.component.html</context>
           <context context-type="linenumber">120,121</context>
@@ -4127,8 +4580,15 @@
         </context-group>
       </trans-unit>
       <trans-unit id="terms.section1Body" datatype="html">
-        <source> By accessing and using the <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> platform, you agree to comply with and be bound by these Terms of Service. If you do not agree to these terms, please do not use the system. </source>
-        <target> En accédant et en utilisant le <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> plateforme, vous acceptez de vous conformer et d’être lié par ces conditions d’utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser le système. </target>
+        <source> By accessing and using the <x id="START_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;/strong&gt;" /> platform, you agree to comply with and be bound by these
+          Terms of Service. If you do not agree to these terms, please do not use the system. </source>
+        <target> En accédant et en utilisant le <x id="START_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;strong&gt;" />Burito<x id="CLOSE_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;/strong&gt;" /> plateforme, vous acceptez de vous conformer et d’être
+          lié par ces conditions d’utilisation. Si vous n'acceptez pas ces conditions, veuillez ne
+          pas utiliser le système. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/terms/terms-of-service.component.html</context>
           <context context-type="linenumber">13,15</context>
@@ -4143,8 +4603,11 @@
         </context-group>
       </trans-unit>
       <trans-unit id="terms.section2Body" datatype="html">
-        <source> Burito is designed to facilitate constructive and accessible evaluations of teaching staff. The goal is to enhance the educational experience through honest feedback. </source>
-        <target> Burito est conçu pour faciliter les évaluations constructives et accessibles du personnel enseignant. L’objectif est d’améliorer l’expérience éducative grâce à des commentaires honnêtes. </target>
+        <source> Burito is designed to facilitate constructive and accessible evaluations of
+          teaching staff. The goal is to enhance the educational experience through honest feedback. </source>
+        <target> Burito est conçu pour faciliter les évaluations constructives et accessibles du
+          personnel enseignant. L’objectif est d’améliorer l’expérience éducative grâce à des
+          commentaires honnêtes. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/terms/terms-of-service.component.html</context>
           <context context-type="linenumber">21,23</context>
@@ -4199,16 +4662,25 @@
         </context-group>
       </trans-unit>
       <trans-unit id="terms.section4Body" datatype="html">
-        <source> While we encourage honest feedback, we maintain strict standards regarding the content of evaluations: </source>
-        <target> Même si nous encourageons les commentaires honnêtes, nous maintenons des normes strictes concernant le contenu des évaluations : </target>
+        <source> While we encourage honest feedback, we maintain strict standards regarding the
+          content of evaluations: </source>
+        <target> Même si nous encourageons les commentaires honnêtes, nous maintenons des normes
+          strictes concernant le contenu des évaluations : </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/terms/terms-of-service.component.html</context>
           <context context-type="linenumber">39,41</context>
         </context-group>
       </trans-unit>
       <trans-unit id="terms.section4Highlight" datatype="html">
-        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Constructive Feedback Only.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Hate speech, harassment, profanity, and personal attacks are strictly prohibited. Feedback should focus on professional performance and teaching methodology. </source>
-        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Commentaires constructifs uniquement.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" /> Les propos haineux, le harcèlement, les grossièretés et les attaques personnelles sont strictement interdits. Les commentaires doivent se concentrer sur les performances professionnelles et la méthodologie d’enseignement. </target>
+        <source><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Constructive
+          Feedback Only.<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;" />
+          Hate speech, harassment, profanity, and personal attacks are strictly prohibited. Feedback
+          should focus on professional performance and teaching methodology. </source>
+        <target><x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;" />Commentaires
+          constructifs uniquement.<x id="CLOSE_TAG_STRONG" ctype="x-strong"
+            equiv-text="&lt;/strong&gt;" /> Les propos haineux, le harcèlement, les grossièretés et
+          les attaques personnelles sont strictement interdits. Les commentaires doivent se
+          concentrer sur les performances professionnelles et la méthodologie d’enseignement. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/terms/terms-of-service.component.html</context>
           <context context-type="linenumber">43,45</context>
@@ -4216,7 +4688,8 @@
       </trans-unit>
       <trans-unit id="terms.section4Note" datatype="html">
         <source> Administrators reserve the right to remove comments that violate these guidelines. </source>
-        <target> Les administrateurs se réservent le droit de supprimer les commentaires qui enfreignent ces directives. </target>
+        <target> Les administrateurs se réservent le droit de supprimer les commentaires qui
+          enfreignent ces directives. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/terms/terms-of-service.component.html</context>
           <context context-type="linenumber">48,50</context>
@@ -4231,8 +4704,12 @@
         </context-group>
       </trans-unit>
       <trans-unit id="terms.section5Body" datatype="html">
-        <source> The design, code, and architecture of the Burito platform are the property of the development team and the University. Unauthorized reproduction or redistribution is prohibited. </source>
-        <target> La conception, le code et l'architecture de la plateforme Burito sont la propriété de l'équipe de développement et de l'Université. La reproduction ou la redistribution non autorisée est interdite. </target>
+        <source> The design, code, and architecture of the Burito platform are the property of the
+          development team and the University. Unauthorized reproduction or redistribution is
+          prohibited. </source>
+        <target> La conception, le code et l'architecture de la plateforme Burito sont la propriété
+          de l'équipe de développement et de l'Université. La reproduction ou la redistribution non
+          autorisée est interdite. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/terms/terms-of-service.component.html</context>
           <context context-type="linenumber">55,57</context>
@@ -4247,8 +4724,11 @@
         </context-group>
       </trans-unit>
       <trans-unit id="terms.section6Body" datatype="html">
-        <source> The system is provided "as is". The administration is not liable for any technical interruptions or data loss, although we strive for high availability and security. </source>
-        <target> Le système est fourni « tel quel ». L'administration n'est pas responsable des interruptions techniques ou des pertes de données, même si nous nous efforçons d'assurer une haute disponibilité et sécurité. </target>
+        <source> The system is provided "as is". The administration is not liable for any technical
+          interruptions or data loss, although we strive for high availability and security. </source>
+        <target> Le système est fourni « tel quel ». L'administration n'est pas responsable des
+          interruptions techniques ou des pertes de données, même si nous nous efforçons d'assurer
+          une haute disponibilité et sécurité. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/terms/terms-of-service.component.html</context>
           <context context-type="linenumber">63,65</context>
@@ -4263,8 +4743,11 @@
         </context-group>
       </trans-unit>
       <trans-unit id="terms.section7Body" datatype="html">
-        <source> We reserve the right to modify these terms at any time. Continued use of the platform after changes constitutes acceptance of the new terms. </source>
-        <target> Nous nous réservons le droit de modifier ces conditions à tout moment. La poursuite de l'utilisation de la plateforme après des modifications constitue l'acceptation des nouvelles conditions. </target>
+        <source> We reserve the right to modify these terms at any time. Continued use of the
+          platform after changes constitutes acceptance of the new terms. </source>
+        <target> Nous nous réservons le droit de modifier ces conditions à tout moment. La poursuite
+          de l'utilisation de la plateforme après des modifications constitue l'acceptation des
+          nouvelles conditions. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/terms/terms-of-service.component.html</context>
           <context context-type="linenumber">71,73</context>
@@ -4279,8 +4762,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="terms.section8Body" datatype="html">
-        <source> For any concerns regarding these terms or reported misuse, please contact the System Administrator. </source>
-        <target> Pour toute préoccupation concernant ces conditions ou toute utilisation abusive signalée, veuillez contacter l'administrateur système. </target>
+        <source> For any concerns regarding these terms or reported misuse, please contact the
+          System Administrator. </source>
+        <target> Pour toute préoccupation concernant ces conditions ou toute utilisation abusive
+          signalée, veuillez contacter l'administrateur système. </target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/terms/terms-of-service.component.html</context>
           <context context-type="linenumber">79,81</context>
@@ -4319,8 +4804,10 @@
         </context-group>
       </trans-unit>
       <trans-unit id="verifyEmail.failed" datatype="html">
-        <source>Verification failed: <x id="INTERPOLATION" equiv-text="{{ errorMessage() || invalidTokenMessage }}" /></source>
-        <target>Échec de la vérification : <x id="INTERPOLATION" equiv-text="{{ errorMessage() || invalidTokenMessage }}" /></target>
+        <source>Verification failed: <x id="INTERPOLATION"
+            equiv-text="{{ errorMessage() || invalidTokenMessage }}" /></source>
+        <target>Échec de la vérification : <x id="INTERPOLATION"
+            equiv-text="{{ errorMessage() || invalidTokenMessage }}" /></target>
         <context-group purpose="location">
           <context context-type="sourcefile">src/app/pages/verify-email/verify-email.component.ts</context>
           <context context-type="linenumber">34,35</context>
