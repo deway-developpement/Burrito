@@ -7,6 +7,7 @@ import type {
   EvaluationSubmittedEvent,
   FormEvent,
   FormReminderEvent,
+  WelcomeEmailEvent,
 } from './notification.events';
 
 @Controller('notifications')
@@ -48,6 +49,11 @@ export class NotificationController {
   @EventPattern('user.emailVerification')
   async onEmailVerification(event: EmailVerificationEvent): Promise<void> {
     await this.notificationService.handleEmailVerification(event);
+  }
+
+  @EventPattern('user.welcome')
+  async onWelcomeEmail(event: WelcomeEmailEvent): Promise<void> {
+    await this.notificationService.handleWelcomeEmail(event);
   }
 
   @Get('failures')

@@ -17,7 +17,7 @@ import { genSalt, hash } from 'bcrypt';
 import { ICreateUser } from '@app/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { createHash, randomBytes } from 'crypto';
-import type { EmailVerificationEvent } from './user.events';
+import type { EmailVerificationEvent, WelcomeEmailEvent } from './user.events';
 
 @Injectable()
 @QueryService(User)
@@ -41,6 +41,7 @@ export class UserService extends MongooseQueryService<User> {
       emailVerificationTokenHash: tokenHash,
       emailVerificationExpiresAt: expiresAt,
     };
+    const tempPassword = createUserEntity.password;
     const salt = await genSalt(10);
     // hash the password with the salt
     createUserEntity.password = await hash(createUserEntity.password, salt);
@@ -49,6 +50,7 @@ export class UserService extends MongooseQueryService<User> {
       throw new BadRequestException('Email already used');
     });
     this.emitVerificationEmail(user, token);
+    this.emitWelcomeEmail(user, tempPassword);
     return user;
   }
 
@@ -189,5 +191,27 @@ export class UserService extends MongooseQueryService<User> {
           );
         },
       });
+  }
+
+  private emitWelcomeEmail(user: User, tempPassword: string | undefined): void {
+    if (!user.email || !tempPassword) {
+      this.logger.warn('Welcome email missing recipient or temp password');
+      return;
+    }
+    const payload: WelcomeEmailEvent = {
+      userId: user.id,
+      email: user.email,
+      fullName: user.fullName,
+      tempPassword,
+      eventId: `${user.id}:welcome`,
+      occurredAt: new Date().toISOString(),
+    };
+    void this.notificationsClient.emit('user.welcome', payload).subscribe({
+      error: (error) => {
+        this.logger.warn(
+          `Failed to emit welcome email: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      },
+    });
   }
 }

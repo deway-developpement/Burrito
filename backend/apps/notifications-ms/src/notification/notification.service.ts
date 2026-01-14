@@ -40,8 +40,10 @@ import type {
   EvaluationSubmittedEvent,
   FormEvent,
   FormReminderEvent,
+  WelcomeEmailEvent,
 } from './notification.events';
 import { emailVerificationTemplate } from './email-verification.template';
+import { welcomeUserTemplate } from './welcome-user.template';
 
 const DEFAULT_TIMEOUT_MS = 5000;
 
@@ -206,6 +208,24 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     };
     await this.dispatchNotifications(
       NotificationType.EMAIL_VERIFICATION,
+      event,
+      undefined,
+      [recipient],
+    );
+  }
+
+  async handleWelcomeEmail(event: WelcomeEmailEvent): Promise<void> {
+    if (!event.email || !event.tempPassword) {
+      this.logger.warn('Welcome email event missing email or temp password');
+      return;
+    }
+    const recipient: Recipient = {
+      userId: event.userId,
+      email: event.email,
+      fullName: event.fullName,
+    };
+    await this.dispatchNotifications(
+      NotificationType.WELCOME_USER,
       event,
       undefined,
       [recipient],
@@ -614,6 +634,27 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
           footerNote: emailVerificationTemplate.footerNote,
         };
       }
+      case NotificationType.WELCOME_USER: {
+        const tempPassword =
+          typeof event.tempPassword === 'string'
+            ? event.tempPassword
+            : undefined;
+        const loginUrl = this.buildLoginUrl();
+        const message = recipientName
+          ? `Hi ${recipientName}, your account is ready. Use the temporary password below to sign in.`
+          : 'Your account is ready. Use the temporary password below to sign in.';
+        return {
+          subject: welcomeUserTemplate.subject,
+          headline: welcomeUserTemplate.headline,
+          message,
+          details: tempPassword
+            ? `Temporary password: ${tempPassword}`
+            : undefined,
+          ctaText: loginUrl ? welcomeUserTemplate.ctaText : undefined,
+          ctaUrl: loginUrl,
+          footerNote: welcomeUserTemplate.footerNote,
+        };
+      }
       default:
         return {
           subject: 'Notification',
@@ -628,6 +669,13 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       return undefined;
     }
     return `${this.webAppUrl}/forms/${formId}`;
+  }
+
+  private buildLoginUrl(): string | undefined {
+    if (!this.webAppUrl) {
+      return undefined;
+    }
+    return `${this.webAppUrl}/sign-in`;
   }
 
   private buildQueueJobId(idempotencyKey: string): string {

@@ -31,3 +31,10 @@ export type EmailVerificationEvent = BaseEvent & {
   fullName?: string;
   verificationUrl: string;
 };
+
+export type WelcomeEmailEvent = BaseEvent & {
+  userId: string;
+  email: string;
+  fullName?: string;
+  tempPassword: string;
+};
