@@ -43,11 +43,46 @@ import { GroupModule } from './group/group.module';
     }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
+      path: '/graphQL',
       autoSchemaFile: join(process.cwd(), 'schema.gql'),
       sortSchema: true,
       playground: false,
       debug: false,
       plugins: [ApolloServerPluginLandingPageLocalDefault()],
+      context: ({ req, extra }) => ({
+        req: req ?? extra?.request,
+      }),
+      subscriptions: {
+        'graphql-ws': {
+          path: '/graphQL',
+          onConnect: (context) => {
+            const connectionParams = (context.connectionParams ??
+              {}) as Record<string, unknown>;
+            const headers = connectionParams.headers as
+              | Record<string, unknown>
+              | undefined;
+            const authHeader =
+              typeof connectionParams.Authorization === 'string'
+                ? connectionParams.Authorization
+                : typeof connectionParams.authorization === 'string'
+                  ? connectionParams.authorization
+                  : typeof headers?.authorization === 'string'
+                    ? headers.authorization
+                    : typeof headers?.Authorization === 'string'
+                      ? headers.Authorization
+                      : undefined;
+
+            const extra = context.extra as
+              | { request?: { headers?: Record<string, string> } }
+              | undefined;
+            if (extra) {
+              extra.request = {
+                headers: authHeader ? { authorization: authHeader } : {},
+              };
+            }
+          },
+        },
+      },
       buildSchemaOptions: {
         directives: [
           new GraphQLDirective({

@@ -114,6 +114,26 @@ const TEXT_ANALYSIS_STATUS = {
 type TextAnalysisStatus =
   (typeof TEXT_ANALYSIS_STATUS)[keyof typeof TEXT_ANALYSIS_STATUS];
 
+type TextAnalysisStatusChangedEvent = {
+  formId: string;
+  questionId: string;
+  windowKey: string;
+  window?: AnalyticsWindow;
+  analysisStatus: TextAnalysisStatus;
+  analysisHash?: string;
+  analysisError?: string;
+  lastEnrichedAt?: Date;
+  topIdeas?: Array<{ idea: string; count: number }>;
+  sentiment?: {
+    positivePct: number;
+    neutralPct: number;
+    negativePct: number;
+  };
+};
+
+const ANALYTICS_TEXT_ANALYSIS_STATUS_CHANGED_EVENT =
+  'analytics.textAnalysisStatusChanged';
+
 @Injectable()
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
@@ -147,6 +167,8 @@ export class AnalyticsService {
     @Inject('FORM_SERVICE') private readonly formClient: ClientProxy,
     @Inject('EVALUATION_SERVICE')
     private readonly evaluationClient: ClientProxy,
+    @Inject('ANALYTICS_EVENTS')
+    private readonly analyticsEventsClient: ClientProxy,
   ) {}
 
   async getFormSnapshot(
@@ -644,13 +666,28 @@ export class AnalyticsService {
       .digest('hex');
   }
 
+  private emitTextAnalysisStatusChanged(
+    payload: TextAnalysisStatusChangedEvent,
+  ) {
+    void firstValueFrom(
+      this.analyticsEventsClient.emit(
+        ANALYTICS_TEXT_ANALYSIS_STATUS_CHANGED_EVENT,
+        payload,
+      ),
+    ).catch((error) => {
+      this.logger.warn(
+        `Failed to emit analytics.textAnalysisStatusChanged: ${this.describeError(error)}`,
+      );
+    });
+  }
+
   private async enrichSnapshot(
     snapshot: AnalyticsSnapshotLean,
     textInputs: TextInput[],
   ): Promise<AnalyticsSnapshotLean | undefined> {
     const client = this.getIntelligenceClient();
     if (!client) {
-      await this.markEnrichmentPending(snapshot._id, textInputs);
+      await this.markEnrichmentPending(snapshot, textInputs);
       return snapshot;
     }
 
@@ -686,6 +723,14 @@ export class AnalyticsService {
             $unset: { 'questions.$.text.analysisError': '' },
           },
         );
+        this.emitTextAnalysisStatusChanged({
+          formId: snapshot.formId,
+          questionId: input.questionId,
+          windowKey: snapshot.windowKey,
+          window: snapshot.window,
+          analysisStatus: TEXT_ANALYSIS_STATUS.pending,
+          analysisHash: input.hash,
+        });
 
         const response = await this.callIntelligence(
           client,
@@ -698,7 +743,7 @@ export class AnalyticsService {
             `Intelligence returned error for question ${input.questionId}: ${errorMessage}`,
           );
           await this.markTextEnrichmentFailed(
-            snapshot._id,
+            snapshot,
             input,
             errorMessage,
           ).catch((updateError) => {
@@ -709,14 +754,16 @@ export class AnalyticsService {
           continue;
         }
         const enrichment = this.buildTextEnrichment(response);
+        const analysisStatus =
+          enrichment.analysisStatus || TEXT_ANALYSIS_STATUS.ready;
+        const lastEnrichedAt = new Date();
         const update: SnapshotTextUpdate = {
           $set: {
             'questions.$.text.topIdeas': enrichment.topIdeas,
             'questions.$.text.sentiment': enrichment.sentiment,
-            'questions.$.text.analysisStatus':
-              enrichment.analysisStatus || TEXT_ANALYSIS_STATUS.ready,
+            'questions.$.text.analysisStatus': analysisStatus,
             'questions.$.text.analysisHash': input.hash,
-            'questions.$.text.lastEnrichedAt': new Date(),
+            'questions.$.text.lastEnrichedAt': lastEnrichedAt,
           },
         };
 
@@ -731,13 +778,25 @@ export class AnalyticsService {
           { _id: snapshot._id, 'questions.questionId': input.questionId },
           update,
         );
+        this.emitTextAnalysisStatusChanged({
+          formId: snapshot.formId,
+          questionId: input.questionId,
+          windowKey: snapshot.windowKey,
+          window: snapshot.window,
+          analysisStatus,
+          analysisHash: input.hash,
+          lastEnrichedAt,
+          topIdeas: enrichment.topIdeas,
+          sentiment: enrichment.sentiment,
+          analysisError: enrichment.analysisError,
+        });
       } catch (error) {
         const errorMessage = this.describeError(error);
         this.logger.warn(
           `Intelligence enrichment failed for question ${input.questionId}: ${errorMessage}`,
         );
         await this.markTextEnrichmentFailed(
-          snapshot._id,
+          snapshot,
           input,
           errorMessage,
         ).catch((updateError) => {
@@ -759,13 +818,13 @@ export class AnalyticsService {
   }
 
   private async markEnrichmentPending(
-    snapshotId: Types.ObjectId | string,
+    snapshot: AnalyticsSnapshotLean,
     inputs: TextInput[],
   ) {
     await Promise.all(
-      inputs.map((input) =>
-        this.snapshotModel.updateOne(
-          { _id: snapshotId, 'questions.questionId': input.questionId },
+      inputs.map(async (input) => {
+        await this.snapshotModel.updateOne(
+          { _id: snapshot._id, 'questions.questionId': input.questionId },
           {
             $set: {
               'questions.$.text.analysisStatus': TEXT_ANALYSIS_STATUS.pending,
@@ -773,26 +832,44 @@ export class AnalyticsService {
             },
             $unset: { 'questions.$.text.analysisError': '' },
           },
-        ),
-      ),
+        );
+        this.emitTextAnalysisStatusChanged({
+          formId: snapshot.formId,
+          questionId: input.questionId,
+          windowKey: snapshot.windowKey,
+          window: snapshot.window,
+          analysisStatus: TEXT_ANALYSIS_STATUS.pending,
+          analysisHash: input.hash,
+        });
+      }),
     );
   }
 
   private async markTextEnrichmentFailed(
-    snapshotId: Types.ObjectId | string,
+    snapshot: AnalyticsSnapshotLean,
     input: TextInput,
     errorMessage: string,
   ) {
+    const analysisError = errorMessage || 'Unknown error';
     await this.snapshotModel.updateOne(
-      { _id: snapshotId, 'questions.questionId': input.questionId },
+      { _id: snapshot._id, 'questions.questionId': input.questionId },
       {
         $set: {
           'questions.$.text.analysisStatus': TEXT_ANALYSIS_STATUS.failed,
           'questions.$.text.analysisHash': input.hash,
-          'questions.$.text.analysisError': errorMessage || 'Unknown error',
+          'questions.$.text.analysisError': analysisError,
         },
       },
     );
+    this.emitTextAnalysisStatusChanged({
+      formId: snapshot.formId,
+      questionId: input.questionId,
+      windowKey: snapshot.windowKey,
+      window: snapshot.window,
+      analysisStatus: TEXT_ANALYSIS_STATUS.failed,
+      analysisHash: input.hash,
+      analysisError,
+    });
   }
 
   private buildTextEnrichment(response: IntelligenceResponse): {

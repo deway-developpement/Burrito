@@ -35,6 +35,7 @@
     "apollo-angular": "^13.0.0",
     "express": "^5.1.0",
     "graphql": "^16",
+    "graphql-ws": "^5.16.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

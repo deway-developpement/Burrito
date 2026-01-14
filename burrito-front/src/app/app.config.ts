@@ -6,7 +6,10 @@ import { isPlatformBrowser } from '@angular/common';
 
 import { provideApollo } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
-import { InMemoryCache, ApolloLink } from '@apollo/client/core';
+import { InMemoryCache, ApolloLink, split } from '@apollo/client/core';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
+import { createClient } from 'graphql-ws';
 import { firstValueFrom, of, timeout, catchError, switchMap } from 'rxjs'; 
 
 import { routes } from './app.routes';
@@ -17,6 +20,7 @@ import { getApiBaseUrl } from './config/runtime-config';
 function apolloOptionsFactory() {
     const httpLink = inject(HttpLink);
     const authService = inject(AuthService);
+    const platformId = inject(PLATFORM_ID);
     const apiBaseUrl = getApiBaseUrl();
     const http = httpLink.create({
         uri: `${apiBaseUrl}/graphQL`,
@@ -31,7 +35,36 @@ function apolloOptionsFactory() {
         }
         return forward(operation);
     });
-    return { link: ApolloLink.from([authLink, http]), cache: new InMemoryCache() };
+    const httpWithAuth = ApolloLink.from([authLink, http]);
+
+    if (!isPlatformBrowser(platformId)) {
+        return { link: httpWithAuth, cache: new InMemoryCache() };
+    }
+
+    const wsBaseUrl = apiBaseUrl.replace(/^http/, 'ws');
+    const wsLink = new GraphQLWsLink(
+        createClient({
+            url: `${wsBaseUrl}/graphQL`,
+            connectionParams: () => {
+                const token = authService.token();
+                return token ? { Authorization: `Bearer ${token}` } : {};
+            }
+        })
+    );
+
+    const link = split(
+        ({ query }) => {
+            const definition = getMainDefinition(query);
+            return (
+                definition.kind === 'OperationDefinition' &&
+                definition.operation === 'subscription'
+            );
+        },
+        wsLink,
+        httpWithAuth
+    );
+
+    return { link, cache: new InMemoryCache() };
 }
 
 export const appConfig: ApplicationConfig = {
