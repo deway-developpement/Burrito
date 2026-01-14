@@ -105,6 +105,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     /\/$/,
     '',
   );
+  private readonly allowedCtaOrigins: string[];
 
   constructor(
     @InjectModel(Notification.name)
@@ -114,7 +115,9 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     @Inject('FORM_SERVICE') private readonly formClient: ClientProxy,
     @Inject('EVALUATION_SERVICE')
     private readonly evaluationClient: ClientProxy,
-  ) {}
+  ) {
+    this.allowedCtaOrigins = this.resolveAllowedCtaOrigins();
+  }
 
   async onModuleInit(): Promise<void> {
     await this.loadTemplates();
@@ -545,7 +548,12 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     const recipientName = recipient.fullName;
     const endDate = this.formatDate(form?.endDate);
     const startDate = this.formatDate(form?.startDate);
-    const ctaUrl = form?.id ? this.buildFormUrl(form.id) : undefined;
+    const formUrl = this.sanitizeCtaUrl(
+      form?.id ? this.buildFormUrl(form.id) : undefined,
+    );
+    const studentEvaluationUrl = this.sanitizeCtaUrl(
+      form?.id ? this.buildStudentEvaluationUrl(form.id) : undefined,
+    );
     const footerNote = 'Manage notification preferences in your profile.';
 
     switch (type) {
@@ -557,8 +565,8 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
             ? `Hi ${recipientName}, a new form is available: ${formTitle}.`
             : `A new form is available: ${formTitle}.`,
           details: endDate ? `Please submit by ${endDate}.` : undefined,
-          ctaText: ctaUrl ? 'Open form' : undefined,
-          ctaUrl,
+          ctaText: studentEvaluationUrl ? 'Open form' : undefined,
+          ctaUrl: studentEvaluationUrl,
           footerNote,
         };
       case NotificationType.FORM_REMINDER:
@@ -569,8 +577,8 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
             ? `Hi ${recipientName}, this is a reminder to complete ${formTitle}.`
             : `This is a reminder to complete ${formTitle}.`,
           details: endDate ? `Deadline: ${endDate}.` : undefined,
-          ctaText: ctaUrl ? 'Complete form' : undefined,
-          ctaUrl,
+          ctaText: studentEvaluationUrl ? 'Complete form' : undefined,
+          ctaUrl: studentEvaluationUrl,
           footerNote,
         };
       case NotificationType.FORM_CLOSED:
@@ -587,24 +595,24 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
           headline: 'All responses received',
           message: `All assigned participants have completed ${formTitle}.`,
           details: startDate ? `Started on ${startDate}.` : undefined,
-          ctaText: ctaUrl ? 'View form' : undefined,
-          ctaUrl,
+          ctaText: formUrl ? 'View form' : undefined,
+          ctaUrl: formUrl,
           footerNote,
         };
       case NotificationType.EVALUATION_SUBMITTED:
         return {
           subject: `Evaluation submitted: ${formTitle}`,
           headline: 'Thanks for your feedback',
-          message: `Your evaluation for ${formTitle} has been submitted.`,
-          ctaText: ctaUrl ? 'View form' : undefined,
-          ctaUrl,
+          message: `Thank you for your feedback on ${formTitle}.`,
           footerNote,
         };
       case NotificationType.ANALYTICS_DIGEST_READY: {
         const periodStart = this.formatDate(event.periodStart as Date | string);
         const periodEnd = this.formatDate(event.periodEnd as Date | string);
         const reportUrl =
-          typeof event.reportUrl === 'string' ? event.reportUrl : undefined;
+          typeof event.reportUrl === 'string'
+            ? this.sanitizeCtaUrl(event.reportUrl)
+            : undefined;
         return {
           subject: 'Analytics digest ready',
           headline: 'Your analytics digest is ready',
@@ -621,7 +629,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
       case NotificationType.EMAIL_VERIFICATION: {
         const verificationUrl =
           typeof event.verificationUrl === 'string'
-            ? event.verificationUrl
+            ? this.sanitizeCtaUrl(event.verificationUrl)
             : undefined;
         return {
           subject: emailVerificationTemplate.subject,
@@ -639,7 +647,7 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
           typeof event.tempPassword === 'string'
             ? event.tempPassword
             : undefined;
-        const loginUrl = this.buildLoginUrl();
+        const loginUrl = this.sanitizeCtaUrl(this.buildLoginUrl());
         const message = recipientName
           ? `Hi ${recipientName}, your account is ready. Use the temporary password below to sign in.`
           : 'Your account is ready. Use the temporary password below to sign in.';
@@ -671,11 +679,74 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
     return `${this.webAppUrl}/forms/${formId}`;
   }
 
+  private buildStudentEvaluationUrl(formId: string): string | undefined {
+    if (!this.webAppUrl) {
+      return undefined;
+    }
+    return `${this.webAppUrl}/student/evaluate/${formId}`;
+  }
+
   private buildLoginUrl(): string | undefined {
     if (!this.webAppUrl) {
       return undefined;
     }
     return `${this.webAppUrl}/sign-in`;
+  }
+
+  private resolveAllowedCtaOrigins(): string[] {
+    const candidates = [
+      this.webAppUrl,
+      process.env.EMAIL_VERIFICATION_URL_BASE || '',
+      process.env.NOTIFICATIONS_ALLOWED_CTA_ORIGINS || '',
+    ];
+    const origins = candidates
+      .flatMap((value) =>
+        value
+          .split(',')
+          .map((entry) => entry.trim())
+          .filter(Boolean),
+      )
+      .map((entry) => this.getOrigin(entry))
+      .filter((origin): origin is string => Boolean(origin));
+
+    return Array.from(new Set(origins));
+  }
+
+  private getOrigin(value: string): string | null {
+    try {
+      const parsed = new URL(value);
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        return null;
+      }
+      return parsed.origin;
+    } catch {
+      return null;
+    }
+  }
+
+  private sanitizeCtaUrl(url: string | undefined): string | undefined {
+    if (!url) {
+      return undefined;
+    }
+    let parsed: URL;
+    try {
+      parsed = new URL(url);
+    } catch {
+      this.logger.warn(`Blocked CTA URL (invalid): ${url}`);
+      return undefined;
+    }
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+      this.logger.warn(`Blocked CTA URL (protocol): ${url}`);
+      return undefined;
+    }
+    if (
+      this.allowedCtaOrigins.length > 0 &&
+      !this.allowedCtaOrigins.includes(parsed.origin)
+    ) {
+      this.logger.warn(`Blocked CTA URL (origin): ${url}`);
+      return undefined;
+    }
+    return parsed.toString();
   }
 
   private buildQueueJobId(idempotencyKey: string): string {
