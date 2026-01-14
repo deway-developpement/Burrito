@@ -809,4 +809,8 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   isQuestionExpanded(questionId: string): boolean {
     return this.expandedQuestions().has(questionId);
   }
+
+  hasResponses(): boolean {
+    return (this.analytics()?.totalResponses ?? 0) > 0;
+  }
 }
