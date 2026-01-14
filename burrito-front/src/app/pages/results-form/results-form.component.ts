@@ -261,7 +261,7 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
 
   onCustomFromDateChange(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const date = input.value ? new Date(input.value + 'T00:00:00') : null;
+    const date = input.value ? new Date(input.value + 'T02:00:00') : null;
     this.customFromDate.set(date);
     this.loadFormAnalytics();
   }
