@@ -281,17 +281,6 @@ client.analyzeQuestion({
 }
 ```
 
-#### sentiment_stats
-```javascript
-{
-  _id: ObjectId,
-  sentiment: String,  // POSITIVE, NEGATIVE, NEUTRAL
-  count: Number,
-  last_updated: Date
-}
-```
-Note: stats are now aggregated from `analyses`; this collection is legacy.
-
 ## Project Structure
 
 ```

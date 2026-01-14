@@ -1,59 +1,97 @@
-# BurritoFront
+# Burrito Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.10.
+The Burrito frontend is an Angular SSR application that provides the UI for
+students, teachers, and administrators. It communicates with the API gateway
+over GraphQL and REST auth endpoints.
 
-## Development server
+## Features
 
-To start a local development server, run:
+- Angular SSR with server-side rendering and hydration.
+- Role-based UI flows (admin, teacher, student).
+- GraphQL data layer with Apollo.
+- Runtime API base URL configuration.
+- Internationalization (fr, de, es).
 
-```bash
-ng serve
-```
+## Prerequisites
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+- Node.js 20+
+- Angular CLI 20 (installed via `npm install`)
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Setup
 
 ```bash
-ng generate --help
+npm install
 ```
 
-## Building
+## Development
 
-To build the project run:
+Start the dev server:
 
 ```bash
-ng build
+npm start
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Defaults:
+- Frontend: `http://localhost:4200`
+- API Gateway (expected): `http://localhost:3000`
 
-## Running unit tests
+The dev server proxies `/auth`, `/api`, and `/graphQL` to the API gateway using
+`proxy.conf.json`.
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+## Runtime Configuration
+
+The API base URL is resolved in `src/app/config/runtime-config.ts`:
+
+- `window.__env.API_BASE_URL` (served from `/env.js`)
+- `process.env.API_BASE_URL` (SSR or build-time)
+- Defaults:
+  - Dev: `http://localhost:3000`
+  - Prod: `https://api.burrito.deway.fr`
+
+The SSR server exposes `/env.js` in `src/server.ts` and also injects
+`globalThis.__env` for server-side rendering.
+
+## Build
 
 ```bash
-ng test
+npm run build
 ```
 
-## Running end-to-end tests
+The build output is in `dist/burrito-front/` with SSR assets and localized
+bundles.
 
-For end-to-end (e2e) testing, run:
+## Run SSR Output
+
+After building, you can run the SSR server:
 
 ```bash
-ng e2e
+node dist/burrito-front/server/server.mjs
 ```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+The server listens on `PORT` (default `4000`).
 
-## Additional Resources
+## Testing
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+```bash
+npm test
+```
+
+## Project Structure
+
+```
+burrito-front/
+├── src/
+│   ├── app/                # pages, services, components
+│   ├── server.ts           # SSR express server + runtime config
+│   ├── main.ts             # browser entry
+│   ├── main.server.ts      # server entry
+│   └── styles/             # global styles
+├── proxy.conf.json         # dev proxy to API gateway
+└── angular.json
+```
+
+## Troubleshooting
+
+- GraphQL endpoint is `/graphQL` (case-sensitive).
+- If API calls fail locally, ensure the backend is running on `localhost:3000`.
+- For SSR, confirm `API_BASE_URL` is set correctly or `/env.js` is reachable.
