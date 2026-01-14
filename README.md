@@ -202,3 +202,12 @@ npm test
 - If GraphQL calls fail, confirm the path is `/graphQL` (capital Q + L).
 - If email is not sending locally, check MailHog at `http://localhost:8025`.
 - NLP enrichment requires model cache; see `backend/apps/intelligence-ms/README.md`.
+
+## Future Enhancements
+
+- Add organization/tenant management with finer-grained RBAC and audit logs.
+- Expand analytics with custom dashboards, cohort comparisons, and CSV/PDF exports.
+- Support richer question types and reusable form templates with versioning.
+- Broaden notifications (digest scheduling, SMS/Slack) and user-level preferences.
+- Improve NLP with native multilingual sentiment, topic modeling, and model versioning.
+- Strengthen observability and performance (tracing, rate limiting, caching, workers).

@@ -520,8 +520,8 @@ async function runStep3() {
     const email = STUDENT_EMAILS[i];
     let studentToken;
     try {
-      const login = await login(email, DEFAULT_PASSWORD);
-      studentToken = login.access_token;
+      const { access_token } = await login(email, DEFAULT_PASSWORD);
+      studentToken = access_token;
     } catch (error) {
       console.log(`! login failed for ${email}: ${error.message}`);
       continue;
@@ -833,11 +833,14 @@ function buildAnswers(questions, userIndex) {
 }
 
 function ratingFor(userIndex, questionIndex) {
-  let rating = 6 + ((userIndex + questionIndex) % 5);
-  if ((userIndex + questionIndex) % 11 === 0) {
-    rating = 3 + (userIndex % 3);
-  } else if ((userIndex + questionIndex) % 7 === 0) {
-    rating = 5 + (questionIndex % 4);
+  const roll = (userIndex * 17 + questionIndex * 31 + 13) % 100;
+  let rating;
+  if (roll < 80) {
+    rating = 9 + (roll % 2);
+  } else if (roll < 95) {
+    rating = 7 + (roll % 2);
+  } else {
+    rating = 5 + (roll % 2);
   }
   return clamp(rating, 1, 10);
 }
