@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { UserService } from './user.service';
-import type { Query } from '@nestjs-query/core';
+import type { AggregateQuery, Filter, Query } from '@nestjs-query/core';
 import { User } from './entities/user.entity';
 
 @Controller()
@@ -21,6 +21,16 @@ export class UserController {
   @MessagePattern({ cmd: 'user.findByIds' })
   findByIds(ids: string[]) {
     return this.userService.findByIds(ids);
+  }
+
+  @MessagePattern({ cmd: 'user.aggregate' })
+  aggregate(data: { filter: Filter<User>; aggregate: AggregateQuery<User> }) {
+    return this.userService.aggregate(data.filter, data.aggregate);
+  }
+
+  @MessagePattern({ cmd: 'user.count' })
+  count(query: Filter<User>) {
+    return this.userService.count(query);
   }
 
   @MessagePattern({ cmd: 'user.createOne' })
