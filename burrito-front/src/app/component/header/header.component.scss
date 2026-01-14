@@ -65,6 +65,19 @@
   
 }
 
+.home__logout-button {
+  ::ng-deep .btn {
+    background: #2f6df6;
+    color: theme.$white;
+    border: 1px solid #2f6df6;
+    box-shadow: 0 12px 24px rgba(47, 109, 246, 0.35);
+
+    &:hover {
+      background: #2559c8;
+    }
+  }
+}
+
 .verify-banner {
   display: flex;
   align-items: center;
@@ -210,4 +223,3 @@
 }
 .verify-banner__status.success { color: theme.$error-green-dark; }
 .verify-banner__status.error { color: theme.$error-red-dark; }
-
