@@ -435,20 +435,26 @@ export class EvaluationService {
 
   getDashboardMetrics(): Observable<DashboardMetrics> {
     return this.apollo.query<any>({
-      query: GET_GLOBAL_STATS,
+      query: gql`
+        query GetEvaluationMetrics($sevenDaysAgo: DateTime!) {
+          totalEvaluations: evaluationAggregate {
+            count { id }
+          }
+          recentEvaluations: evaluationAggregate(
+            filter: { createdAt: { gte: $sevenDaysAgo } }
+          ) {
+            count { id }
+          }
+        }
+      `,
+      variables: {
+        sevenDaysAgo: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+      },
       fetchPolicy: 'network-only'
     }).pipe(
       map(result => {
-        const evaluations = result.data?.evaluations?.edges.map((e: any) => e.node) || [];
-
-        const oneWeekAgo = new Date();
-        oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-        const newFeedbackCount = evaluations.filter((ev: any) =>
-          new Date(ev.createdAt) >= oneWeekAgo
-        ).length;
-
-        let completionRate = evaluations.length; 
+        const completionRate = result.data?.totalEvaluations?.[0]?.count?.id || 0;
+        const newFeedbackCount = result.data?.recentEvaluations?.[0]?.count?.id || 0;
 
         return { completionRate, newFeedbackCount };
       })
