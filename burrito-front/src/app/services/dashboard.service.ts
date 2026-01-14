@@ -18,25 +18,23 @@ export class DashboardService {
       .watchQuery<any>({
         query: gql`
           query GetDashboardStats {
-            teachers: users(filter: { userType: { eq: TEACHER } }) {
-              edges { node { id } }
+            teachers: userAggregate(filter: { userType: { eq: TEACHER } }) {
+              count { id }
             }
-            students: users(filter: { userType: { eq: STUDENT } }) {
-              edges { node { id } }
+            students: userAggregate(filter: { userType: { eq: STUDENT } }) {
+              count { id }
             }
           }
         `,
         fetchPolicy: 'cache-and-network',
       })
       .valueChanges.pipe(
-        // 1. IMPORTANT : On ignore les émissions tant que data est vide
         filter(result => !!result.data), 
 
         map((result) => {
-          // 2. Sécurité supplémentaire avec le '?' (optionnel si le filter est là, mais conseillé)
           return {
-            teacherCount: result.data?.teachers?.edges?.length || 0,
-            studentCount: result.data?.students?.edges?.length || 0
+            teacherCount: result.data?.teachers?.[0]?.count?.id || 0,
+            studentCount: result.data?.students?.[0]?.count?.id || 0
           };
         })
       );

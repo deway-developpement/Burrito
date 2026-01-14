@@ -25,7 +25,7 @@ export class AdminHomeComponent implements OnInit {
   forms$: Observable<Array<{ id: string; title: string }>> = of([]);
 
   constructor(
-    private readonly dashboardService: DashboardService, 
+    private readonly dashboardService: DashboardService,
     private readonly evaluationService: EvaluationService,
     private readonly apollo: Apollo
   ) {
