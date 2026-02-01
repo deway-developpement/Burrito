@@ -276,6 +276,21 @@ resource "helm_release" "kube_prometheus_stack" {
         ingress = {
           enabled = false
         }
+        prometheusSpec = {
+          # Persist metrics across rollouts
+          storageSpec = {
+            volumeClaimTemplate = {
+              spec = {
+                accessModes = ["ReadWriteOnce"]
+                resources = {
+                  requests = {
+                    storage = "10Gi"
+                  }
+                }
+              }
+            }
+          }
+        }
       }
       alertmanager = {
         ingress = {
