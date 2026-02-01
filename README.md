@@ -205,6 +205,8 @@ npm test
 
 ## Future Enhancements
 
+- Implement a way for users to be massively added, via a Teams organization or a csv file.
+- Improve the user profile to let users manage themselves on some level.
 - Add organization/tenant management with finer-grained RBAC and audit logs.
 - Expand analytics with custom dashboards, cohort comparisons, and CSV/PDF exports.
 - Support richer question types and reusable form templates with versioning.
