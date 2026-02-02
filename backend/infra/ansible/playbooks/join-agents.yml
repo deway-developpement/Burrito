@@ -1,0 +1,43 @@
+- hosts: burrito
+  become: true
+  tasks:
+    - name: Read k3s node token
+      slurp:
+        src: /var/lib/rancher/k3s/server/node-token
+      register: k3s_node_token
+      no_log: true
+
+- hosts: k3s_agents
+  become: true
+  vars:
+    k3s_server_url: "{{ hostvars['burrito'].k3s_api_endpoint }}"
+    k3s_server_ip: "{{ hostvars['burrito'].k3s_private_ip }}"
+  tasks:
+    - name: Clear existing burrito.deway.fr host entry
+      lineinfile:
+        path: /etc/hosts
+        regexp: "^.*burrito\\.deway\\.fr.*$"
+        state: absent
+
+    - name: Add burrito.deway.fr host entry
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ k3s_server_ip }} burrito.deway.fr"
+        create: true
+
+    - name: Install base dependencies
+      apt:
+        name:
+          - curl
+          - ca-certificates
+          - apt-transport-https
+        update_cache: true
+
+    - name: Install k3s agent
+      shell: |
+        curl -sfL https://get.k3s.io | \
+        K3S_URL="{{ k3s_server_url }}" \
+        K3S_TOKEN="{{ hostvars['burrito'].k3s_node_token.content | b64decode | trim }}" sh -
+      args:
+        creates: /usr/local/bin/k3s
+      no_log: true

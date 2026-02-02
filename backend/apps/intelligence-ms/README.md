@@ -79,6 +79,7 @@ Edit `.env` file to configure:
 - `SENTIMENT_MODEL_ID`: Sentiment model ID (default: cardiffnlp/twitter-roberta-base-sentiment-latest)
 - `TRANSLATE_BEFORE_SENTIMENT`: Translate answers to English before sentiment/paraphrasing (default: true)
 - `TRANSLATION_MODEL`: Translation model ID (default: Helsinki-NLP/opus-mt-mul-en)
+- `TRANSLATION_TASK`: Translation pipeline task (default: translation_mul_to_en)
 - `TRANSLATION_DETECT_LANGUAGE`: Skip translation when text is detected as English (default: true)
 - `HF_HOME`: HuggingFace cache directory (default: ./.cache/huggingface)
 - `PARAPHRASE_REPORT_ENABLED`: Log paraphrase fallback reasons (default: true)

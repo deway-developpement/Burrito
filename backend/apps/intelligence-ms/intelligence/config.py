@@ -35,6 +35,10 @@ TRANSLATION_MODEL = os.getenv(
     'TRANSLATION_MODEL',
     'Helsinki-NLP/opus-mt-mul-en',
 )
+TRANSLATION_TASK = os.getenv(
+    'TRANSLATION_TASK',
+    'translation_mul_to_en',
+).strip()
 TRANSLATION_DETECT_LANGUAGE = (
     os.getenv('TRANSLATION_DETECT_LANGUAGE', 'true').lower() == 'true'
 )

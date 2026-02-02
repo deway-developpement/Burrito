@@ -180,8 +180,16 @@ class SentimentAnalyzer:
                 'Translation model unavailable. Run scripts/cache_models.py.'
             ) from exc
 
+        translation_task = (config.TRANSLATION_TASK or '').strip()
+        if translation_task == 'translation':
+            self._logger.warning(
+                'TRANSLATION_TASK=translation is invalid; '
+                'using translation_mul_to_en instead.'
+            )
+            translation_task = 'translation_mul_to_en'
+
         self._translator = pipeline(
-            'translation',
+            translation_task,
             model=model,
             tokenizer=tokenizer,
             device=-1,
