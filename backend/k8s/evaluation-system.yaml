@@ -4,6 +4,21 @@ metadata:
   name: evaluation-system
 ---
 apiVersion: v1
+kind: LimitRange
+metadata:
+  name: default-resources
+  namespace: evaluation-system
+spec:
+  limits:
+    - type: Container
+      defaultRequest:
+        cpu: 100m
+        memory: 256Mi
+      default:
+        cpu: 500m
+        memory: 512Mi
+---
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: burrito-config
@@ -57,6 +72,13 @@ spec:
           image: mongo:7.0
           ports:
             - containerPort: 27017
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: "2"
+              memory: 4Gi
           env:
             - name: MONGO_INITDB_ROOT_USERNAME
               valueFrom:
@@ -149,6 +171,13 @@ spec:
           image: redis:7
           ports:
             - containerPort: 6379
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
           readinessProbe:
             tcpSocket:
               port: 6379
