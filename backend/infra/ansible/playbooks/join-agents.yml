@@ -1,5 +1,9 @@
 - hosts: burrito
   become: true
+  vars:
+    ntp_servers:
+      - "0.europe.pool.ntp.org"
+      - "1.europe.pool.ntp.org"
   tasks:
     - name: Read k3s node token
       slurp:
@@ -7,11 +11,55 @@
       register: k3s_node_token
       no_log: true
 
+    - name: Install chrony
+      apt:
+        name: chrony
+        update_cache: true
+
+    - name: Configure chrony NTP servers
+      blockinfile:
+        path: /etc/chrony/chrony.conf
+        marker: "# {mark} ANSIBLE NTP SERVERS"
+        block: |
+          {% for server in ntp_servers %}
+          pool {{ server }} iburst
+          {% endfor %}
+      register: chrony_config
+
+    - name: Collect service facts
+      service_facts:
+
+    - name: Disable systemd-timesyncd (avoid conflicts)
+      service:
+        name: systemd-timesyncd
+        state: stopped
+        enabled: false
+      when:
+        - ansible_service_mgr == "systemd"
+        - ansible_facts.services is defined
+        - "'systemd-timesyncd.service' in ansible_facts.services"
+      failed_when: false
+
+    - name: Restart chrony if config changed
+      service:
+        name: chrony
+        state: restarted
+      when: chrony_config.changed
+
+    - name: Ensure chrony is enabled
+      service:
+        name: chrony
+        state: started
+        enabled: true
+
 - hosts: k3s_agents
   become: true
   vars:
     k3s_server_url: "{{ hostvars['burrito'].k3s_api_endpoint }}"
     k3s_server_ip: "{{ hostvars['burrito'].k3s_private_ip }}"
+    ntp_servers:
+      - "0.europe.pool.ntp.org"
+      - "1.europe.pool.ntp.org"
   tasks:
     - name: Clear existing burrito.deway.fr host entry
       lineinfile:
@@ -32,6 +80,47 @@
           - ca-certificates
           - apt-transport-https
         update_cache: true
+
+    - name: Install chrony
+      apt:
+        name: chrony
+        update_cache: true
+
+    - name: Configure chrony NTP servers
+      blockinfile:
+        path: /etc/chrony/chrony.conf
+        marker: "# {mark} ANSIBLE NTP SERVERS"
+        block: |
+          {% for server in ntp_servers %}
+          pool {{ server }} iburst
+          {% endfor %}
+      register: chrony_config
+
+    - name: Collect service facts
+      service_facts:
+
+    - name: Disable systemd-timesyncd (avoid conflicts)
+      service:
+        name: systemd-timesyncd
+        state: stopped
+        enabled: false
+      when:
+        - ansible_service_mgr == "systemd"
+        - ansible_facts.services is defined
+        - "'systemd-timesyncd.service' in ansible_facts.services"
+      failed_when: false
+
+    - name: Restart chrony if config changed
+      service:
+        name: chrony
+        state: restarted
+      when: chrony_config.changed
+
+    - name: Ensure chrony is enabled
+      service:
+        name: chrony
+        state: started
+        enabled: true
 
     - name: Install k3s agent
       shell: |
