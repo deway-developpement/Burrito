@@ -43,6 +43,7 @@ export class AuthService {
       username: user.email,
       sub: user.id,
       authType: user.userType,
+      role: user.role,
     };
     return this.sendWithTimeout(
       this.userClient.send<{ access_token: string; refresh_token: string }>(

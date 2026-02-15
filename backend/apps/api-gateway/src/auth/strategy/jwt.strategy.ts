@@ -24,10 +24,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   validate(payload: JwtPayload): AuthCredentials {
+    // VULNERABILITY: Trusting JWT payload without database verification
+    // This allows users to modify their role by tampering with the JWT
     return {
       id: payload.sub,
       email: payload.username,
       authType: payload.authType,
+      role: payload.role,
     };
   }
 }

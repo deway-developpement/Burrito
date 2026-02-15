@@ -1,15 +1,22 @@
 import { InputType, Field } from '@nestjs/graphql';
-import { QuestionInput } from './question.input';
+import { GraphQLScalarType } from 'graphql'; // Import this
+import { GraphQLJSON } from 'graphql-type-json';
 import {
   IsString,
   IsOptional,
   IsDateString,
-  ValidateNested,
   IsArray,
   IsEnum,
 } from 'class-validator';
-import { Type } from 'class-transformer';
 import { FormStatus } from '@app/common';
+
+// --- FIX: RENAME THE SCALAR TO AVOID COLLISION ---
+// We create a new scalar that works exactly like GraphQLJSON
+// but carries the name 'RawJSON' so it doesn't crash the schema.
+const RawJSON = new GraphQLScalarType({
+  ...GraphQLJSON.toConfig(),
+  name: 'RawJSON', 
+});
 
 @InputType()
 export class CreateFormInput {
@@ -22,11 +29,11 @@ export class CreateFormInput {
   @IsString()
   description?: string;
 
-  @Field(() => [QuestionInput])
+  // --- VULNERABLE FIELD ---
+  // Use our renamed 'RawJSON' scalar here
+  @Field(() => [RawJSON]) 
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => QuestionInput)
-  questions: QuestionInput[];
+  questions: any[]; 
 
   @Field({ nullable: true })
   @IsOptional()

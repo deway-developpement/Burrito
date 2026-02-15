@@ -14,6 +14,8 @@ export interface IUser {
 
   readonly userType: UserType;
 
+  readonly role?: string; // For JWT vulnerability demonstration
+
   readonly refresh_token: string | null;
 
   readonly emailVerified: boolean;
