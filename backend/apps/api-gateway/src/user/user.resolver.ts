@@ -107,6 +107,6 @@ export class UserResolver extends CRUDResolver(UserDto, {
       throw new Error('User not found');
     }
     const mergedUser = merge(currentUser, updates);
-    return this.userService.update(user.id, mergedUser);
+    return this.userService.updateOne(user.id, mergedUser);
   }
 }
