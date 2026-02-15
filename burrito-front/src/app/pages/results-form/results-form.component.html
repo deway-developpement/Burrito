@@ -355,7 +355,7 @@
                   <span class="pill neutral">{{ resp.questionLabel }}</span>
                   <span class="muted">{{ formatDate(resp.createdAt) }}</span>
                 </div>
-                <p class="tr-text">{{ resp.text }}</p>
+                <p class="tr-text" [innerHtml]="resp.text | safeHtml"></p>
               </div>
             }
             

@@ -16,6 +16,7 @@ import { takeUntil } from 'rxjs/operators';
 import { GoBackComponent } from '../../component/shared/go-back/go-back.component';
 import { AuthService } from '../../services/auth.service';
 import { BackgroundDivComponent } from '../../component/shared/background-div/background-div.component';
+import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
 
 interface AnalyticsWindow {
   from?: Date;
@@ -236,7 +237,7 @@ const GET_USER = gql`
 @Component({
   selector: 'app-results-form',
   standalone: true,
-  imports: [CommonModule, BackgroundDivComponent, GoBackComponent, RouterModule],
+  imports: [CommonModule, BackgroundDivComponent, GoBackComponent, RouterModule, SafeHtmlPipe],
   templateUrl: './results-form.component.html',
   styleUrls: ['./results-form.component.scss'],
 })

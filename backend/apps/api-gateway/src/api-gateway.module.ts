@@ -24,6 +24,7 @@ import { EvaluationModule } from './evaluation/evaluation.module';
 import { LoggerModule } from 'nestjs-pino';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { GroupModule } from './group/group.module';
+import { JsonScalar } from './scalars/json.scalar';
 
 @Module({
   imports: [
@@ -110,6 +111,7 @@ import { GroupModule } from './group/group.module';
   providers: [
     ApiGatewayService,
     setHttpPlugin,
+    JsonScalar,
     PrometheusService,
     makeCounterProvider({
       name: 'http_requests_total',

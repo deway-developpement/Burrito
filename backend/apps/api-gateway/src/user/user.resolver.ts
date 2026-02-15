@@ -28,6 +28,7 @@ import { MembershipsByMemberLoader } from '../loaders/memberships-by-member.load
 import { GroupByIdLoader } from '../loaders/group-by-id.loader';
 import { VerifyEmailInput } from './dto/verify-email.input';
 import { merge } from '../../../../libs/common/src/utils/merge.util';
+import { JsonScalar } from '../scalars/json.scalar';
 
 @Resolver(() => UserDto)
 @Directive('@auth(role: "ADMIN")')
@@ -100,7 +101,7 @@ export class UserResolver extends CRUDResolver(UserDto, {
   @UseGuards(GqlAuthGuard)
   async updateProfile(
     @CurrentUser() user: AuthCredentials,
-    @Args('updates', { type: () => Object }) updates: Record<string, any>,
+    @Args('updates', { type: () => JsonScalar }) updates: Record<string, any>,
   ): Promise<UserDto> {
     const currentUser = await this.userService.findById(user.id);
     if (!currentUser) {
