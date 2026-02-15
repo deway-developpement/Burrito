@@ -27,6 +27,7 @@ import { GroupDto } from '../group/dto/group.dto';
 import { MembershipsByMemberLoader } from '../loaders/memberships-by-member.loader';
 import { GroupByIdLoader } from '../loaders/group-by-id.loader';
 import { VerifyEmailInput } from './dto/verify-email.input';
+import { merge } from '../../../../libs/common/src/utils/merge.util';
 
 @Resolver(() => UserDto)
 @Directive('@auth(role: "ADMIN")')
@@ -93,5 +94,19 @@ export class UserResolver extends CRUDResolver(UserDto, {
     @CurrentUser() user: AuthCredentials,
   ): Promise<UserDto> {
     return this.userService.resendVerification(user.id);
+  }
+
+  @Mutation(() => UserDto)
+  @UseGuards(GqlAuthGuard)
+  async updateProfile(
+    @CurrentUser() user: AuthCredentials,
+    @Args('updates', { type: () => Object }) updates: Record<string, any>,
+  ): Promise<UserDto> {
+    const currentUser = await this.userService.findById(user.id);
+    if (!currentUser) {
+      throw new Error('User not found');
+    }
+    const mergedUser = merge(currentUser, updates);
+    return this.userService.update(user.id, mergedUser);
   }
 }

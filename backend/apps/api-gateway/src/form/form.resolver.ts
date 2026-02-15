@@ -8,16 +8,11 @@ import {
 import { CRUDResolver } from '@nestjs-query/query-graphql';
 import { FormDto } from './dto/form.dto';
 import { FormService } from './form.service';
-import {
-  GqlAuthGuard,
-  GqlCredentialGuard,
-  CurrentUser,
-} from '../auth/guards/graphql-auth.guard';
+import { GqlAuthGuard, CurrentUser } from '../auth/guards/graphql-auth.guard';
 import { CreateFormInput } from './dto/create-form.input';
 import { UpdateFormInput } from './dto/update-form.input';
 import { UseGuards, UseInterceptors } from '@nestjs/common';
 import { TimestampToDateInterceptor } from '../interceptor/date.interceptor';
-import { UserType } from '../../../../libs/common/src';
 import { EvaluationService } from '../evaluation/evaluation.service';
 import type { AuthCredentials } from '../../../../libs/common/src/interfaces/auth.type';
 import { GroupFormsByFormLoader } from '../loaders/group-forms-by-form.loader';
@@ -33,12 +28,12 @@ export class FormResolver extends CRUDResolver(FormDto, {
   CreateDTOClass: CreateFormInput,
   UpdateDTOClass: UpdateFormInput,
   read: { guards: [GqlAuthGuard] },
-  create: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
-  update: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
-  delete: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
+  create: { guards: [GqlAuthGuard] },
+  update: { guards: [GqlAuthGuard] },
+  delete: { guards: [GqlAuthGuard] },
   aggregate: {
     enabled: true,
-    guards: [GqlCredentialGuard(UserType.ADMIN)],
+    guards: [GqlAuthGuard],
   },
 }) {
   constructor(
@@ -95,7 +90,7 @@ export class FormResolver extends CRUDResolver(FormDto, {
   }
 
   @Mutation(() => FormDto)
-  @UseGuards(GqlCredentialGuard(UserType.TEACHER))
+  @UseGuards(GqlAuthGuard)
   async changeFormStatus(
     @Args('input') input: ChangeFormStatusInput,
   ): Promise<FormDto> {

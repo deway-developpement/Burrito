@@ -6,11 +6,8 @@ import { CreateEvaluationInput } from './dto/create-evaluation.input';
 import { UpdateEvaluationInput } from './dto/update-evaluation.input';
 import {
   CurrentUser,
-  GqlAndGuard,
   GqlAuthGuard,
   GqlCredentialGuard,
-  GqlCurrentUserGuard,
-  GqlOrGuard,
 } from '../auth/guards/graphql-auth.guard';
 import { TimestampToDateInterceptor } from '../interceptor/date.interceptor';
 import { UserType } from '@app/common';
@@ -21,15 +18,10 @@ import { UseGuards, UseInterceptors } from '@nestjs/common';
 export class EvaluationResolver extends CRUDResolver(EvaluationDto, {
   CreateDTOClass: CreateEvaluationInput,
   UpdateDTOClass: UpdateEvaluationInput,
-  read: { guards: [GqlAuthGuard] },
+  read: { guards: [] },
   create: { disabled: true },
   update: {
-    guards: [
-      GqlOrGuard(
-        GqlAndGuard(GqlCredentialGuard(UserType.TEACHER), GqlCurrentUserGuard),
-        GqlCredentialGuard(UserType.ADMIN),
-      ),
-    ],
+    guards: [],
   },
   delete: { guards: [GqlCredentialGuard(UserType.ADMIN)] },
   aggregate: {

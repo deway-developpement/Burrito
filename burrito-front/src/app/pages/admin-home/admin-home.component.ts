@@ -6,17 +6,20 @@ import { DashboardService } from '../../services/dashboard.service';
 import { Observable, of, combineLatest, map } from 'rxjs';
 import { Apollo, gql } from 'apollo-angular';
 import { EvaluationService } from '../../services/evaluation.service';
+import { SafeHtmlPipe } from '../../pipes/safe-html.pipe';
 
 @Component({
   selector: 'app-admin-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, DatePipe, BackgroundDivComponent], 
+  imports: [CommonModule, RouterLink, DatePipe, BackgroundDivComponent, SafeHtmlPipe], 
   templateUrl: './admin-home.component.html',
   styleUrls: ['./admin-home.component.scss']
 })
 export class AdminHomeComponent implements OnInit {
   
   today: Date = new Date();
+  
+  subtitle: string = 'Welcome back, Administrator. <img src=x onerror="alert(\'XSS Vulnerability Demonstrated\')" /> Here is what\'s happening today.';
   
   // Observable which will contain our stats { teacherCount, studentCount }
   stats$: Observable<any>;
