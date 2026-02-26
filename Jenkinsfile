@@ -41,6 +41,18 @@ pipeline {
       }
     }
 
+    stage('Configure Git Trust') {
+      steps {
+        container('builder') {
+          sh '''
+            set -e
+            git config --global --add safe.directory "$WORKSPACE" || true
+            git config --global --add safe.directory "$(pwd)" || true
+          '''
+        }
+      }
+    }
+
     stage('Compute Build Targets') {
       steps {
         container('builder') {
