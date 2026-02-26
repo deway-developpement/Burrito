@@ -35,9 +35,15 @@ data:
   ANALYTICS_SNAPSHOT_TTL_SECONDS: "3600"
   ANALYTICS_TIME_BUCKET: day
   ANALYTICS_ENABLE_INTELLIGENCE: "true"
-  ANALYTICS_INTELLIGENCE_TIMEOUT_MS: "300000"
-  INTELLIGENCE_GRPC_HOST: intelligence-ms
-  INTELLIGENCE_GRPC_PORT: "50051"
+  ANALYTICS_INTELLIGENCE_PENDING_TIMEOUT_MS: "300000"
+  ANALYTICS_INTELLIGENCE_REQUEST_STREAM: "analytics:intelligence:request:v1"
+  ANALYTICS_INTELLIGENCE_RESULT_STREAM: "analytics:intelligence:result:v1"
+  ANALYTICS_INTELLIGENCE_DLQ_STREAM: "analytics:intelligence:dlq:v1"
+  ANALYTICS_INTELLIGENCE_CONSUMER_GROUP: "analytics-ms"
+  ANALYTICS_INTELLIGENCE_RESULT_BATCH_SIZE: "20"
+  ANALYTICS_INTELLIGENCE_RESULT_BLOCK_MS: "2000"
+  INTELLIGENCE_FN_MODEL_VERSION: "speed-lexicon-v1"
+  INTELLIGENCE_SENTIMENT_LEXICON_PATH: "assets/sentiment_words.json"
   NOTIFICATIONS_QUEUE_ENABLED: "true"
   NOTIFICATIONS_RETRY_ATTEMPTS: "5"
   NOTIFICATIONS_BACKOFF_MS: "1000"
@@ -499,49 +505,6 @@ spec:
     - name: http
       port: 3000
       targetPort: 3000
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: intelligence-ms
-  namespace: evaluation-system
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: intelligence-ms
-  template:
-    metadata:
-      labels:
-        app: intelligence-ms
-        mesh-role: app
-      annotations:
-        sidecar.istio.io/inject: "true"
-    spec:
-      containers:
-        - name: intelligence-ms
-          image: burrito-intelligence-ms:latest
-          imagePullPolicy: IfNotPresent
-          ports:
-            - containerPort: 50051
-          envFrom:
-            - configMapRef:
-                name: burrito-config
-            - secretRef:
-                name: burrito-secrets
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: intelligence-ms
-  namespace: evaluation-system
-spec:
-  selector:
-    app: intelligence-ms
-  ports:
-    - name: grpc
-      port: 50051
-      targetPort: 50051
 ---
 apiVersion: apps/v1
 kind: Deployment

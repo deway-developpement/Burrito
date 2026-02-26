@@ -33,7 +33,6 @@ ENV PORT=${PORT}
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/apps/intelligence-ms/proto ./apps/intelligence-ms/proto
 
 RUN chown -R node:node /app
 
