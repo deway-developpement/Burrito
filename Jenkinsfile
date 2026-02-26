@@ -65,7 +65,7 @@ pipeline {
                 BUILD_ALL=false
                 BUILD_BACKEND_ALL=false
                 BUILD_SERVICES=""
-                BUILD_INTELLIGENCE=false
+                BUILD_INTELLIGENCE_FN=false
                 BUILD_FRONTEND=false
 
                 BASE_COMMIT=""
@@ -127,12 +127,8 @@ pipeline {
                       printf '%s\n' "$CHANGED_FILES" > .changed_files
                       while IFS= read -r file; do
                         case "$file" in
-                          backend/apps/intelligence-ms/proto/*)
-                            BUILD_INTELLIGENCE=true
-                            BUILD_BACKEND_ALL=true
-                            ;;
-                          backend/apps/intelligence-ms/*)
-                            BUILD_INTELLIGENCE=true
+                          backend/apps/intelligence-fn-rs/*)
+                            BUILD_INTELLIGENCE_FN=true
                             ;;
                           backend/apps/*)
                             svc=$(echo "$file" | cut -d/ -f3)
@@ -155,7 +151,7 @@ pipeline {
 
                 if [ "$BUILD_ALL" = "true" ]; then
                   BUILD_SERVICES="$BACKEND_SERVICES"
-                  BUILD_INTELLIGENCE=true
+                  BUILD_INTELLIGENCE_FN=true
                   BUILD_FRONTEND=true
                 fi
 
@@ -168,7 +164,7 @@ pipeline {
                 printf 'BASE_COMMIT=%s\n' "$BASE_COMMIT"
                 printf 'BUILD_ALL=%s\n' "$BUILD_ALL"
                 printf 'BUILD_SERVICES=%s\n' "$BUILD_SERVICES"
-                printf 'BUILD_INTELLIGENCE=%s\n' "$BUILD_INTELLIGENCE"
+                printf 'BUILD_INTELLIGENCE_FN=%s\n' "$BUILD_INTELLIGENCE_FN"
                 printf 'BUILD_FRONTEND=%s\n' "$BUILD_FRONTEND"
               '''
             ).trim()
@@ -186,12 +182,12 @@ pipeline {
             env.BASE_COMMIT = props.BASE_COMMIT ?: ''
             env.BUILD_ALL = props.BUILD_ALL ?: 'false'
             env.BUILD_SERVICES = props.BUILD_SERVICES ?: ''
-            env.BUILD_INTELLIGENCE = props.BUILD_INTELLIGENCE ?: 'false'
+            env.BUILD_INTELLIGENCE_FN = props.BUILD_INTELLIGENCE_FN ?: 'false'
             env.BUILD_FRONTEND = props.BUILD_FRONTEND ?: 'false'
 
             echo "Base commit: ${env.BASE_COMMIT}"
             echo "Build services: ${env.BUILD_SERVICES}"
-            echo "Build intelligence: ${env.BUILD_INTELLIGENCE}"
+            echo "Build intelligence fn: ${env.BUILD_INTELLIGENCE_FN}"
             echo "Build frontend: ${env.BUILD_FRONTEND}"
           }
         }
@@ -248,19 +244,19 @@ pipeline {
               }
             }
 
-            if (env.BUILD_INTELLIGENCE == 'true') {
-              tasks['build-intelligence-ms'] = {
+            if (env.BUILD_INTELLIGENCE_FN == 'true') {
+              tasks['build-intelligence-fn-rs'] = {
                 sh """
                   set -e
-                  echo "Building Service: intelligence-ms"
+                  echo "Building Service: intelligence-fn-rs"
                   buildctl \
                     --addr "${env.BUILDKIT_HOST}" \
                     build \
                     --frontend dockerfile.v0 \
-                    --local context=backend/apps/intelligence-ms \
-                    --local dockerfile=backend/apps/intelligence-ms \
+                    --local context=backend/apps/intelligence-fn-rs \
+                    --local dockerfile=backend/apps/intelligence-fn-rs \
                     --opt filename=Dockerfile \
-                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-intelligence-ms:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-intelligence-ms:latest",push=true,registry.insecure=true'
+                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-intelligence-fn-rs:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-intelligence-fn-rs:latest",push=true,registry.insecure=true'
                 """
               }
             }
@@ -329,7 +325,7 @@ pipeline {
         expression {
           def sourceBranch = 'main'
           def branchName = env.BRANCH_NAME ?: sourceBranch
-          def hasArtifacts = (env.BUILD_SERVICES ?: '').trim() || env.BUILD_INTELLIGENCE == 'true' || env.BUILD_FRONTEND == 'true'
+          def hasArtifacts = (env.BUILD_SERVICES ?: '').trim() || env.BUILD_INTELLIGENCE_FN == 'true' || env.BUILD_FRONTEND == 'true'
           return branchName == sourceBranch && hasArtifacts
         }
       }
@@ -402,8 +398,8 @@ pipeline {
                 update_tag "burrito-${svc}" "${BUILD_NUMBER}"
               done
 
-              if [ "${BUILD_INTELLIGENCE}" = "true" ]; then
-                update_tag "burrito-intelligence-ms" "${BUILD_NUMBER}"
+              if [ "${BUILD_INTELLIGENCE_FN}" = "true" ]; then
+                update_tag "burrito-intelligence-fn-rs" "${BUILD_NUMBER}"
               fi
 
               if [ "${BUILD_FRONTEND}" = "true" ]; then
@@ -466,6 +462,12 @@ pipeline {
           sh '''
             set -e
 
+            # Use in-cluster config (service account)
+            kubectl get crd services.serving.knative.dev >/dev/null
+            kubectl get crd redisstreamsources.sources.knative.dev >/dev/null
+            kubectl apply -f backend/k8s/evaluation-system.yaml
+            kubectl apply -f backend/k8s/intelligence-fn-rs.knative.yaml
+            kubectl apply -f backend/k8s/frontend.yaml
             kubectl apply -f backend/k8s/istio/peer-authn-global-permissive.yaml
             kubectl apply -f backend/k8s/istio/peer-authn-data-permissive.yaml
 
@@ -482,6 +484,103 @@ pipeline {
                 ;;
             esac
           '''
+          script {
+            def services = (env.BUILD_SERVICES ?: '').tokenize(' ') as Set
+            def updateImage = { String deployment, String image ->
+              sh """
+                kubectl set image deployment/${deployment} \
+                  ${deployment}=${env.REGISTRY_HOST}/${image}:${env.BUILD_NUMBER} \
+                  -n "\$K8S_NAMESPACE"
+              """
+            }
+            def restart = { String deployment ->
+              sh """
+                kubectl rollout restart deployment/${deployment} -n "\$K8S_NAMESPACE"
+              """
+            }
+            def rollout = { String deployment ->
+              sh """
+                kubectl rollout status deployment/${deployment} -n "\$K8S_NAMESPACE" --timeout=5m
+              """
+            }
+            def updateKnativeImage = { String serviceName, String image ->
+              sh """
+                kubectl patch kservice/${serviceName} \
+                  -n "\$K8S_NAMESPACE" \
+                  --type=merge \
+                  -p '{"spec":{"template":{"metadata":{"annotations":{"burrito/build-number":"${env.BUILD_NUMBER}"}},"spec":{"containers":[{"image":"${env.REGISTRY_HOST}/${image}:${env.BUILD_NUMBER}"}]}}}}'
+              """
+            }
+            def rolloutKnative = { String serviceName ->
+              sh """
+                kubectl wait --for=condition=Ready kservice/${serviceName} -n "\$K8S_NAMESPACE" --timeout=5m
+              """
+            }
+
+            if (services.contains('api-gateway')) {
+              updateImage('api-gateway', 'burrito-api-gateway')
+              restart('api-gateway')
+            }
+            if (services.contains('users-ms')) {
+              updateImage('users-ms', 'burrito-users-ms')
+              restart('users-ms')
+            }
+            if (services.contains('forms-ms')) {
+              updateImage('forms-ms', 'burrito-forms-ms')
+              restart('forms-ms')
+            }
+            if (services.contains('evaluations-ms')) {
+              updateImage('evaluations-ms', 'burrito-evaluations-ms')
+              restart('evaluations-ms')
+            }
+            if (services.contains('analytics-ms')) {
+              updateImage('analytics-ms', 'burrito-analytics-ms')
+              restart('analytics-ms')
+            }
+            if (services.contains('groups-ms')) {
+              updateImage('groups-ms', 'burrito-groups-ms')
+              restart('groups-ms')
+            }
+            if (services.contains('notifications-ms')) {
+              updateImage('notifications-ms', 'burrito-notifications-ms')
+              restart('notifications-ms')
+            }
+            if (env.BUILD_INTELLIGENCE_FN == 'true') {
+              updateKnativeImage('intelligence-fn-rs', 'burrito-intelligence-fn-rs')
+            }
+            if (env.BUILD_FRONTEND == 'true') {
+              updateImage('burrito-frontend', 'burrito-frontend')
+              restart('burrito-frontend')
+            }
+
+            if (services.contains('api-gateway')) {
+              rollout('api-gateway')
+            }
+            if (services.contains('users-ms')) {
+              rollout('users-ms')
+            }
+            if (services.contains('forms-ms')) {
+              rollout('forms-ms')
+            }
+            if (services.contains('evaluations-ms')) {
+              rollout('evaluations-ms')
+            }
+            if (services.contains('analytics-ms')) {
+              rollout('analytics-ms')
+            }
+            if (services.contains('groups-ms')) {
+              rollout('groups-ms')
+            }
+            if (services.contains('notifications-ms')) {
+              rollout('notifications-ms')
+            }
+            if (env.BUILD_INTELLIGENCE_FN == 'true') {
+              rolloutKnative('intelligence-fn-rs')
+            }
+            if (env.BUILD_FRONTEND == 'true') {
+              rollout('burrito-frontend')
+            }
+          }
         }
       }
     }

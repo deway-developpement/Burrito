@@ -101,3 +101,15 @@ variable "api_gateway_domain" {
   description = "Public hostname for the API Gateway ingress"
   default     = "api.burrito.deway.fr"
 }
+
+variable "knative_version" {
+  type        = string
+  description = "Knative release tag used for Serving, Eventing, and net-istio manifests."
+  default     = "knative-v1.21.0"
+}
+
+variable "eventing_redis_version" {
+  type        = string
+  description = "Knative eventing-redis release tag used for RedisStreamSource CRDs/controllers."
+  default     = "knative-v1.21.0"
+}

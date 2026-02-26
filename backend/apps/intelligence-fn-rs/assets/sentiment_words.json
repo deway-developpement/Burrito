@@ -1,0 +1,8 @@
+{
+  "positive": [
+    "excellent", "great", "good", "amazing", "clear", "helpful", "effective", "productive", "engaging", "useful", "organized", "improved", "satisfied", "positive", "supportive", "fast", "easy", "friendly", "reliable", "strong"
+  ],
+  "negative": [
+    "bad", "poor", "unclear", "confusing", "slow", "late", "boring", "hard", "difficult", "frustrating", "problem", "issues", "disappointed", "negative", "weak", "messy", "bug", "broken", "noisy", "inconsistent"
+  ]
+}

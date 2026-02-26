@@ -3,7 +3,7 @@
 The Burrito backend is a NestJS monorepo that powers the API gateway and a set
 of microservices for users, groups, forms, evaluations, analytics, and
 notifications. It uses MongoDB for persistence, Redis for queues/caching, and a
-Python gRPC service for optional NLP enrichment.
+Rust Knative function for optional NLP enrichment.
 
 ## Features
 
@@ -11,7 +11,7 @@ Python gRPC service for optional NLP enrichment.
 - Microservice architecture for user, group, form, evaluation, analytics, and
   notifications domains.
 - Analytics snapshots with NPS, rating distributions, and time-series counts.
-- Optional NLP enrichment through the intelligence microservice (gRPC).
+- Optional NLP enrichment through Redis Streams + Knative intelligence function.
 - Email notifications with templates and queue-based delivery (BullMQ).
 - Docker Compose and Kubernetes manifests for local and production deploys.
 
@@ -24,8 +24,10 @@ Python gRPC service for optional NLP enrichment.
 - `evaluations-ms`: evaluation submissions and respondent tracking.
 - `analytics-ms`: analytics snapshots and aggregations.
 - `notifications-ms`: email notifications and reminders.
-- `intelligence-ms`: Python gRPC service for sentiment + idea extraction
-  (lives under `backend/apps/intelligence-ms`).
+- `intelligence-fn-rs`: Rust function service for sentiment + idea extraction
+  (lives under `backend/apps/intelligence-fn-rs`).
+
+Legacy Python `apps/intelligence-ms` remains for reference and is not part of active deployment.
 
 ## Repository Layout
 
@@ -39,7 +41,7 @@ backend/
 │   ├── evaluations-ms/
 │   ├── analytics-ms/
 │   ├── notifications-ms/
-│   └── intelligence-ms/        # Python service
+│   └── intelligence-fn-rs/     # Rust service
 ├── libs/                        # shared TypeScript code
 ├── scripts/                     # seed and utility scripts
 ├── docker-compose.yml
@@ -51,7 +53,7 @@ backend/
 
 - Node.js 18+
 - Docker (recommended for MongoDB/Redis/MailHog)
-- Python 3.8+ if running `intelligence-ms`
+- Rust 1.88+ if running `intelligence-fn-rs` without Docker
 
 ## Setup
 
@@ -78,7 +80,7 @@ This starts:
 - Redis on `6379`
 - MailHog on `8025`
 - All NestJS services
-- `intelligence-ms` (Python)
+- `intelligence-fn-rs` (Rust)
 
 ## Local Development (Manual)
 
@@ -102,13 +104,11 @@ npx nest start analytics-ms --watch
 npx nest start notifications-ms --watch
 ```
 
-Optional NLP service:
+Optional NLP function:
 
 ```bash
-cd apps/intelligence-ms
-pip install -r requirements.txt
-python scripts/cache_models.py
-python main.py
+cd apps/intelligence-fn-rs
+cargo run
 ```
 
 ## API Endpoints
@@ -122,7 +122,7 @@ The full GraphQL schema is generated in `schema.gql`.
 
 - Analytics enrichment:
   - `ANALYTICS_ENABLE_INTELLIGENCE=true`
-  - `INTELLIGENCE_GRPC_HOST` and `INTELLIGENCE_GRPC_PORT`
+  - `ANALYTICS_INTELLIGENCE_REQUEST_STREAM`, `ANALYTICS_INTELLIGENCE_RESULT_STREAM`, `ANALYTICS_INTELLIGENCE_DLQ_STREAM`
 - Analytics snapshot control:
   - `ANALYTICS_SNAPSHOT_TTL_SECONDS`
   - `ANALYTICS_TIME_BUCKET=day|week`
@@ -150,8 +150,8 @@ npm run test:e2e
 ## Docker Images
 
 The Docker build uses `backend/Dockerfile` and supports `SERVICE_NAME` to build
-individual services. The `intelligence-ms` image is built from
-`apps/intelligence-ms/Dockerfile`.
+individual NestJS services. The Rust intelligence image is built from
+`apps/intelligence-fn-rs/Dockerfile`.
 
 ## Deployment
 
@@ -165,4 +165,4 @@ individual services. The `intelligence-ms` image is built from
 - GraphQL path must be `/graphQL` (capital Q + L).
 - If auth fails, verify `JWT_*` settings and `WEB_APP_URL`.
 - If emails are not delivered locally, check MailHog at `http://localhost:8025`.
-- NLP enrichment requires model caches; see `apps/intelligence-ms/README.md`.
+- NLP enrichment requires Knative and RedisStreamSource manifests (`k8s/intelligence-fn-rs.knative.yaml`).
