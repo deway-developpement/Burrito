@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: burrito-prod
+  namespace: argocd
+spec:
+  project: burrito
+  source:
+    repoURL: https://github.com/deway-developpement/Burrito.git
+    targetRevision: production
+    path: backend/k8s/overlays/prod
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: evaluation-system
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false

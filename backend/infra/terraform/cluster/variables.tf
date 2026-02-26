@@ -22,6 +22,12 @@ variable "grafana_domain" {
   default     = "grafana.burrito.deway.fr"
 }
 
+variable "argocd_domain" {
+  type        = string
+  description = "Public hostname for Argo CD ingress"
+  default     = "argocd.burrito.deway.fr"
+}
+
 variable "grafana_admin_password" {
   type        = string
   description = "Admin password for Grafana (kube-prometheus-stack)"
