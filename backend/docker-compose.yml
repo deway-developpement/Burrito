@@ -31,7 +31,7 @@ services:
     ports:
       - "${MAILHOG_SMTP_PORT:-1025}:1025"
       - "${MAILHOG_WEB_PORT:-8025}:8025"
-  
+
   api-gateway:
     build:
       context: .
@@ -72,7 +72,7 @@ services:
       - ./.env:/app/.env:ro
 
   forms-ms:
-    build: 
+    build:
       context: .
       args:
         SERVICE_NAME: forms-ms
@@ -131,9 +131,11 @@ services:
       - ANALYTICS_SNAPSHOT_TTL_SECONDS=${ANALYTICS_SNAPSHOT_TTL_SECONDS:-3600}
       - ANALYTICS_TIME_BUCKET=${ANALYTICS_TIME_BUCKET:-day}
       - ANALYTICS_ENABLE_INTELLIGENCE=${ANALYTICS_ENABLE_INTELLIGENCE:-false}
-      - ANALYTICS_INTELLIGENCE_TIMEOUT_MS=${ANALYTICS_INTELLIGENCE_TIMEOUT_MS:-5000}
-      - INTELLIGENCE_GRPC_HOST=${INTELLIGENCE_GRPC_HOST:-intelligence-ms}
-      - INTELLIGENCE_GRPC_PORT=${INTELLIGENCE_GRPC_PORT:-50051}
+      - ANALYTICS_INTELLIGENCE_PENDING_TIMEOUT_MS=${ANALYTICS_INTELLIGENCE_PENDING_TIMEOUT_MS:-300000}
+      - ANALYTICS_INTELLIGENCE_REQUEST_STREAM=${ANALYTICS_INTELLIGENCE_REQUEST_STREAM:-analytics:intelligence:request:v1}
+      - ANALYTICS_INTELLIGENCE_RESULT_STREAM=${ANALYTICS_INTELLIGENCE_RESULT_STREAM:-analytics:intelligence:result:v1}
+      - ANALYTICS_INTELLIGENCE_DLQ_STREAM=${ANALYTICS_INTELLIGENCE_DLQ_STREAM:-analytics:intelligence:dlq:v1}
+      - ANALYTICS_INTELLIGENCE_CONSUMER_GROUP=${ANALYTICS_INTELLIGENCE_CONSUMER_GROUP:-analytics-ms}
     volumes:
       - ./.env:/app/.env:ro
 
@@ -154,9 +156,9 @@ services:
     volumes:
       - ./.env:/app/.env:ro
 
-  intelligence-ms:
+  intelligence-fn-rs:
     build:
-      context: ./apps/intelligence-ms
+      context: ./apps/intelligence-fn-rs
       dockerfile: Dockerfile
     depends_on: [mongo, redis]
     environment:
@@ -165,6 +167,8 @@ services:
       - REDIS_PORT=${REDIS_PORT:-6379}
       - MONGODB_HOST=${MONGODB_CONTAINER_NAME:-burrito-mongo}
       - MONGODB_PORT=${MONGODB_PORT:-27017}
+      - ANALYTICS_INTELLIGENCE_RESULT_STREAM=${ANALYTICS_INTELLIGENCE_RESULT_STREAM:-analytics:intelligence:result:v1}
+      - INTELLIGENCE_FN_MODEL_VERSION=${INTELLIGENCE_FN_MODEL_VERSION:-speed-lexicon-v1}
     volumes:
       - ./.env:/app/.env:ro
 

@@ -397,6 +397,88 @@ resource "helm_release" "istiod" {
   depends_on = [helm_release.istio_base]
 }
 
+resource "terraform_data" "knative_serving" {
+  triggers_replace = {
+    kubeconfig_path = pathexpand(var.kubeconfig_path)
+    knative_version = var.knative_version
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -euo pipefail
+
+      KUBECONFIG="${pathexpand(var.kubeconfig_path)}"
+      KNATIVE_VERSION="${var.knative_version}"
+
+      kubectl --kubeconfig "$KUBECONFIG" apply -f "https://github.com/knative/serving/releases/download/$KNATIVE_VERSION/serving-crds.yaml"
+      kubectl --kubeconfig "$KUBECONFIG" apply -f "https://github.com/knative/serving/releases/download/$KNATIVE_VERSION/serving-core.yaml"
+      kubectl --kubeconfig "$KUBECONFIG" apply -f "https://github.com/knative/net-istio/releases/download/$KNATIVE_VERSION/net-istio.yaml"
+      kubectl --kubeconfig "$KUBECONFIG" patch configmap/config-network -n knative-serving --type merge -p '{"data":{"ingress-class":"istio.ingress.networking.knative.dev"}}'
+
+      kubectl --kubeconfig "$KUBECONFIG" wait --for=condition=Established crd/services.serving.knative.dev --timeout=2m
+
+      for deployment in $(kubectl --kubeconfig "$KUBECONFIG" -n knative-serving get deploy -o jsonpath='{.items[*].metadata.name}'); do
+        kubectl --kubeconfig "$KUBECONFIG" -n knative-serving wait --for=condition=Available "deployment/$deployment" --timeout=5m
+      done
+    EOT
+  }
+
+  depends_on = [helm_release.istiod]
+}
+
+resource "terraform_data" "knative_eventing" {
+  triggers_replace = {
+    kubeconfig_path = pathexpand(var.kubeconfig_path)
+    knative_version = var.knative_version
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -euo pipefail
+
+      KUBECONFIG="${pathexpand(var.kubeconfig_path)}"
+      KNATIVE_VERSION="${var.knative_version}"
+
+      kubectl --kubeconfig "$KUBECONFIG" apply -f "https://github.com/knative/eventing/releases/download/$KNATIVE_VERSION/eventing-crds.yaml"
+      kubectl --kubeconfig "$KUBECONFIG" apply -f "https://github.com/knative/eventing/releases/download/$KNATIVE_VERSION/eventing-core.yaml"
+
+      kubectl --kubeconfig "$KUBECONFIG" wait --for=condition=Established crd/brokers.eventing.knative.dev --timeout=2m
+
+      for deployment in $(kubectl --kubeconfig "$KUBECONFIG" -n knative-eventing get deploy -o jsonpath='{.items[*].metadata.name}'); do
+        kubectl --kubeconfig "$KUBECONFIG" -n knative-eventing wait --for=condition=Available "deployment/$deployment" --timeout=5m
+      done
+    EOT
+  }
+
+  depends_on = [terraform_data.knative_serving]
+}
+
+resource "terraform_data" "knative_eventing_redis" {
+  triggers_replace = {
+    eventing_redis_version = var.eventing_redis_version
+    kubeconfig_path        = pathexpand(var.kubeconfig_path)
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+      set -euo pipefail
+
+      KUBECONFIG="${pathexpand(var.kubeconfig_path)}"
+      EVENTING_REDIS_VERSION="${var.eventing_redis_version}"
+
+      kubectl --kubeconfig "$KUBECONFIG" apply -f "https://github.com/knative-extensions/eventing-redis/releases/download/$EVENTING_REDIS_VERSION/redis-source.yaml"
+
+      kubectl --kubeconfig "$KUBECONFIG" wait --for=condition=Established crd/redisstreamsources.sources.knative.dev --timeout=2m
+
+      for deployment in $(kubectl --kubeconfig "$KUBECONFIG" -n knative-sources get deploy -o jsonpath='{.items[*].metadata.name}'); do
+        kubectl --kubeconfig "$KUBECONFIG" -n knative-sources wait --for=condition=Available "deployment/$deployment" --timeout=5m
+      done
+    EOT
+  }
+
+  depends_on = [terraform_data.knative_eventing]
+}
+
 resource "kubernetes_deployment" "buildkitd" {
   metadata {
     name      = "buildkitd"
@@ -459,6 +541,7 @@ resource "kubernetes_deployment" "buildkitd" {
       }
     }
   }
+
 }
 
 resource "kubernetes_service" "buildkitd" {
@@ -860,6 +943,74 @@ resource "kubernetes_role" "jenkins_deployer" {
       "peerauthentications",
       "authorizationpolicies",
       "requestauthentications",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+  rule {
+    api_groups = ["traefik.io"]
+    resources = [
+      "middlewares",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = ["serving.knative.dev"]
+    resources = [
+      "services",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = ["sources.knative.dev"]
+    resources = [
+      "redisstreamsources",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = [""]
+    resources = [
+      "services",
+      "configmaps",
+      "secrets",
+      "pods",
+      "pods/log",
+      "persistentvolumeclaims",
     ]
     verbs = [
       "get",
