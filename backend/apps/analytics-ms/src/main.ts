@@ -12,6 +12,8 @@ async function bootstrap() {
       options: {
         port: parseInt(process.env.REDIS_PORT || '6379'),
         host: process.env.REDIS_HOST || 'localhost',
+        retryAttempts: parseInt(process.env.REDIS_RETRY_ATTEMPTS || '1000000'),
+        retryDelay: parseInt(process.env.REDIS_RETRY_DELAY_MS || '1000'),
       },
       bufferLogs: true,
     },
