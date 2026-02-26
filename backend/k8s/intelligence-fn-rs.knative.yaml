@@ -34,7 +34,7 @@ metadata:
   name: intelligence-request-source
   namespace: evaluation-system
 spec:
-  address: redis://redis:6379
+  address: rediss://redis-tls:6379
   stream: analytics:intelligence:request:v1
   group: intelligence-fn-rs
   sink:
