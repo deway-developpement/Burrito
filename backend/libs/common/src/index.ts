@@ -11,3 +11,4 @@ export * from './interceptors/logger.interceptor';
 export * from './metrics/metrics.service';
 export * from './metrics/metrics.controller';
 export * from './filters/rpcToHttp.filter';
+export * from './utils/mongoose-count-compat';

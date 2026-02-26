@@ -1,10 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { UsersMsModule } from './users-ms.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { RedisLoggerInterceptor } from '@app/common';
+import {
+  patchMongooseCountCompatibility,
+  RedisLoggerInterceptor,
+} from '@app/common';
 import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
+  patchMongooseCountCompatibility();
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     UsersMsModule,
     {
