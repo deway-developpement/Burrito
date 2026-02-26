@@ -3,7 +3,7 @@ locals {
   monitoring_namespace = "monitoring"
   app_namespace        = "evaluation-system"
   istio_namespace      = "istio-system"
-  istio_chart_version  = "1.22.8"
+  istio_chart_version  = "1.23.2"
   traefik_cluster_ip   = data.kubernetes_service.traefik.spec[0].cluster_ip
 }
 
