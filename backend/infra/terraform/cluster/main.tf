@@ -2,6 +2,8 @@ locals {
   jenkins_namespace    = "jenkins"
   monitoring_namespace = "monitoring"
   app_namespace        = "evaluation-system"
+  istio_namespace      = "istio-system"
+  istio_chart_version  = "1.22.8"
   traefik_cluster_ip   = data.kubernetes_service.traefik.spec[0].cluster_ip
 }
 
@@ -21,6 +23,12 @@ resource "kubernetes_namespace" "jenkins" {
 resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = local.monitoring_namespace
+  }
+}
+
+resource "kubernetes_namespace" "istio_system" {
+  metadata {
+    name = local.istio_namespace
   }
 }
 
@@ -221,7 +229,7 @@ resource "helm_release" "jenkins" {
           hostName         = var.jenkins_domain
           ingressClassName = "traefik"
           annotations = {
-            "cert-manager.io/cluster-issuer" = "letsencrypt"
+            "cert-manager.io/cluster-issuer"                   = "letsencrypt"
             "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
             "traefik.ingress.kubernetes.io/router.middlewares" = "jenkins-https-redirect@kubernetescrd"
             "traefik.ingress.kubernetes.io/router.tls"         = "true"
@@ -259,7 +267,7 @@ resource "helm_release" "kube_prometheus_stack" {
           ingressClassName = "traefik"
           hosts            = [var.grafana_domain]
           annotations = {
-            "cert-manager.io/cluster-issuer" = "letsencrypt"
+            "cert-manager.io/cluster-issuer"                   = "letsencrypt"
             "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
             "traefik.ingress.kubernetes.io/router.middlewares" = "monitoring-https-redirect@kubernetescrd"
             "traefik.ingress.kubernetes.io/router.tls"         = "true"
@@ -301,6 +309,24 @@ resource "helm_release" "kube_prometheus_stack" {
   ]
 
   depends_on = [kubernetes_manifest.letsencrypt_issuer]
+}
+
+resource "helm_release" "istio_base" {
+  name       = "istio-base"
+  repository = "https://istio-release.storage.googleapis.com/charts"
+  chart      = "base"
+  namespace  = kubernetes_namespace.istio_system.metadata[0].name
+  version    = local.istio_chart_version
+}
+
+resource "helm_release" "istiod" {
+  name       = "istiod"
+  repository = "https://istio-release.storage.googleapis.com/charts"
+  chart      = "istiod"
+  namespace  = kubernetes_namespace.istio_system.metadata[0].name
+  version    = local.istio_chart_version
+
+  depends_on = [helm_release.istio_base]
 }
 
 resource "kubernetes_deployment" "buildkitd" {
@@ -534,7 +560,7 @@ resource "kubernetes_ingress_v1" "registry" {
     name      = "registry"
     namespace = kubernetes_namespace.jenkins.metadata[0].name
     annotations = {
-      "cert-manager.io/cluster-issuer" = "letsencrypt"
+      "cert-manager.io/cluster-issuer"                   = "letsencrypt"
       "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
       "traefik.ingress.kubernetes.io/router.middlewares" = "jenkins-https-redirect@kubernetescrd"
       "traefik.ingress.kubernetes.io/router.tls"         = "true"
@@ -583,7 +609,7 @@ resource "kubernetes_ingress_v1" "api_gateway" {
     name      = "api-gateway"
     namespace = kubernetes_namespace.evaluation_system.metadata[0].name
     annotations = {
-      "cert-manager.io/cluster-issuer" = "letsencrypt"
+      "cert-manager.io/cluster-issuer"                   = "letsencrypt"
       "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
       "traefik.ingress.kubernetes.io/router.middlewares" = "evaluation-system-https-redirect@kubernetescrd"
       "traefik.ingress.kubernetes.io/router.tls"         = "true"
@@ -699,6 +725,44 @@ resource "kubernetes_role" "jenkins_deployer" {
     api_groups = ["networking.k8s.io"]
     resources = [
       "ingresses",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = ["networking.istio.io"]
+    resources = [
+      "virtualservices",
+      "destinationrules",
+      "sidecars",
+      "serviceentries",
+      "gateways",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = ["security.istio.io"]
+    resources = [
+      "peerauthentications",
+      "authorizationpolicies",
+      "requestauthentications",
     ]
     verbs = [
       "get",
