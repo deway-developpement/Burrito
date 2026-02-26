@@ -21,11 +21,8 @@ export class AnalyticsController {
 
   @MessagePattern({ cmd: 'analytics.getFormSnapshot' })
   getFormSnapshot(data: GetFormSnapshotRequest) {
-    return this.analyticsService.getFormSnapshot(data, { forceRefresh: false });
-  }
-
-  @MessagePattern({ cmd: 'analytics.refreshSnapshot' })
-  refreshSnapshot(data: GetFormSnapshotRequest) {
-    return this.analyticsService.getFormSnapshot(data, { forceRefresh: true });
+    return this.analyticsService.getFormSnapshot(data, {
+      forceRefresh: Boolean(data?.forceSync),
+    });
   }
 }
