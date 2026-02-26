@@ -370,7 +370,7 @@ pipeline {
                     next
                   }
                   in_target == 1 && $1 == "newTag:" {
-                    sub(/newTag:[[:space:]]*.*/, "newTag: " tag)
+                    sub(/newTag:[[:space:]]*.*/, "newTag: \"" tag "\"")
                     in_target = 0
                     updated = 1
                     print
