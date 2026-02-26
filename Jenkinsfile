@@ -351,6 +351,8 @@ pipeline {
               fi
 
               git fetch origin "${SOURCE_BRANCH}" "${TARGET_BRANCH}" || git fetch origin "${SOURCE_BRANCH}"
+              git config user.name "Jenkins"
+              git config user.email "jenkins@burrito.local"
 
               if git show-ref --verify --quiet "refs/remotes/origin/${TARGET_BRANCH}"; then
                 git checkout -B "${TARGET_BRANCH}" "origin/${TARGET_BRANCH}"
