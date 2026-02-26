@@ -20,6 +20,7 @@ pipeline {
 
   parameters {
     booleanParam(name: 'FORCE_BUILD_ALL', defaultValue: false, description: 'Build all images regardless of detected changes.')
+    choice(name: 'ISTIO_MTLS_PHASE', choices: ['permissive', 'strict'], description: 'Istio mTLS rollout phase for app workloads.')
   }
 
   environment {
@@ -321,6 +322,21 @@ pipeline {
             # Use in-cluster config (service account)
             kubectl apply -f backend/k8s/evaluation-system.yaml
             kubectl apply -f backend/k8s/frontend.yaml
+            kubectl apply -f backend/k8s/istio/peer-authn-global-permissive.yaml
+            kubectl apply -f backend/k8s/istio/peer-authn-data-permissive.yaml
+
+            case "${ISTIO_MTLS_PHASE}" in
+              strict)
+                kubectl apply -f backend/k8s/istio/peer-authn-apps-strict.yaml
+                ;;
+              permissive)
+                kubectl delete -f backend/k8s/istio/peer-authn-apps-strict.yaml --ignore-not-found=true || true
+                ;;
+              *)
+                echo "Invalid ISTIO_MTLS_PHASE=${ISTIO_MTLS_PHASE}. Allowed values: permissive|strict"
+                exit 1
+                ;;
+            esac
           '''
           script {
             def services = (env.BUILD_SERVICES ?: '').tokenize(' ') as Set
