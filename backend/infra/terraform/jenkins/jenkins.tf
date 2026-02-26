@@ -52,6 +52,12 @@ resource "jenkins_credential_secret_text" "huggingface_hub_token" {
   secret      = var.burrito_huggingface_hub_token
 }
 
+resource "jenkins_credential_secret_text" "git_push_token" {
+  name        = "burrito-git-push-token"
+  description = "Git token used by Jenkins to push GitOps promotion commits"
+  secret      = var.burrito_git_push_token
+}
+
 resource "jenkins_job" "burrito_backend" {
   name = "burrito-backend"
 
@@ -73,6 +79,7 @@ resource "jenkins_job" "burrito_backend" {
     jenkins_credential_secret_text.smtp_user,
     jenkins_credential_secret_text.smtp_pass,
     jenkins_credential_secret_text.huggingface_hub_token,
+    jenkins_credential_secret_text.git_push_token,
   ]
 }
 

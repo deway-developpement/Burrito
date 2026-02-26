@@ -1,6 +1,7 @@
 locals {
   jenkins_namespace    = "jenkins"
   monitoring_namespace = "monitoring"
+  argocd_namespace     = "argocd"
   app_namespace        = "evaluation-system"
   traefik_cluster_ip   = data.kubernetes_service.traefik.spec[0].cluster_ip
 }
@@ -21,6 +22,12 @@ resource "kubernetes_namespace" "jenkins" {
 resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = local.monitoring_namespace
+  }
+}
+
+resource "kubernetes_namespace" "argocd" {
+  metadata {
+    name = local.argocd_namespace
   }
 }
 
@@ -178,6 +185,23 @@ resource "kubernetes_manifest" "monitoring_https_redirect" {
   }
 }
 
+resource "kubernetes_manifest" "argocd_https_redirect" {
+  manifest = {
+    apiVersion = "traefik.io/v1alpha1"
+    kind       = "Middleware"
+    metadata = {
+      name      = "https-redirect"
+      namespace = kubernetes_namespace.argocd.metadata[0].name
+    }
+    spec = {
+      redirectScheme = {
+        scheme    = "https"
+        permanent = true
+      }
+    }
+  }
+}
+
 resource "helm_release" "jenkins" {
   name       = "jenkins"
   repository = "https://charts.jenkins.io"
@@ -221,7 +245,7 @@ resource "helm_release" "jenkins" {
           hostName         = var.jenkins_domain
           ingressClassName = "traefik"
           annotations = {
-            "cert-manager.io/cluster-issuer" = "letsencrypt"
+            "cert-manager.io/cluster-issuer"                   = "letsencrypt"
             "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
             "traefik.ingress.kubernetes.io/router.middlewares" = "jenkins-https-redirect@kubernetescrd"
             "traefik.ingress.kubernetes.io/router.tls"         = "true"
@@ -235,6 +259,39 @@ resource "helm_release" "jenkins" {
         }
         persistence = {
           size = var.jenkins_storage_size
+        }
+      }
+    })
+  ]
+
+  depends_on = [kubernetes_manifest.letsencrypt_issuer]
+}
+
+resource "helm_release" "argocd" {
+  name       = "argocd"
+  repository = "https://argoproj.github.io/argo-helm"
+  chart      = "argo-cd"
+  namespace  = kubernetes_namespace.argocd.metadata[0].name
+
+  values = [
+    yamlencode({
+      global = {
+        domain = var.argocd_domain
+      }
+      server = {
+        service = {
+          type = "ClusterIP"
+        }
+        ingress = {
+          enabled = false
+        }
+      }
+      configs = {
+        cm = {
+          "kustomize.buildOptions" = "--load-restrictor LoadRestrictionsNone"
+        }
+        params = {
+          "server.insecure" = true
         }
       }
     })
@@ -259,7 +316,7 @@ resource "helm_release" "kube_prometheus_stack" {
           ingressClassName = "traefik"
           hosts            = [var.grafana_domain]
           annotations = {
-            "cert-manager.io/cluster-issuer" = "letsencrypt"
+            "cert-manager.io/cluster-issuer"                   = "letsencrypt"
             "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
             "traefik.ingress.kubernetes.io/router.middlewares" = "monitoring-https-redirect@kubernetescrd"
             "traefik.ingress.kubernetes.io/router.tls"         = "true"
@@ -534,7 +591,7 @@ resource "kubernetes_ingress_v1" "registry" {
     name      = "registry"
     namespace = kubernetes_namespace.jenkins.metadata[0].name
     annotations = {
-      "cert-manager.io/cluster-issuer" = "letsencrypt"
+      "cert-manager.io/cluster-issuer"                   = "letsencrypt"
       "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
       "traefik.ingress.kubernetes.io/router.middlewares" = "jenkins-https-redirect@kubernetescrd"
       "traefik.ingress.kubernetes.io/router.tls"         = "true"
@@ -572,10 +629,73 @@ resource "kubernetes_ingress_v1" "registry" {
   }
 }
 
+resource "kubernetes_ingress_v1" "argocd" {
+  metadata {
+    name      = "argocd"
+    namespace = kubernetes_namespace.argocd.metadata[0].name
+    annotations = {
+      "cert-manager.io/cluster-issuer"                   = "letsencrypt"
+      "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
+      "traefik.ingress.kubernetes.io/router.middlewares" = "argocd-https-redirect@kubernetescrd"
+      "traefik.ingress.kubernetes.io/router.tls"         = "true"
+    }
+  }
+
+  spec {
+    ingress_class_name = "traefik"
+
+    rule {
+      host = var.argocd_domain
+
+      http {
+        path {
+          path      = "/"
+          path_type = "Prefix"
+
+          backend {
+            service {
+              name = "argocd-server"
+
+              port {
+                number = 80
+              }
+            }
+          }
+        }
+      }
+    }
+
+    tls {
+      hosts       = [var.argocd_domain]
+      secret_name = "argocd-tls"
+    }
+  }
+
+  depends_on = [helm_release.argocd]
+}
+
 resource "kubernetes_namespace" "evaluation_system" {
   metadata {
     name = local.app_namespace
   }
+}
+
+resource "kubernetes_manifest" "argocd_project_burrito" {
+  manifest = yamldecode(file("${path.module}/../../../k8s/argocd/appproject-burrito.yaml"))
+
+  depends_on = [
+    helm_release.argocd,
+    kubernetes_namespace.evaluation_system,
+  ]
+}
+
+resource "kubernetes_manifest" "argocd_application_burrito_prod" {
+  manifest = yamldecode(file("${path.module}/../../../k8s/argocd/application-burrito-prod.yaml"))
+
+  depends_on = [
+    kubernetes_manifest.argocd_project_burrito,
+    kubernetes_namespace.evaluation_system,
+  ]
 }
 
 resource "kubernetes_ingress_v1" "api_gateway" {
@@ -583,7 +703,7 @@ resource "kubernetes_ingress_v1" "api_gateway" {
     name      = "api-gateway"
     namespace = kubernetes_namespace.evaluation_system.metadata[0].name
     annotations = {
-      "cert-manager.io/cluster-issuer" = "letsencrypt"
+      "cert-manager.io/cluster-issuer"                   = "letsencrypt"
       "traefik.ingress.kubernetes.io/router.entrypoints" = "web,websecure"
       "traefik.ingress.kubernetes.io/router.middlewares" = "evaluation-system-https-redirect@kubernetescrd"
       "traefik.ingress.kubernetes.io/router.tls"         = "true"
@@ -626,6 +746,9 @@ resource "kubernetes_role" "jenkins_deployer" {
     namespace = kubernetes_namespace.evaluation_system.metadata[0].name
   }
 
+  # Jenkins keeps operational access for secrets and one-off jobs only.
+  # Argo CD owns application Deployments/Services/Ingress resources.
+
   rule {
     api_groups = ["batch"]
     resources = [
@@ -645,97 +768,9 @@ resource "kubernetes_role" "jenkins_deployer" {
   rule {
     api_groups = [""]
     resources = [
-      "services",
-      "configmaps",
       "secrets",
       "pods",
       "pods/log",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-      "create",
-      "update",
-      "patch",
-      "delete",
-    ]
-  }
-
-  rule {
-    api_groups = ["apps"]
-    resources = [
-      "deployments",
-      "replicasets",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-      "create",
-      "update",
-      "patch",
-      "delete",
-    ]
-  }
-
-  rule {
-    api_groups = ["autoscaling"]
-    resources = [
-      "horizontalpodautoscalers",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-      "create",
-      "update",
-      "patch",
-      "delete",
-    ]
-  }
-
-  rule {
-    api_groups = ["networking.k8s.io"]
-    resources = [
-      "ingresses",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-      "create",
-      "update",
-      "patch",
-      "delete",
-    ]
-  }
-
-  rule {
-    api_groups = ["traefik.io"]
-    resources = [
-      "middlewares",
-    ]
-    verbs = [
-      "get",
-      "list",
-      "watch",
-      "create",
-      "update",
-      "patch",
-      "delete",
-    ]
-  }
-
-  rule {
-    api_groups = [""]
-    resources = [
-      "services",
-      "configmaps",
-      "secrets",
-      "pods",
-      "pods/log",
-      "persistentvolumeclaims",
     ]
     verbs = [
       "get",

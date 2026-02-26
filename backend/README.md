@@ -155,7 +155,8 @@ individual services. The `intelligence-ms` image is built from
 
 ## Deployment
 
-- CI/CD: `../Jenkinsfile`
+- CI/CD: `../Jenkinsfile` (build/test/push + GitOps image promotion)
+- GitOps deployment: Argo CD (`k8s/argocd/` + `k8s/overlays/prod/`)
 - Kubernetes manifests: `k8s/`
 - Infra automation: `infra/` (Terraform + Ansible)
 

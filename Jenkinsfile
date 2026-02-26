@@ -29,7 +29,6 @@ pipeline {
 
     // BuildKit service inside the jenkins namespace (ClusterIP Service "buildkit")
     BUILDKIT_HOST = 'tcp://buildkit:1234'
-    REGISTRY_HOST = 'registry.burrito.deway.fr'
     REGISTRY_PUSH_HOST = 'registry.jenkins.svc.cluster.local:5000'
     BACKEND_SERVICES = 'api-gateway users-ms forms-ms evaluations-ms analytics-ms groups-ms notifications-ms'
   }
@@ -312,100 +311,132 @@ pipeline {
       }
     }
 
-    stage('Deploy to Kubernetes') {
+    stage('Promote GitOps') {
+      when {
+        expression {
+          def sourceBranch = 'main'
+          def branchName = env.BRANCH_NAME ?: sourceBranch
+          def hasArtifacts = (env.BUILD_SERVICES ?: '').trim() || env.BUILD_INTELLIGENCE == 'true' || env.BUILD_FRONTEND == 'true'
+          return branchName == sourceBranch && hasArtifacts
+        }
+      }
       steps {
         container('builder') {
-          sh '''
-            set -e
+          withCredentials([
+            string(credentialsId: 'burrito-git-push-token', variable: 'GIT_PUSH_TOKEN'),
+          ]) {
+            sh '''
+              set -euo pipefail
 
-            # Use in-cluster config (service account)
-            kubectl apply -f backend/k8s/evaluation-system.yaml
-            kubectl apply -f backend/k8s/frontend.yaml
-          '''
-          script {
-            def services = (env.BUILD_SERVICES ?: '').tokenize(' ') as Set
-            def updateImage = { String deployment, String image ->
-              sh """
-                kubectl set image deployment/${deployment} \
-                  ${deployment}=${env.REGISTRY_HOST}/${image}:${env.BUILD_NUMBER} \
-                  -n "\$K8S_NAMESPACE"
-              """
-            }
-            def restart = { String deployment ->
-              sh """
-                kubectl rollout restart deployment/${deployment} -n "\$K8S_NAMESPACE"
-              """
-            }
-            def rollout = { String deployment ->
-              sh """
-                kubectl rollout status deployment/${deployment} -n "\$K8S_NAMESPACE" --timeout=5m
-              """
-            }
+              GITOPS_OVERLAY_PATH="backend/k8s/overlays/prod/kustomization.yaml"
+              SOURCE_BRANCH="main"
+              TARGET_BRANCH="production"
 
-            if (services.contains('api-gateway')) {
-              updateImage('api-gateway', 'burrito-api-gateway')
-              restart('api-gateway')
-            }
-            if (services.contains('users-ms')) {
-              updateImage('users-ms', 'burrito-users-ms')
-              restart('users-ms')
-            }
-            if (services.contains('forms-ms')) {
-              updateImage('forms-ms', 'burrito-forms-ms')
-              restart('forms-ms')
-            }
-            if (services.contains('evaluations-ms')) {
-              updateImage('evaluations-ms', 'burrito-evaluations-ms')
-              restart('evaluations-ms')
-            }
-            if (services.contains('analytics-ms')) {
-              updateImage('analytics-ms', 'burrito-analytics-ms')
-              restart('analytics-ms')
-            }
-            if (services.contains('groups-ms')) {
-              updateImage('groups-ms', 'burrito-groups-ms')
-              restart('groups-ms')
-            }
-            if (services.contains('notifications-ms')) {
-              updateImage('notifications-ms', 'burrito-notifications-ms')
-              restart('notifications-ms')
-            }
-            if (env.BUILD_INTELLIGENCE == 'true') {
-              updateImage('intelligence-ms', 'burrito-intelligence-ms')
-              restart('intelligence-ms')
-            }
-            if (env.BUILD_FRONTEND == 'true') {
-              updateImage('burrito-frontend', 'burrito-frontend')
-              restart('burrito-frontend')
-            }
+              if [ ! -f "${GITOPS_OVERLAY_PATH}" ]; then
+                echo "Missing GitOps overlay file: ${GITOPS_OVERLAY_PATH}" >&2
+                exit 1
+              fi
 
-            if (services.contains('api-gateway')) {
-              rollout('api-gateway')
-            }
-            if (services.contains('users-ms')) {
-              rollout('users-ms')
-            }
-            if (services.contains('forms-ms')) {
-              rollout('forms-ms')
-            }
-            if (services.contains('evaluations-ms')) {
-              rollout('evaluations-ms')
-            }
-            if (services.contains('analytics-ms')) {
-              rollout('analytics-ms')
-            }
-            if (services.contains('groups-ms')) {
-              rollout('groups-ms')
-            }
-            if (services.contains('notifications-ms')) {
-              rollout('notifications-ms')
-            }
-            if (env.BUILD_INTELLIGENCE == 'true') {
-              rollout('intelligence-ms')
-            }
-            if (env.BUILD_FRONTEND == 'true') {
-              rollout('burrito-frontend')
-            }
+              git fetch origin "${SOURCE_BRANCH}" "${TARGET_BRANCH}" || git fetch origin "${SOURCE_BRANCH}"
+
+              if git show-ref --verify --quiet "refs/remotes/origin/${TARGET_BRANCH}"; then
+                git checkout -B "${TARGET_BRANCH}" "origin/${TARGET_BRANCH}"
+                git merge --no-edit "origin/${SOURCE_BRANCH}"
+              else
+                git checkout -B "${TARGET_BRANCH}" "origin/${SOURCE_BRANCH}"
+              fi
+
+              update_tag() {
+                local image_name="$1"
+                local image_tag="$2"
+
+                rc=0
+                awk -v image="${image_name}" -v tag="${image_tag}" '
+                  BEGIN { in_target = 0; updated = 0 }
+                  $1 == "-" && $2 == "name:" && $3 == image {
+                    in_target = 1
+                    print
+                    next
+                  }
+                  in_target == 1 && $1 == "newTag:" {
+                    sub(/newTag:[[:space:]]*.*/, "newTag: " tag)
+                    in_target = 0
+                    updated = 1
+                    print
+                    next
+                  }
+                  { print }
+                  END {
+                    if (updated == 0) {
+                      exit 42
+                    }
+                  }
+                ' "${GITOPS_OVERLAY_PATH}" > "${GITOPS_OVERLAY_PATH}.tmp" || rc=$?
+                if [ "${rc}" -ne 0 ]; then
+                  rm -f "${GITOPS_OVERLAY_PATH}.tmp"
+                  if [ "${rc}" -eq 42 ]; then
+                    echo "Image entry not found in ${GITOPS_OVERLAY_PATH}: ${image_name}" >&2
+                  fi
+                  exit "${rc}"
+                fi
+
+                mv "${GITOPS_OVERLAY_PATH}.tmp" "${GITOPS_OVERLAY_PATH}"
+              }
+
+              for svc in ${BUILD_SERVICES}; do
+                update_tag "burrito-${svc}" "${BUILD_NUMBER}"
+              done
+
+              if [ "${BUILD_INTELLIGENCE}" = "true" ]; then
+                update_tag "burrito-intelligence-ms" "${BUILD_NUMBER}"
+              fi
+
+              if [ "${BUILD_FRONTEND}" = "true" ]; then
+                update_tag "registry.burrito.deway.fr/burrito-frontend" "${BUILD_NUMBER}"
+              fi
+
+              git add "${GITOPS_OVERLAY_PATH}"
+              if ! git diff --cached --quiet; then
+                git config user.name "Jenkins"
+                git config user.email "jenkins@burrito.local"
+                git commit -m "ci: promote gitops images to ${BUILD_NUMBER} [skip ci]"
+              fi
+
+              if git show-ref --verify --quiet "refs/remotes/origin/${TARGET_BRANCH}"; then
+                if [ "$(git rev-list --count "origin/${TARGET_BRANCH}..HEAD")" -eq 0 ]; then
+                  echo "No new commits to push to ${TARGET_BRANCH}."
+                  exit 0
+                fi
+              fi
+
+              ORIGIN_URL="$(git remote get-url origin)"
+              AUTH_URL=""
+              if [ -n "${GIT_PUSH_TOKEN}" ]; then
+                case "${ORIGIN_URL}" in
+                  https://*)
+                    AUTH_URL="$(echo "${ORIGIN_URL}" | sed "s#^https://#https://x-access-token:${GIT_PUSH_TOKEN}@#")"
+                    ;;
+                  http://*)
+                    AUTH_URL="$(echo "${ORIGIN_URL}" | sed "s#^http://#http://x-access-token:${GIT_PUSH_TOKEN}@#")"
+                    ;;
+                  *)
+                    echo "GIT_PUSH_TOKEN provided, but remote URL is not HTTP(S). Using existing origin auth."
+                    ;;
+                esac
+              fi
+
+              if [ -n "${AUTH_URL}" ]; then
+                git remote set-url origin "${AUTH_URL}"
+                trap 'git remote set-url origin "${ORIGIN_URL}" >/dev/null 2>&1 || true' EXIT
+              fi
+
+              git push origin HEAD:${TARGET_BRANCH}
+
+              if [ -n "${AUTH_URL}" ]; then
+                git remote set-url origin "${ORIGIN_URL}"
+                trap - EXIT
+              fi
+            '''
           }
         }
       }

@@ -92,3 +92,10 @@ variable "burrito_huggingface_hub_token" {
   default     = "huggingface-token"
   sensitive   = true
 }
+
+variable "burrito_git_push_token" {
+  type        = string
+  description = "Git token used by Jenkins to push GitOps promotion commits"
+  default     = ""
+  sensitive   = true
+}

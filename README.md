@@ -193,8 +193,9 @@ npm test
 
 ## Deployment
 
-- CI/CD pipeline: `Jenkinsfile` (BuildKit + Kubernetes deploys).
-- Kubernetes manifests: `backend/k8s` (including `frontend.yaml`).
+- CI/CD pipeline: `Jenkinsfile` (BuildKit + GitOps image promotion commits).
+- GitOps deployment: Argo CD syncs `backend/k8s/overlays/prod`.
+- Kubernetes manifests: `backend/k8s` (base manifests + Argo CD application/project files).
 - Infrastructure tools: `backend/infra` (Terraform + Ansible).
 
 ## Troubleshooting
