@@ -39,6 +39,13 @@ export class EvaluationService extends MongooseQueryService<Evaluation> {
     return super.aggregate(normalizedFilter, aggregateQuery);
   }
 
+  async count(filter: Filter<Evaluation>): Promise<number> {
+    const filterQuery = this.filterQueryBuilder.buildFilterQuery(
+      (filter ?? {}) as Filter<Evaluation>,
+    );
+    return this.evaluationModel.countDocuments(filterQuery).exec();
+  }
+
   async createOne(dto: Partial<Evaluation>): Promise<Evaluation> {
     const respondentToken = await this.getRespondentToken(dto);
     try {

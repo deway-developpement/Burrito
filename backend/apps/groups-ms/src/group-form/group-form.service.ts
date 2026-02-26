@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { QueryService } from '@nestjs-query/core';
+import { Filter, QueryService } from '@nestjs-query/core';
 import { MongooseQueryService } from '@nestjs-query/query-mongoose';
 import { RpcException } from '@nestjs/microservices';
 import { GroupForm } from './entities/group-form.entity';
@@ -47,6 +47,13 @@ export class GroupFormService extends MongooseQueryService<GroupForm> {
       .find({ groupId: { $in: groupIds } })
       .exec();
     return groupForms;
+  }
+
+  async count(filter: Filter<GroupForm>): Promise<number> {
+    const filterQuery = this.filterQueryBuilder.buildFilterQuery(
+      (filter ?? {}) as Filter<GroupForm>,
+    );
+    return this.groupFormModel.countDocuments(filterQuery).exec();
   }
 
   async listByForm(formId: string): Promise<GroupForm[]> {
