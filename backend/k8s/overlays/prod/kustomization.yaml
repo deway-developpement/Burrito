@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - ../../evaluation-system.yaml
+  - ../../intelligence-fn-rs.knative.yaml
   - ../../frontend.yaml
 
 images:
@@ -21,8 +22,8 @@ images:
   - name: burrito-analytics-ms
     newName: registry.burrito.deway.fr/burrito-analytics-ms
     newTag: latest
-  - name: burrito-intelligence-ms
-    newName: registry.burrito.deway.fr/burrito-intelligence-ms
+  - name: burrito-intelligence-fn-rs
+    newName: registry.burrito.deway.fr/burrito-intelligence-fn-rs
     newTag: latest
   - name: burrito-groups-ms
     newName: registry.burrito.deway.fr/burrito-groups-ms
