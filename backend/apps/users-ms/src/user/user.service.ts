@@ -10,6 +10,7 @@ import { Model } from 'mongoose';
 import { MongooseQueryService } from '@nestjs-query/query-mongoose';
 import {
   DeepPartial,
+  Filter,
   QueryService,
   UpdateOneOptions,
 } from '@nestjs-query/core';
@@ -76,6 +77,13 @@ export class UserService extends MongooseQueryService<User> {
       .find({ _id: { $in: ids } })
       .select('-password')
       .exec();
+  }
+
+  async count(filter: Filter<User>): Promise<number> {
+    const filterQuery = this.filterQueryBuilder.buildFilterQuery(
+      (filter ?? {}) as Filter<User>,
+    );
+    return this.userModel.countDocuments(filterQuery).exec();
   }
 
   async updateOne(

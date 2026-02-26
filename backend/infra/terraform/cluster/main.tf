@@ -3,6 +3,8 @@ locals {
   monitoring_namespace = "monitoring"
   argocd_namespace     = "argocd"
   app_namespace        = "evaluation-system"
+  istio_namespace      = "istio-system"
+  istio_chart_version  = "1.23.2"
   traefik_cluster_ip   = data.kubernetes_service.traefik.spec[0].cluster_ip
 }
 
@@ -22,6 +24,12 @@ resource "kubernetes_namespace" "jenkins" {
 resource "kubernetes_namespace" "monitoring" {
   metadata {
     name = local.monitoring_namespace
+  }
+}
+
+resource "kubernetes_namespace" "istio_system" {
+  metadata {
+    name = local.istio_namespace
   }
 }
 
@@ -358,6 +366,24 @@ resource "helm_release" "kube_prometheus_stack" {
   ]
 
   depends_on = [kubernetes_manifest.letsencrypt_issuer]
+}
+
+resource "helm_release" "istio_base" {
+  name       = "istio-base"
+  repository = "https://istio-release.storage.googleapis.com/charts"
+  chart      = "base"
+  namespace  = kubernetes_namespace.istio_system.metadata[0].name
+  version    = local.istio_chart_version
+}
+
+resource "helm_release" "istiod" {
+  name       = "istiod"
+  repository = "https://istio-release.storage.googleapis.com/charts"
+  chart      = "istiod"
+  namespace  = kubernetes_namespace.istio_system.metadata[0].name
+  version    = local.istio_chart_version
+
+  depends_on = [helm_release.istio_base]
 }
 
 resource "kubernetes_deployment" "buildkitd" {
@@ -771,6 +797,44 @@ resource "kubernetes_role" "jenkins_deployer" {
       "secrets",
       "pods",
       "pods/log",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = ["networking.istio.io"]
+    resources = [
+      "virtualservices",
+      "destinationrules",
+      "sidecars",
+      "serviceentries",
+      "gateways",
+    ]
+    verbs = [
+      "get",
+      "list",
+      "watch",
+      "create",
+      "update",
+      "patch",
+      "delete",
+    ]
+  }
+
+  rule {
+    api_groups = ["security.istio.io"]
+    resources = [
+      "peerauthentications",
+      "authorizationpolicies",
+      "requestauthentications",
     ]
     verbs = [
       "get",

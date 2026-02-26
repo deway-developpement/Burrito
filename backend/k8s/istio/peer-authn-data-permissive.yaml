@@ -1,0 +1,11 @@
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: data-permissive
+  namespace: evaluation-system
+spec:
+  selector:
+    matchLabels:
+      mesh-role: data
+  mtls:
+    mode: PERMISSIVE
