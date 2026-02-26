@@ -280,9 +280,13 @@ resource "helm_release" "argocd" {
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
   namespace  = kubernetes_namespace.argocd.metadata[0].name
+  skip_crds  = false
 
   values = [
     yamlencode({
+      crds = {
+        install = true
+      }
       global = {
         domain = var.argocd_domain
       }
@@ -308,6 +312,13 @@ resource "helm_release" "argocd" {
   depends_on = [kubernetes_manifest.letsencrypt_issuer]
 }
 
+resource "time_sleep" "wait_for_argocd_crds" {
+  depends_on = [helm_release.argocd]
+
+  # The Kubernetes API can acknowledge the Argo CD release before argoproj.io CRDs
+  # are fully established. Wait briefly to avoid transient "kind not found" failures.
+  create_duration = "45s"
+}
 resource "helm_release" "kube_prometheus_stack" {
   name       = "kube-prometheus-stack"
   repository = "https://prometheus-community.github.io/helm-charts"
@@ -704,19 +715,33 @@ resource "kubernetes_namespace" "evaluation_system" {
   metadata {
     name = local.app_namespace
   }
+
+  lifecycle {
+    ignore_changes = [
+      metadata[0].annotations["argocd.argoproj.io/tracking-id"],
+    ]
+  }
 }
 
 resource "kubernetes_manifest" "argocd_project_burrito" {
   manifest = yamldecode(file("${path.module}/../../../k8s/argocd/appproject-burrito.yaml"))
 
   depends_on = [
-    helm_release.argocd,
+    time_sleep.wait_for_argocd_crds,
     kubernetes_namespace.evaluation_system,
   ]
 }
 
 resource "kubernetes_manifest" "argocd_application_burrito_prod" {
   manifest = yamldecode(file("${path.module}/../../../k8s/argocd/application-burrito-prod.yaml"))
+  computed_fields = [
+    "metadata.annotations",
+    "metadata.labels",
+    "operation",
+    "status",
+    "object.operation",
+    "object.status",
+  ]
 
   depends_on = [
     kubernetes_manifest.argocd_project_burrito,
