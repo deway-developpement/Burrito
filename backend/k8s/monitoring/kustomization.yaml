@@ -1,5 +1,8 @@
 namespace: monitoring
 
+generatorOptions:
+  disableNameSuffixHash: true
+
 configMapGenerator:
   - name: grafana-dashboard-burrito-uptime
     files:
@@ -20,6 +23,7 @@ configMapGenerator:
 
 resources:
   - service-monitor-api-gateway.yaml
+  - pod-monitor-evaluation-istio-proxy.yaml
   - loki.yaml
   - promtail.yaml
   - loki-datasource.yaml

@@ -22,7 +22,10 @@
   "links": [],
   "panels": [
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -70,7 +73,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"$service\"}[5m]))",
+          "expr": "sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m]))",
           "legendFormat": "rps",
           "refId": "A"
         }
@@ -79,7 +82,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -127,7 +133,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "100 * sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", response_code=~\"5..\", destination_service_name=~\"$service\"}[5m])) / sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"$service\"}[5m]))",
+          "expr": "100 * sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", response_code=~\"5..\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m])) / sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m]))",
           "legendFormat": "5xx %",
           "refId": "A"
         }
@@ -136,7 +142,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -184,7 +193,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"$service\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m])) by (le))",
           "legendFormat": "p95",
           "refId": "A"
         }
@@ -193,7 +202,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -274,7 +286,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (destination_service_name) (rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"$service\"}[5m]))",
+          "expr": "sum by (destination_service_name) (rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m]))",
           "legendFormat": "{{destination_service_name}}",
           "refId": "A"
         }
@@ -283,7 +295,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -364,7 +379,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (response_code) (rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"$service\"}[5m]))",
+          "expr": "sum by (response_code) (rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m]))",
           "legendFormat": "{{response_code}}",
           "refId": "A"
         }
@@ -373,7 +388,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -454,17 +472,17 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"$service\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m])) by (le))",
           "legendFormat": "p50",
           "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.90, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"$service\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.90, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m])) by (le))",
           "legendFormat": "p90",
           "refId": "B"
         },
         {
-          "expr": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"$service\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.99, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m])) by (le))",
           "legendFormat": "p99",
           "refId": "C"
         }
@@ -473,7 +491,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -554,8 +575,8 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum(rate(istio_requests_total{source_canonical_service=\"envoy\", source_workload_namespace=\"envoy-gateway-system\", reporter=\"destination\", destination_workload_namespace=\"$namespace\"}[5m]))",
-          "legendFormat": "gateway",
+          "expr": "sum by (destination_service_name) (rate(istio_requests_total{source_workload_namespace=\"$namespace\", source_workload=~\"$gateway_workload\", reporter=\"destination\", destination_workload_namespace=\"$namespace\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m]))",
+          "legendFormat": "{{destination_service_name}}",
           "refId": "A"
         }
       ],
@@ -563,7 +584,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -611,7 +635,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "100 * sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", connection_security_policy=\"mutual_tls\", destination_service_name=~\"$service\"}[5m])) / sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"$service\"}[5m]))",
+          "expr": "100 * sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", connection_security_policy=\"mutual_tls\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m])) / sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m]))",
           "legendFormat": "mTLS %",
           "refId": "A"
         }
@@ -620,7 +644,10 @@
       "type": "stat"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -701,12 +728,12 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", connection_security_policy=\"mutual_tls\", destination_service_name=~\"$service\"}[5m]))",
+          "expr": "sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", connection_security_policy=\"mutual_tls\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m]))",
           "legendFormat": "mTLS",
           "refId": "A"
         },
         {
-          "expr": "sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", connection_security_policy=\"none\", destination_service_name=~\"$service\"}[5m]))",
+          "expr": "sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", connection_security_policy=\"none\", destination_service_name=~\"($service)(\\\\..*)?\"}[5m]))",
           "legendFormat": "plaintext",
           "refId": "B"
         }
@@ -715,7 +742,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -804,7 +834,10 @@
       "type": "timeseries"
     },
     {
-      "datasource": "Prometheus",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -885,8 +918,8 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum(kube_pod_status_phase{namespace=~\"$namespace|envoy-gateway-system\", phase=\"Running\"})",
-          "legendFormat": "pods_running ($namespace + envoy-gateway-system)",
+          "expr": "sum(kube_pod_status_phase{namespace=\"$namespace\", phase=\"Running\"})",
+          "legendFormat": "pods_running ($namespace)",
           "refId": "A"
         },
         {
@@ -898,16 +931,6 @@
           "expr": "sum by (deployment) (kube_deployment_status_replicas_available{namespace=\"$namespace\"})",
           "legendFormat": "replicas_available: {{deployment}}",
           "refId": "C"
-        },
-        {
-          "expr": "sum by (deployment) (kube_deployment_status_replicas{namespace=\"envoy-gateway-system\"})",
-          "legendFormat": "replicas_desired: {{deployment}} (envoy-gateway-system)",
-          "refId": "D"
-        },
-        {
-          "expr": "sum by (deployment) (kube_deployment_status_replicas_available{namespace=\"envoy-gateway-system\"})",
-          "legendFormat": "replicas_available: {{deployment}} (envoy-gateway-system)",
-          "refId": "E"
         }
       ],
       "title": "Pods Running + Replicas (Desired/Available)",
@@ -930,8 +953,11 @@
           "text": "evaluation-system",
           "value": "evaluation-system"
         },
-        "datasource": "Prometheus",
-        "definition": "label_values(istio_requests_total, destination_workload_namespace)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(kube_pod_info{namespace=\"evaluation-system\"}, namespace)",
         "hide": 0,
         "includeAll": false,
         "label": "Namespace",
@@ -939,7 +965,7 @@
         "name": "namespace",
         "options": [],
         "query": {
-          "query": "label_values(istio_requests_total, destination_workload_namespace)",
+          "query": "label_values(kube_pod_info{namespace=\"evaluation-system\"}, namespace)",
           "refId": "PrometheusVariableQuery"
         },
         "refresh": 1,
@@ -953,8 +979,11 @@
           "text": "All",
           "value": "$__all"
         },
-        "datasource": "Prometheus",
-        "definition": "label_values(istio_requests_total{destination_workload_namespace=\"$namespace\"}, destination_service_name)",
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(kube_service_info{namespace=\"$namespace\"}, service)",
         "hide": 0,
         "includeAll": true,
         "label": "Service",
@@ -962,7 +991,7 @@
         "name": "service",
         "options": [],
         "query": {
-          "query": "label_values(istio_requests_total{destination_workload_namespace=\"$namespace\"}, destination_service_name)",
+          "query": "label_values(kube_service_info{namespace=\"$namespace\"}, service)",
           "refId": "PrometheusVariableQuery"
         },
         "refresh": 2,
@@ -970,6 +999,32 @@
         "skipUrlSync": false,
         "type": "query",
         "allValue": ".*"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "api-gateway",
+          "value": "api-gateway"
+        },
+        "datasource": {
+          "type": "prometheus",
+          "uid": "prometheus"
+        },
+        "definition": "label_values(kube_deployment_status_replicas{namespace=\"$namespace\"}, deployment)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Gateway Workload",
+        "multi": false,
+        "name": "gateway_workload",
+        "options": [],
+        "query": {
+          "query": "label_values(kube_deployment_status_replicas{namespace=\"$namespace\"}, deployment)",
+          "refId": "PrometheusVariableQuery"
+        },
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "query"
       }
     ]
   },
