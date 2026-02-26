@@ -319,7 +319,6 @@ resource "time_sleep" "wait_for_argocd_crds" {
   # are fully established. Wait briefly to avoid transient "kind not found" failures.
   create_duration = "45s"
 }
-
 resource "helm_release" "kube_prometheus_stack" {
   name       = "kube-prometheus-stack"
   repository = "https://prometheus-community.github.io/helm-charts"
