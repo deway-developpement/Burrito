@@ -716,6 +716,12 @@ resource "kubernetes_namespace" "evaluation_system" {
   metadata {
     name = local.app_namespace
   }
+
+  lifecycle {
+    ignore_changes = [
+      metadata[0].annotations["argocd.argoproj.io/tracking-id"],
+    ]
+  }
 }
 
 resource "kubernetes_manifest" "argocd_project_burrito" {
@@ -729,6 +735,14 @@ resource "kubernetes_manifest" "argocd_project_burrito" {
 
 resource "kubernetes_manifest" "argocd_application_burrito_prod" {
   manifest = yamldecode(file("${path.module}/../../../k8s/argocd/application-burrito-prod.yaml"))
+  computed_fields = [
+    "metadata.annotations",
+    "metadata.labels",
+    "operation",
+    "status",
+    "object.operation",
+    "object.status",
+  ]
 
   depends_on = [
     kubernetes_manifest.argocd_project_burrito,
