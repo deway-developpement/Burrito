@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { QueryService } from '@nestjs-query/core';
+import { Filter, QueryService } from '@nestjs-query/core';
 import { MongooseQueryService } from '@nestjs-query/query-mongoose';
 import { RpcException } from '@nestjs/microservices';
 import { Membership } from './entities/membership.entity';
@@ -47,6 +47,13 @@ export class MembershipService extends MongooseQueryService<Membership> {
       .find({ groupId: { $in: groupIds } })
       .exec();
     return memberships;
+  }
+
+  async count(filter: Filter<Membership>): Promise<number> {
+    const filterQuery = this.filterQueryBuilder.buildFilterQuery(
+      (filter ?? {}) as Filter<Membership>,
+    );
+    return this.membershipModel.countDocuments(filterQuery).exec();
   }
 
   async listByMember(memberId: string): Promise<Membership[]> {

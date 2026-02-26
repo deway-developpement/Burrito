@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { QueryService } from '@nestjs-query/core';
+import { Filter, QueryService } from '@nestjs-query/core';
 import { MongooseQueryService } from '@nestjs-query/query-mongoose';
 import { Group } from './entities/group.entity';
 
@@ -19,5 +19,12 @@ export class GroupService extends MongooseQueryService<Group> {
       return [];
     }
     return this.groupModel.find({ _id: { $in: ids } }).exec();
+  }
+
+  async count(filter: Filter<Group>): Promise<number> {
+    const filterQuery = this.filterQueryBuilder.buildFilterQuery(
+      (filter ?? {}) as Filter<Group>,
+    );
+    return this.groupModel.countDocuments(filterQuery).exec();
   }
 }
