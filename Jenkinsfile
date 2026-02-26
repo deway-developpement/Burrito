@@ -326,7 +326,7 @@ pipeline {
           withCredentials([
             string(credentialsId: 'burrito-git-push-token', variable: 'GIT_PUSH_TOKEN'),
           ]) {
-            sh '''
+            sh '''#!/usr/bin/env bash
               set -euo pipefail
 
               GITOPS_OVERLAY_PATH="backend/k8s/overlays/prod/kustomization.yaml"
