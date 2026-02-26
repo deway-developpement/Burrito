@@ -32,3 +32,7 @@ spec:
       kind: Ingress
     - group: traefik.io
       kind: Middleware
+    - group: serving.knative.dev
+      kind: Service
+    - group: sources.knative.dev
+      kind: RedisStreamSource
