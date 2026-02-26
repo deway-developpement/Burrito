@@ -3,6 +3,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AnalyticsController } from './analytics.controller';
 import { AnalyticsService } from './analytics.service';
+import { IntelligenceStreamClient } from './intelligence-stream.client';
+import { IntelligenceResultConsumerService } from './intelligence-result-consumer.service';
 import {
   AnalyticsSnapshot,
   AnalyticsSnapshotSchema,
@@ -47,6 +49,10 @@ import {
     ]),
   ],
   controllers: [AnalyticsController],
-  providers: [AnalyticsService],
+  providers: [
+    AnalyticsService,
+    IntelligenceStreamClient,
+    IntelligenceResultConsumerService,
+  ],
 })
 export class AnalyticsModule {}

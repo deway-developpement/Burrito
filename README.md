@@ -1,8 +1,8 @@
 # Burrito
 
 Burrito is a full-stack course evaluation and feedback platform. It combines an
-Angular SSR frontend, a NestJS microservice backend, and a Python NLP service
-for text analytics.
+Angular SSR frontend, a NestJS microservice backend, and a Rust serverless NLP
+function for text analytics.
 
 ## Features
 
@@ -10,7 +10,7 @@ for text analytics.
 - Evaluation forms with rating + text questions, scheduling, and group targeting.
 - One-response-per-student evaluations enforced with respondent tokens.
 - Analytics snapshots with NPS, rating distributions, and time-series trends.
-- Optional NLP enrichment (sentiment + idea clustering) via gRPC.
+- Optional NLP enrichment (sentiment + idea clustering) via Redis Streams + Knative.
 - Email notifications for form lifecycle events, reminders, and digests.
 - Internationalized UI (fr/de/es) with SSR.
 
@@ -24,7 +24,7 @@ Angular SSR (burrito-front)
      -> Forms MS
      -> Evaluations MS
      -> Analytics MS
-        -> Intelligence MS (Python, gRPC, optional)
+        -> Redis Streams -> Knative Intelligence Function (Rust, optional)
      -> Notifications MS
      -> MongoDB, Redis
 ```
@@ -41,9 +41,9 @@ Kubernetes manifests are in `backend/k8s`.
 - `evaluations-ms`: evaluation submissions and respondent tracking.
 - `analytics-ms`: analytics snapshots, NPS, and time-series aggregates.
 - `notifications-ms`: email notifications and reminders (BullMQ + SMTP).
-- `intelligence-ms`: Python gRPC service for sentiment + idea extraction.
+- `intelligence-fn-rs`: Rust Knative function for sentiment + idea extraction.
 
-See `backend/apps/intelligence-ms/README.md` for NLP service details.
+Legacy Python `backend/apps/intelligence-ms` remains in the repository for reference only and is no longer deployed.
 
 ## Repository Structure
 
@@ -64,7 +64,7 @@ See `backend/apps/intelligence-ms/README.md` for NLP service details.
 
 - Node.js 18+ for the backend (Dockerfile uses Node 18).
 - Node.js 20+ for the frontend (Angular CLI 20).
-- Python 3.8+ for the intelligence service.
+- Rust toolchain (or Docker) if running the intelligence function locally.
 - Docker (recommended for local services).
 - MongoDB, Redis, MailHog if running locally without Docker.
 
@@ -82,7 +82,7 @@ cp backend/.env.example backend/.env
 ## Quick Start (Docker Compose)
 
 Run the backend stack (includes all NestJS services, MongoDB, Redis, MailHog,
-and intelligence-ms):
+and intelligence-fn-rs):
 
 ```bash
 cd backend
@@ -125,13 +125,11 @@ npx nest start analytics-ms --watch
 npx nest start notifications-ms --watch
 ```
 
-3. Optional: run the intelligence service (for NLP enrichment):
+3. Optional: run the intelligence function (for NLP enrichment):
 
 ```bash
-cd backend/apps/intelligence-ms
-pip install -r requirements.txt
-python scripts/cache_models.py
-python main.py
+cd backend/apps/intelligence-fn-rs
+cargo run
 ```
 
 4. Start the frontend:
@@ -152,7 +150,7 @@ The frontend dev server uses `burrito-front/proxy.conf.json` to proxy `/auth`,
   - Defaults to `http://localhost:3000` in dev, `https://api.burrito.deway.fr` in prod.
 - Analytics + intelligence:
   - `ANALYTICS_ENABLE_INTELLIGENCE=true` to enable NLP.
-  - `INTELLIGENCE_GRPC_HOST` and `INTELLIGENCE_GRPC_PORT` for gRPC connection.
+  - `ANALYTICS_INTELLIGENCE_REQUEST_STREAM`, `ANALYTICS_INTELLIGENCE_RESULT_STREAM`, and `ANALYTICS_INTELLIGENCE_DLQ_STREAM` for event flow.
 - Email/notifications:
   - `SMTP_*` and `MAILHOG_*` configure outbound email.
   - Queue behavior is controlled by `NOTIFICATIONS_*`.
@@ -202,7 +200,7 @@ npm test
 
 - If GraphQL calls fail, confirm the path is `/graphQL` (capital Q + L).
 - If email is not sending locally, check MailHog at `http://localhost:8025`.
-- NLP enrichment requires model cache; see `backend/apps/intelligence-ms/README.md`.
+- NLP enrichment requires the Rust function and Knative Redis source in Kubernetes (`backend/k8s/intelligence-fn-rs.knative.yaml`).
 
 ## Future Enhancements
 
