@@ -362,7 +362,7 @@ pipeline {
                 local image_tag="$2"
 
                 rc=0
-                awk -v image="${image_name}" -v tag="${image_tag}" '
+                awk -v image="${image_name}" -v image_tag="${image_tag}" '
                   BEGIN { in_target = 0; updated = 0 }
                   $1 == "-" && $2 == "name:" && $3 == image {
                     in_target = 1
@@ -370,7 +370,7 @@ pipeline {
                     next
                   }
                   in_target == 1 && $1 == "newTag:" {
-                    sub(/newTag:[[:space:]]*.*/, "newTag: \"" tag "\"")
+                    sub(/newTag:[[:space:]]*.*/, sprintf("newTag: \"%s\"", image_tag))
                     in_target = 0
                     updated = 1
                     print
