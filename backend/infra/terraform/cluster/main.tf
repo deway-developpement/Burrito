@@ -244,7 +244,8 @@ resource "helm_release" "jenkins" {
           "kubernetes",
           "kubernetes-credentials",
           "durable-task",
-          "apache-httpcomponents-client-4-api"
+          "apache-httpcomponents-client-4-api",
+          "http_request"
         ]
         jenkinsUrl  = "https://${var.jenkins_domain}"
         serviceType = "ClusterIP"

@@ -7,6 +7,7 @@ import {
   MetricsController,
   PrometheusService,
   RedisLoggerInterceptor,
+  createPinoHttpOptions,
 } from '@app/common';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { LoggerModule } from 'nestjs-pino';
@@ -17,12 +18,7 @@ import { AnalyticsMsService } from './analytics-ms.service';
 @Module({
   imports: [
     LoggerModule.forRoot({
-      pinoHttp: {
-        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-        base: { service: 'analytics-ms' },
-        autoLogging: false,
-        redact: ['req.headers.authorization'],
-      },
+      pinoHttp: createPinoHttpOptions('analytics-ms'),
     }),
     ConfigModule.forRoot({
       envFilePath: '.env',

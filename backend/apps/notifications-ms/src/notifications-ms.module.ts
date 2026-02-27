@@ -9,6 +9,7 @@ import {
   MetricsController,
   PrometheusService,
   RedisLoggerInterceptor,
+  createPinoHttpOptions,
 } from '@app/common';
 import { NotificationsMsController } from './notifications-ms.controller';
 import { NotificationsMsService } from './notifications-ms.service';
@@ -17,12 +18,7 @@ import { NotificationModule } from './notification/notification.module';
 @Module({
   imports: [
     LoggerModule.forRoot({
-      pinoHttp: {
-        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-        base: { service: 'notifications-ms' },
-        autoLogging: false,
-        redact: ['req.headers.authorization'],
-      },
+      pinoHttp: createPinoHttpOptions('notifications-ms'),
     }),
     ConfigModule.forRoot({
       envFilePath: '.env',

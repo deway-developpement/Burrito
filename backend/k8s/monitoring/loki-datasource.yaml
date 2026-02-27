@@ -16,3 +16,12 @@ data:
         jsonData:
           timeout: 60
           maxLines: 1000
+          derivedFields:
+            - name: TraceID
+              matcherRegex: '"trace_id":"([a-f0-9]{32})"'
+              datasourceUid: tempo
+              url: '$${__value.raw}'
+            - name: TraceIDPlain
+              matcherRegex: 'trace_id=([a-f0-9]{32})'
+              datasourceUid: tempo
+              url: '$${__value.raw}'
