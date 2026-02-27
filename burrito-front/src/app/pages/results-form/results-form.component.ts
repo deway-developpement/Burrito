@@ -274,6 +274,11 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private analyticsSubscription?: Subscription;
+  private analyticsSubscriptionKey: string | null = null;
+  private readonly latestTextUpdates = new Map<
+    string,
+    AnalyticsTextAnalysisUpdate
+  >();
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -298,13 +303,21 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     }
 
     this.route.params.pipe(takeUntil(this.destroy$)).subscribe((params) => {
-      this.formId.set(params['formId']);
+      const nextFormId = params['formId'] as string;
+      if (nextFormId !== this.formId()) {
+        this.analyticsSubscription?.unsubscribe();
+        this.analyticsSubscription = undefined;
+        this.analyticsSubscriptionKey = null;
+        this.latestTextUpdates.clear();
+      }
+      this.formId.set(nextFormId);
       this.loadFormAnalytics();
     });
   }
 
   ngOnDestroy(): void {
     this.analyticsSubscription?.unsubscribe();
+    this.analyticsSubscriptionKey = null;
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -362,12 +375,12 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
   private async fetchFormAnalytics(forceSync: boolean): Promise<void> {
     try {
       const window = this.getAnalyticsWindow();
+      this.startAnalyticsSubscription(window);
 
       // Step 1: Fetch form analytics snapshot
       const formData = await this.fetchFormSnapshot(forceSync, window);
 
       if (!formData) {
-        this.analyticsSubscription?.unsubscribe();
         this.error.set($localize`:@@resultsForm.loadError:Failed to load form analytics`);
         return;
       }
@@ -383,10 +396,9 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
         ...formData,
         teachersBreakdown,
       });
-      this.startAnalyticsSubscription(window);
+      this.reapplyLatestTextUpdates(window);
       this.error.set(null);
     } catch (err) {
-      this.analyticsSubscription?.unsubscribe();
       this.error.set($localize`:@@resultsForm.loadError:Failed to load form analytics`);
       console.error('Analytics fetch error:', err);
     }
@@ -430,11 +442,20 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.analyticsSubscription?.unsubscribe();
     const formId = this.formId();
     if (!formId) {
       return;
     }
+    const subscriptionKey = `${formId}|${this.computeWindowKey(window)}`;
+    if (
+      this.analyticsSubscription &&
+      this.analyticsSubscriptionKey === subscriptionKey
+    ) {
+      return;
+    }
+
+    this.analyticsSubscription?.unsubscribe();
+    this.analyticsSubscriptionKey = subscriptionKey;
 
     this.analyticsSubscription = this.apollo
       .subscribe<{
@@ -452,12 +473,38 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
           }
         },
         error: (err) => {
+          this.analyticsSubscriptionKey = null;
           console.warn('Analytics text analysis subscription error:', err);
         },
       });
   }
 
   private applyTextAnalysisUpdate(update: AnalyticsTextAnalysisUpdate): void {
+    const updateKey = this.getTextUpdateKey(
+      update.formId,
+      update.windowKey,
+      update.questionId,
+    );
+    this.latestTextUpdates.set(updateKey, update);
+    this.applyTextAnalysisUpdateToCurrent(update);
+  }
+
+  private reapplyLatestTextUpdates(window?: AnalyticsWindow): void {
+    const formId = this.formId();
+    if (!formId) {
+      return;
+    }
+    const windowKey = this.computeWindowKey(window);
+    for (const update of this.latestTextUpdates.values()) {
+      if (update.formId === formId && update.windowKey === windowKey) {
+        this.applyTextAnalysisUpdateToCurrent(update);
+      }
+    }
+  }
+
+  private applyTextAnalysisUpdateToCurrent(
+    update: AnalyticsTextAnalysisUpdate,
+  ): void {
     console.log('Received text analysis update:', update);
     const current = this.analytics();
     if (!current || update.formId !== current.formId) {
@@ -502,6 +549,30 @@ export class ResultsFormComponent implements OnInit, OnDestroy {
     });
 
     this.analytics.set({ ...current, questions });
+  }
+
+  private computeWindowKey(window?: AnalyticsWindow): string {
+    const from = this.toIsoString(window?.from);
+    const to = this.toIsoString(window?.to);
+    if (!from && !to) {
+      return 'all-time';
+    }
+    return `${from || 'start'}|${to || 'end'}`;
+  }
+
+  private toIsoString(value?: Date): string | undefined {
+    if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
+      return undefined;
+    }
+    return value.toISOString();
+  }
+
+  private getTextUpdateKey(
+    formId: string,
+    windowKey: string,
+    questionId: string,
+  ): string {
+    return `${formId}|${windowKey}|${questionId}`;
   }
 
   private async fetchFormTitle(formId: string): Promise<string> {
