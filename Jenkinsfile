@@ -440,16 +440,32 @@ pipeline {
                 mv "${GITOPS_OVERLAY_PATH}.tmp" "${GITOPS_OVERLAY_PATH}"
               }
 
-              for svc in ${BUILD_SERVICES}; do
-                update_tag "burrito-${svc}" "${IMAGE_TAG}"
-              done
-
-              if [ "${BUILD_INTELLIGENCE_FN}" = "true" ]; then
+              malformed_pattern='^[[:space:]]*(-?\\.?nan|nan)[[:space:]]*$'
+              if grep -Eq "${malformed_pattern}" "${GITOPS_OVERLAY_PATH}"; then
+                echo "Detected malformed tag lines in ${GITOPS_OVERLAY_PATH}; forcing full tag repair with IMAGE_TAG=${IMAGE_TAG}."
+                for svc in ${BACKEND_SERVICES}; do
+                  update_tag "burrito-${svc}" "${IMAGE_TAG}"
+                done
                 update_tag "burrito-intelligence-fn-rs" "${IMAGE_TAG}"
+                update_tag "registry.burrito.deway.fr/burrito-frontend" "${IMAGE_TAG}"
+              else
+                for svc in ${BUILD_SERVICES}; do
+                  update_tag "burrito-${svc}" "${IMAGE_TAG}"
+                done
+
+                if [ "${BUILD_INTELLIGENCE_FN}" = "true" ]; then
+                  update_tag "burrito-intelligence-fn-rs" "${IMAGE_TAG}"
+                fi
+
+                if [ "${BUILD_FRONTEND}" = "true" ]; then
+                  update_tag "registry.burrito.deway.fr/burrito-frontend" "${IMAGE_TAG}"
+                fi
               fi
 
-              if [ "${BUILD_FRONTEND}" = "true" ]; then
-                update_tag "registry.burrito.deway.fr/burrito-frontend" "${IMAGE_TAG}"
+              if grep -Eq "${malformed_pattern}" "${GITOPS_OVERLAY_PATH}"; then
+                echo "Malformed tag lines remain after promotion update; refusing to commit." >&2
+                sed -n '1,120p' "${GITOPS_OVERLAY_PATH}" >&2
+                exit 1
               fi
 
               ensure_only_allowed_changes() {
