@@ -153,7 +153,7 @@ String humanDuration(long ms) {
 }
 
 String isoNowUtc() {
-  return java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC).toString()
+  return new Date().format("yyyy-MM-dd'T'HH:mm:ssXXX")
 }
 
 pipeline {
