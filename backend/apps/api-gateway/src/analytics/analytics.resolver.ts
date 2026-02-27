@@ -1,4 +1,4 @@
-import { Args, Mutation, Query, Resolver, Subscription } from '@nestjs/graphql';
+import { Args, Query, Resolver, Subscription } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import {
   GqlCredentialGuard,
@@ -79,27 +79,6 @@ export class AnalyticsResolver {
     forceSync?: boolean,
   ): Promise<AnalyticsSnapshotDto> {
     return this.analyticsService.getFormSnapshot({
-      formId,
-      window,
-      forceSync,
-    });
-  }
-
-  @Mutation(() => AnalyticsSnapshotDto)
-  @UseGuards(
-    GqlOrGuard(
-      GqlCredentialGuard(UserType.TEACHER),
-      GqlCredentialGuard(UserType.ADMIN),
-    ),
-  )
-  refreshAnalyticsSnapshot(
-    @Args('formId') formId: string,
-    @Args('window', { type: () => AnalyticsWindowInput, nullable: true })
-    window?: AnalyticsWindowInput,
-    @Args('forceSync', { type: () => Boolean, nullable: true })
-    forceSync?: boolean,
-  ): Promise<AnalyticsSnapshotDto> {
-    return this.analyticsService.refreshSnapshot({
       formId,
       window,
       forceSync,

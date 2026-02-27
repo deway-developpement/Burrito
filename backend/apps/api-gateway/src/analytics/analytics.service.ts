@@ -103,18 +103,6 @@ export class AnalyticsService {
     return this.normalizeSnapshot(snapshot);
   }
 
-  async refreshSnapshot(
-    request: AnalyticsSnapshotRequest,
-  ): Promise<AnalyticsSnapshotDto> {
-    const snapshot = await this.sendWithTimeout(
-      this.analyticsClient.send<AnalyticsSnapshotRaw>(
-        { cmd: 'analytics.refreshSnapshot' },
-        request,
-      ),
-    );
-    return this.normalizeSnapshot(snapshot);
-  }
-
   private normalizeSnapshot(
     snapshot: AnalyticsSnapshotRaw,
   ): AnalyticsSnapshotDto {

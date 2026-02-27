@@ -332,7 +332,9 @@ pipeline {
       steps {
         container('builder') {
           withCredentials([
-            string(credentialsId: 'burrito-git-push-token', variable: 'GIT_PUSH_TOKEN'),
+            string(credentialsId: 'burrito-github-app-id', variable: 'GITHUB_APP_ID'),
+            string(credentialsId: 'burrito-github-app-installation-id', variable: 'GITHUB_APP_INSTALLATION_ID'),
+            string(credentialsId: 'burrito-github-app-private-key', variable: 'GITHUB_APP_PRIVATE_KEY'),
           ]) {
             sh '''#!/usr/bin/env bash
               set -euo pipefail
@@ -347,12 +349,26 @@ pipeline {
               fi
 
               git fetch origin "${SOURCE_BRANCH}" "${TARGET_BRANCH}" || git fetch origin "${SOURCE_BRANCH}"
-              git config user.name "Jenkins"
-              git config user.email "jenkins@burrito.local"
+              git config user.name "jenkins-gitops[bot]"
+              git config user.email "jenkins-gitops[bot]@users.noreply.github.com"
 
               if git show-ref --verify --quiet "refs/remotes/origin/${TARGET_BRANCH}"; then
                 git checkout -B "${TARGET_BRANCH}" "origin/${TARGET_BRANCH}"
-                git merge --no-edit "origin/${SOURCE_BRANCH}"
+                if ! git merge --no-edit "origin/${SOURCE_BRANCH}"; then
+                  conflict_files="$(git diff --name-only --diff-filter=U)"
+                  conflict_count="$(printf '%s\n' "${conflict_files}" | sed '/^$/d' | wc -l | tr -d ' ')"
+
+                  if [ "${conflict_count}" -eq 1 ] && [ "${conflict_files}" = "${GITOPS_OVERLAY_PATH}" ]; then
+                    echo "Merge conflict only on ${GITOPS_OVERLAY_PATH}; resolving with ${SOURCE_BRANCH} version before tag update."
+                    git checkout --theirs "${GITOPS_OVERLAY_PATH}"
+                    git add "${GITOPS_OVERLAY_PATH}"
+                    git merge --continue
+                  else
+                    echo "Unresolved merge conflicts detected:" >&2
+                    printf '%s\n' "${conflict_files}" >&2
+                    exit 1
+                  fi
+                fi
               else
                 git checkout -B "${TARGET_BRANCH}" "origin/${SOURCE_BRANCH}"
               fi
@@ -406,10 +422,33 @@ pipeline {
                 update_tag "registry.burrito.deway.fr/burrito-frontend" "${BUILD_NUMBER}"
               fi
 
+              ensure_only_allowed_changes() {
+                local changed_files=""
+                local bad_file=0
+                changed_files="$({ git diff --name-only; git diff --cached --name-only; } | sed '/^$/d' | sort -u)"
+                if [ -z "${changed_files}" ]; then
+                  return 0
+                fi
+
+                while IFS= read -r file; do
+                  [ -z "${file}" ] && continue
+                  if [ "${file}" != "${GITOPS_OVERLAY_PATH}" ]; then
+                    echo "Unauthorized file change detected before push: ${file}" >&2
+                    bad_file=1
+                  fi
+                done <<< "${changed_files}"
+
+                if [ "${bad_file}" -ne 0 ]; then
+                  exit 1
+                fi
+              }
+
+              ensure_only_allowed_changes
               git add "${GITOPS_OVERLAY_PATH}"
+              ensure_only_allowed_changes
               if ! git diff --cached --quiet; then
-                git config user.name "Jenkins"
-                git config user.email "jenkins@burrito.local"
+                git config user.name "jenkins-gitops[bot]"
+                git config user.email "jenkins-gitops[bot]@users.noreply.github.com"
                 git commit -m "ci: promote gitops images to ${BUILD_NUMBER} [skip ci]"
               fi
 
@@ -420,33 +459,83 @@ pipeline {
                 fi
               fi
 
-              ORIGIN_URL="$(git remote get-url origin)"
-              AUTH_URL=""
-              if [ -n "${GIT_PUSH_TOKEN}" ]; then
-                case "${ORIGIN_URL}" in
-                  https://*)
-                    AUTH_URL="$(echo "${ORIGIN_URL}" | sed "s#^https://#https://x-access-token:${GIT_PUSH_TOKEN}@#")"
-                    ;;
-                  http://*)
-                    AUTH_URL="$(echo "${ORIGIN_URL}" | sed "s#^http://#http://x-access-token:${GIT_PUSH_TOKEN}@#")"
-                    ;;
-                  *)
-                    echo "GIT_PUSH_TOKEN provided, but remote URL is not HTTP(S). Using existing origin auth."
-                    ;;
-                esac
+              APP_JWT="$(node <<'NODE'
+              const crypto = require('crypto');
+
+              function toBase64Url(input) {
+                return Buffer.from(input)
+                  .toString('base64')
+                  .split('+').join('-')
+                  .split('/').join('_')
+                  .replace(/=+$/g, '');
+              }
+
+              const appId = (process.env.GITHUB_APP_ID || '').trim();
+              let privateKey = process.env.GITHUB_APP_PRIVATE_KEY || '';
+              if (!appId || !privateKey.trim()) {
+                console.error('Missing GITHUB_APP_ID or GITHUB_APP_PRIVATE_KEY.');
+                process.exit(1);
+              }
+
+              privateKey = privateKey
+                .split(String.fromCharCode(92) + 'n')
+                .join(String.fromCharCode(10));
+
+              const now = Math.floor(Date.now() / 1000);
+              const header = { alg: 'RS256', typ: 'JWT' };
+              const payload = { iat: now - 60, exp: now + 540, iss: appId };
+              const unsignedToken = `${toBase64Url(JSON.stringify(header))}.${toBase64Url(JSON.stringify(payload))}`;
+              const signature = crypto
+                .createSign('RSA-SHA256')
+                .update(unsignedToken)
+                .end()
+                .sign(privateKey, 'base64')
+                .split('+').join('-')
+                .split('/').join('_')
+                .replace(/=+$/g, '');
+              process.stdout.write(`${unsignedToken}.${signature}`);
+NODE
+              )"
+
+              if [ -z "${APP_JWT}" ]; then
+                echo "Failed to generate GitHub App JWT." >&2
+                exit 1
               fi
 
-              if [ -n "${AUTH_URL}" ]; then
-                git remote set-url origin "${AUTH_URL}"
-                trap 'git remote set-url origin "${ORIGIN_URL}" >/dev/null 2>&1 || true' EXIT
+              INSTALLATION_TOKEN="$(curl -fsSL \
+                -X POST \
+                -H "Authorization: Bearer ${APP_JWT}" \
+                -H "Accept: application/vnd.github+json" \
+                -H "X-GitHub-Api-Version: 2022-11-28" \
+                "https://api.github.com/app/installations/${GITHUB_APP_INSTALLATION_ID}/access_tokens" \
+                | node -e 'const fs=require("fs"); const raw=fs.readFileSync(0,"utf8"); let data; try { data=JSON.parse(raw); } catch (err) { console.error("Unable to parse installation token response."); process.exit(1); } if (!data.token) { console.error("GitHub installation token response missing token field."); process.exit(1); } process.stdout.write(data.token);')"
+
+              if [ -z "${INSTALLATION_TOKEN}" ]; then
+                echo "Failed to fetch GitHub installation token." >&2
+                exit 1
               fi
+
+              ORIGIN_URL="$(git remote get-url origin)"
+              case "${ORIGIN_URL}" in
+                https://*)
+                  AUTH_URL="$(echo "${ORIGIN_URL}" | sed "s#^https://#https://x-access-token:${INSTALLATION_TOKEN}@#")"
+                  ;;
+                http://*)
+                  AUTH_URL="$(echo "${ORIGIN_URL}" | sed "s#^http://#http://x-access-token:${INSTALLATION_TOKEN}@#")"
+                  ;;
+                *)
+                  echo "Unsupported origin URL for GitHub App token auth: ${ORIGIN_URL}" >&2
+                  exit 1
+                  ;;
+              esac
+
+              git remote set-url origin "${AUTH_URL}"
+              trap 'git remote set-url origin "${ORIGIN_URL}" >/dev/null 2>&1 || true' EXIT
 
               git push origin HEAD:${TARGET_BRANCH}
 
-              if [ -n "${AUTH_URL}" ]; then
-                git remote set-url origin "${ORIGIN_URL}"
-                trap - EXIT
-              fi
+              git remote set-url origin "${ORIGIN_URL}"
+              trap - EXIT
             '''
           }
         }
