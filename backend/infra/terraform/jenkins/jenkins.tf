@@ -52,10 +52,22 @@ resource "jenkins_credential_secret_text" "huggingface_hub_token" {
   secret      = var.burrito_huggingface_hub_token
 }
 
-resource "jenkins_credential_secret_text" "git_push_token" {
-  name        = "burrito-git-push-token"
-  description = "Git token used by Jenkins to push GitOps promotion commits"
-  secret      = var.burrito_git_push_token
+resource "jenkins_credential_secret_text" "github_app_id" {
+  name        = "burrito-github-app-id"
+  description = "GitHub App ID used by Jenkins for GitOps promotion pushes"
+  secret      = var.burrito_github_app_id
+}
+
+resource "jenkins_credential_secret_text" "github_app_installation_id" {
+  name        = "burrito-github-app-installation-id"
+  description = "GitHub App installation ID used by Jenkins for GitOps promotion pushes"
+  secret      = var.burrito_github_app_installation_id
+}
+
+resource "jenkins_credential_secret_text" "github_app_private_key" {
+  name        = "burrito-github-app-private-key"
+  description = "GitHub App private key (PEM) used by Jenkins to mint installation tokens"
+  secret      = var.burrito_github_app_private_key_pem
 }
 
 resource "jenkins_job" "burrito_backend" {
@@ -79,7 +91,9 @@ resource "jenkins_job" "burrito_backend" {
     jenkins_credential_secret_text.smtp_user,
     jenkins_credential_secret_text.smtp_pass,
     jenkins_credential_secret_text.huggingface_hub_token,
-    jenkins_credential_secret_text.git_push_token,
+    jenkins_credential_secret_text.github_app_id,
+    jenkins_credential_secret_text.github_app_installation_id,
+    jenkins_credential_secret_text.github_app_private_key,
   ]
 }
 
