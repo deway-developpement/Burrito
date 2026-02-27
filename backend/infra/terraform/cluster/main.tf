@@ -414,6 +414,7 @@ resource "terraform_data" "knative_serving" {
       kubectl --kubeconfig "$KUBECONFIG" apply -f "https://github.com/knative/serving/releases/download/$KNATIVE_VERSION/serving-core.yaml"
       kubectl --kubeconfig "$KUBECONFIG" apply -f "https://github.com/knative/net-istio/releases/download/$KNATIVE_VERSION/net-istio.yaml"
       kubectl --kubeconfig "$KUBECONFIG" patch configmap/config-network -n knative-serving --type merge -p '{"data":{"ingress-class":"istio.ingress.networking.knative.dev"}}'
+      kubectl --kubeconfig "$KUBECONFIG" patch configmap/config-observability -n knative-serving --type merge -p '{"data":{"metrics-protocol":"prometheus","metrics-endpoint":":9090","request-metrics-protocol":"prometheus","request-metrics-endpoint":":9091"}}'
 
       kubectl --kubeconfig "$KUBECONFIG" wait --for=condition=Established crd/services.serving.knative.dev --timeout=2m
 
