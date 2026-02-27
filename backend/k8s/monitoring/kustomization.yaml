@@ -20,10 +20,22 @@ configMapGenerator:
         grafana_dashboard: "1"
         dashboard_version: "v1.0"
         app: "burrito"
+  - name: grafana-dashboard-knative-metrics
+    files:
+      - knative-metrics.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+        dashboard_version: "v1.0"
+        app: "burrito"
 
 resources:
+  - alertmanager-config-burrito.yaml
   - service-monitor-api-gateway.yaml
+  - service-monitor-knative-serving.yaml
+  - pod-monitor-knative-queue-proxy.yaml
   - pod-monitor-evaluation-istio-proxy.yaml
+  - prometheus-rule-api-gateway.yaml
   - loki.yaml
   - promtail.yaml
   - loki-datasource.yaml

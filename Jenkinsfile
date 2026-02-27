@@ -764,12 +764,22 @@ NODE
     stage('Deploy Monitoring') {
       steps {
         container('builder') {
-          sh '''
-            set -e
+          withCredentials([
+            string(credentialsId: 'burrito-smtp-user', variable: 'SMTP_USER'),
+            string(credentialsId: 'burrito-smtp-pass', variable: 'SMTP_PASS'),
+          ]) {
+            sh '''
+              set -e
 
-            # Deploy monitoring components (namespace and helm release are managed by Terraform)
-            kubectl apply -k backend/k8s/monitoring
-          '''
+              kubectl create secret generic alertmanager-smtp-auth \
+                --from-literal=username="${SMTP_USER}" \
+                --from-literal=password="${SMTP_PASS}" \
+                --dry-run=client -o yaml | kubectl apply -n monitoring -f -
+
+              # Deploy monitoring components (namespace and helm release are managed by Terraform)
+              kubectl apply -k backend/k8s/monitoring
+            '''
+          }
         }
       }
     }
