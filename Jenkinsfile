@@ -407,22 +407,26 @@ pipeline {
 
               const overlayPath = process.env.GITOPS_OVERLAY_PATH;
               const imageTag = (process.env.IMAGE_TAG || '').trim();
+              const normalizeWhitespace = (value) =>
+                (value || '').split('\t').join(' ').split('\n').join(' ').split('\r').join(' ');
               const parseList = (value) =>
-                (value || '')
+                normalizeWhitespace(value)
                   .trim()
-                  .split(/\s+/)
+                  .split(' ')
                   .filter(Boolean);
 
               if (!/^[0-9]+$/.test(imageTag)) {
                 throw new Error(`Invalid IMAGE_TAG '${imageTag}'`);
               }
 
-              const malformedLine = /^\s*(-?\.?nan|nan)\s*$/;
+              const malformedValues = new Set(['-nan', '.nan', '-.nan', 'nan']);
+              const isMalformedLine = (line) =>
+                malformedValues.has(((line || '').trim().toLowerCase()));
               const selectedImages = new Set(parseList(process.env.PROMOTE_IMAGES));
               const backendServices = parseList(process.env.BACKEND_SERVICES);
 
               const content = fs.readFileSync(overlayPath, 'utf8');
-              const hasMalformed = content.split(/\r?\n/).some((line) => malformedLine.test(line));
+              const hasMalformed = content.split('\n').some((line) => isMalformedLine(line));
 
               if (hasMalformed) {
                 console.log(
@@ -440,7 +444,7 @@ pipeline {
                 process.exit(0);
               }
 
-              const lines = content.split(/\r?\n/);
+              const lines = content.split('\n');
               const out = [];
               const updated = new Set();
               let currentImage = '';
@@ -454,24 +458,25 @@ pipeline {
               };
 
               for (const line of lines) {
-                const nameMatch = line.match(/^(\s*)-\s+name:\s+(\S+)\s*$/);
-                if (nameMatch) {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('- name: ')) {
                   if (inTarget) {
                     setTag();
                   }
-                  currentImage = nameMatch[2];
+                  currentImage = trimmed.slice('- name: '.length).trim();
                   inTarget = selectedImages.has(currentImage);
-                  tagIndent = `${nameMatch[1]}  `;
+                  const leadingSpaces = line.length - line.trimStart().length;
+                  tagIndent = `${' '.repeat(leadingSpaces + 2)}`;
                   out.push(line);
                   continue;
                 }
 
-                if (inTarget && /^\s*newTag:\s*.*$/.test(line)) {
+                if (inTarget && trimmed.startsWith('newTag:')) {
                   setTag();
                   continue;
                 }
 
-                if (inTarget && malformedLine.test(line)) {
+                if (inTarget && isMalformedLine(line)) {
                   setTag();
                   continue;
                 }
@@ -491,7 +496,7 @@ pipeline {
               }
 
               const rewritten = out.join('\n');
-              if (rewritten.split(/\r?\n/).some((line) => malformedLine.test(line))) {
+              if (rewritten.split('\n').some((line) => isMalformedLine(line))) {
                 throw new Error(
                   `Malformed tag lines remain in ${overlayPath} after rewrite.`,
                 );
