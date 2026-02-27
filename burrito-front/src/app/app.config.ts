@@ -86,7 +86,7 @@ export const appConfig: ApplicationConfig = {
 
       return firstValueFrom(
         authService.refreshSession().pipe(
-          timeout(10000), 
+          timeout(5000), 
           
           // ✅ LOGIQUE AJOUTÉE ICI
           switchMap((authResponse) => {
