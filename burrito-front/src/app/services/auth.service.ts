@@ -1,6 +1,6 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { tap, catchError, of } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { tap, catchError, of, shareReplay, finalize, Observable } from 'rxjs';
 import { getApiBaseUrl } from '../config/runtime-config';
 
 interface AuthResponse {
@@ -19,6 +19,7 @@ interface User {
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly apiBaseUrl = getApiBaseUrl();
+  private refreshInFlight$: Observable<AuthResponse | null> | null = null;
   
   // Signal for the short-lived Access Token
   token = signal<string | null>(null);
@@ -49,10 +50,13 @@ export class AuthService {
       this.token.set(null);
       return of(null);
     }
+    if (this.refreshInFlight$) {
+      return this.refreshInFlight$;
+    }
 
     const headers = new HttpHeaders().set('refresh_token', refreshToken);
 
-    return this.http
+    this.refreshInFlight$ = this.http
       .get<AuthResponse>(`${this.apiBaseUrl}/auth/refresh`, {
         headers,
         withCredentials: true,
@@ -65,11 +69,20 @@ export class AuthService {
             localStorage.setItem('refresh_token', response.refresh_token);
           }
         }),
-        catchError((err) => {
-          this.logout(); 
+        catchError((err: unknown) => {
+          const status =
+            err instanceof HttpErrorResponse ? err.status : undefined;
+          if (status === 401 || status === 403) {
+            this.logout();
+          }
           return of(null);
-        })
+        }),
+        finalize(() => {
+          this.refreshInFlight$ = null;
+        }),
+        shareReplay(1),
       );
+    return this.refreshInFlight$;
   }
 
   getCurrentUser(): User | null {
@@ -81,6 +94,15 @@ export class AuthService {
   }
 
   logout() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (refreshToken) {
+      const headers = new HttpHeaders().set('refresh_token', refreshToken);
+      // Best-effort server-side session revocation.
+      this.http
+        .post(`${this.apiBaseUrl}/auth/logout`, {}, { headers, withCredentials: true })
+        .pipe(catchError(() => of(null)))
+        .subscribe();
+    }
     this.token.set(null);
     this.currentUser.set(null);
     localStorage.removeItem('refresh_token');
