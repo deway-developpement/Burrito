@@ -6,7 +6,7 @@ REPO="${REPO:-Burrito}"
 RULESET_ID="${RULESET_ID:-13297101}"
 APP_ID="${APP_ID:-}"
 
-if [ -z "${APP_ID}" ]; then
+if [[ -z "${APP_ID}" ]]; then
   echo "APP_ID is required (numeric GitHub App ID)." >&2
   exit 1
 fi
