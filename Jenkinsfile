@@ -407,8 +407,11 @@ pipeline {
 
               const overlayPath = process.env.GITOPS_OVERLAY_PATH;
               const imageTag = (process.env.IMAGE_TAG || '').trim();
+              const TAB = String.fromCharCode(9);
+              const LF = String.fromCharCode(10);
+              const CR = String.fromCharCode(13);
               const normalizeWhitespace = (value) =>
-                (value || '').split('\t').join(' ').split('\n').join(' ').split('\r').join(' ');
+                (value || '').split(TAB).join(' ').split(LF).join(' ').split(CR).join(' ');
               const parseList = (value) =>
                 normalizeWhitespace(value)
                   .trim()
@@ -426,7 +429,7 @@ pipeline {
               const backendServices = parseList(process.env.BACKEND_SERVICES);
 
               const content = fs.readFileSync(overlayPath, 'utf8');
-              const hasMalformed = content.split('\n').some((line) => isMalformedLine(line));
+              const hasMalformed = content.split(LF).some((line) => isMalformedLine(line));
 
               if (hasMalformed) {
                 console.log(
@@ -444,7 +447,7 @@ pipeline {
                 process.exit(0);
               }
 
-              const lines = content.split('\n');
+              const lines = content.split(LF);
               const out = [];
               const updated = new Set();
               let currentImage = '';
@@ -495,8 +498,8 @@ pipeline {
                 );
               }
 
-              const rewritten = out.join('\n');
-              if (rewritten.split('\n').some((line) => isMalformedLine(line))) {
+              const rewritten = out.join(LF);
+              if (rewritten.split(LF).some((line) => isMalformedLine(line))) {
                 throw new Error(
                   `Malformed tag lines remain in ${overlayPath} after rewrite.`,
                 );
