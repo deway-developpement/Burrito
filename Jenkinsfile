@@ -769,12 +769,46 @@ NODE
             string(credentialsId: 'burrito-smtp-pass', variable: 'SMTP_PASS'),
           ]) {
             sh '''
-              set -e
+              set -euo pipefail
 
               kubectl create secret generic alertmanager-smtp-auth \
                 --from-literal=username="${SMTP_USER}" \
                 --from-literal=password="${SMTP_PASS}" \
                 --dry-run=client -o yaml | kubectl apply -n monitoring -f -
+
+              # AlertmanagerConfig v1alpha1 expects authUsername as string (not SecretKeySelector).
+              cat <<EOF | kubectl apply -f -
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: burrito-email-routing
+  namespace: monitoring
+  labels:
+    app: burrito
+    release: kube-prometheus-stack
+spec:
+  route:
+    receiver: team-burrito-email
+    matchers:
+      - name: team
+        value: burrito
+        matchType: "="
+  receivers:
+    - name: team-burrito-email
+      emailConfigs:
+        - to: Paul.mairesse@free.fr
+          from: no-reply@burrito.deway.fr
+          smarthost: in-v3.mailjet.com:587
+          authUsername: "${SMTP_USER}"
+          authPassword:
+            name: alertmanager-smtp-auth
+            key: password
+          requireTLS: true
+          headers:
+            - key: subject
+              value: "[Burrito] {{ .Status | toUpper }} - {{ .CommonLabels.alertname }}"
+          html: "{{ range .Alerts }}<p><b>Burrito</b> - {{ .Annotations.summary }}</p><p>{{ .Annotations.description }}</p>{{ end }}"
+EOF
 
               # Deploy monitoring components (namespace and helm release are managed by Terraform)
               kubectl apply -k backend/k8s/monitoring

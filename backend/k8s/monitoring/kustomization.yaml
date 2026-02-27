@@ -30,7 +30,6 @@ configMapGenerator:
         app: "burrito"
 
 resources:
-  - alertmanager-config-burrito.yaml
   - service-monitor-api-gateway.yaml
   - service-monitor-knative-serving.yaml
   - pod-monitor-knative-queue-proxy.yaml
