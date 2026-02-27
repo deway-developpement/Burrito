@@ -13,6 +13,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { isValidObjectId } from 'mongoose';
 import { subtle, randomUUID } from 'crypto';
+import type { SignOptions } from 'jsonwebtoken';
 import {
   RefreshSession,
   RefreshSessionStatus,
@@ -380,8 +381,11 @@ export class AuthService {
   }
 
   private signRefreshToken(payload: SessionRefreshPayload): RefreshTokenIssue {
+    const expiresIn =
+      this.configService.get<SignOptions['expiresIn']>('jwt.refreshExpiresIn') ??
+      '30d';
     const token = this.jwtService.sign(payload, {
-      expiresIn: this.configService.get<string>('jwt.refreshExpiresIn'),
+      expiresIn,
     });
     const decoded = this.jwtService.decode(token) as
       | { exp?: number }
