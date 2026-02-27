@@ -268,6 +268,7 @@ resource "helm_release" "jenkins" {
         persistence = {
           size = var.jenkins_storage_size
         }
+      }
     })
   ]
 
@@ -304,6 +305,7 @@ resource "helm_release" "argocd" {
         params = {
           "server.insecure" = true
         }
+      }
     })
   ]
 
@@ -377,7 +379,6 @@ resource "helm_release" "kube_prometheus_stack" {
             }
           }
         }
-      }
       }
     })
   ]
@@ -804,6 +805,10 @@ resource "kubernetes_ingress_v1" "argocd" {
 resource "kubernetes_namespace" "evaluation_system" {
   metadata {
     name = local.app_namespace
+    labels = {
+      # Keep consistent with backend/k8s/evaluation-system.yaml to avoid Terraform/ArgoCD drift.
+      "istio-injection" = "enabled"
+    }
   }
 
   lifecycle {
