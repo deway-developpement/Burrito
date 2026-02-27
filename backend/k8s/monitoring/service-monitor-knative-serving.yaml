@@ -1,0 +1,26 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: knative-serving-control-plane
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  namespaceSelector:
+    matchNames:
+      - knative-serving
+  selector:
+    matchExpressions:
+      - key: app
+        operator: In
+        values:
+          - activator
+          - autoscaler
+          - controller
+          - webhook
+          - net-istio-webhook
+  endpoints:
+    - port: http-metrics
+      path: /metrics
+      interval: 30s
+      honorLabels: true
