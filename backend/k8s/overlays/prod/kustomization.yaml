@@ -24,7 +24,7 @@ images:
 -nan
   - name: burrito-intelligence-fn-rs
     newName: registry.burrito.deway.fr/burrito-intelligence-fn-rs
-    -nan
+-nan
   - name: burrito-groups-ms
     newName: registry.burrito.deway.fr/burrito-groups-ms
 -nan
@@ -33,4 +33,4 @@ images:
 -nan
   - name: registry.burrito.deway.fr/burrito-frontend
     newName: registry.burrito.deway.fr/burrito-frontend
-    -nan
+-nan
