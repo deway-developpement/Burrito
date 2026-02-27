@@ -11,3 +11,19 @@ export interface JwtPayload {
   sub: string;
   authType: UserType;
 }
+
+export interface RefreshTokenPayload {
+  sub: string;
+  sid: string;
+  fid: string;
+  jti: string;
+  type: 'refresh';
+  iat?: number;
+  exp?: number;
+}
+
+export interface LegacyRefreshTokenPayload {
+  sub: string;
+  iat?: number;
+  exp?: number;
+}
