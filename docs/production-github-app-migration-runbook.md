@@ -82,9 +82,13 @@ gh api \
     { "type": "deletion" },
     { "type": "non_fast_forward" },
     {
-      "type": "update",
+      "type": "pull_request",
       "parameters": {
-        "update_allows_fetch_and_merge": false
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_approving_review_count": 0,
+        "required_review_thread_resolution": false
       }
     }
   ]
@@ -93,7 +97,8 @@ JSON
 ```
 
 Notes:
-- The app allowlist is enforced through `bypass_actors` (`Integration`) plus the `update` rule.
+- The app allowlist is enforced through `bypass_actors` (`Integration`).
+- Direct human pushes are blocked by the `pull_request` rule.
 - Keep `deletion` and `non_fast_forward` enabled.
 
 ## 5) Cutover validation
