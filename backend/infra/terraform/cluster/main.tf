@@ -47,7 +47,7 @@ resource "kubernetes_cluster_role" "jenkins_monitoring_deployer" {
 
   rule {
     api_groups = ["monitoring.coreos.com"]
-    resources  = ["servicemonitors", "podmonitors"]
+    resources  = ["servicemonitors", "podmonitors", "alertmanagerconfigs", "prometheusrules"]
     verbs      = ["get", "list", "watch", "create", "update", "patch", "delete"]
   }
 

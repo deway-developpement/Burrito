@@ -19,13 +19,12 @@ spec:
         - to: Paul.mairesse@free.fr
           from: no-reply@burrito.deway.fr
           smarthost: in-v3.mailjet.com:587
-          authUsername:
-            name: alertmanager-smtp-auth
-            key: username
+          authUsername: REPLACE_WITH_SMTP_USER
           authPassword:
             name: alertmanager-smtp-auth
             key: password
           requireTLS: true
           headers:
-            subject: "[Burrito] {{ .Status | toUpper }} - {{ .CommonLabels.alertname }}"
+            - key: subject
+              value: "[Burrito] {{ .Status | toUpper }} - {{ .CommonLabels.alertname }}"
           html: "{{ range .Alerts }}<p><b>Burrito</b> - {{ .Annotations.summary }}</p><p>{{ .Annotations.description }}</p>{{ end }}"
