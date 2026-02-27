@@ -52,6 +52,12 @@ resource "jenkins_credential_secret_text" "huggingface_hub_token" {
   secret      = var.burrito_huggingface_hub_token
 }
 
+resource "jenkins_credential_secret_text" "discord_webhook" {
+  name        = "burrito-discord-webhook"
+  description = "Discord webhook URL used by Jenkins build notifications"
+  secret      = var.burrito_discord_webhook
+}
+
 resource "jenkins_credential_secret_text" "github_app_id" {
   name        = "burrito-github-app-id"
   description = "GitHub App ID used by Jenkins for GitOps promotion pushes"
@@ -91,6 +97,7 @@ resource "jenkins_job" "burrito_backend" {
     jenkins_credential_secret_text.smtp_user,
     jenkins_credential_secret_text.smtp_pass,
     jenkins_credential_secret_text.huggingface_hub_token,
+    jenkins_credential_secret_text.discord_webhook,
     jenkins_credential_secret_text.github_app_id,
     jenkins_credential_secret_text.github_app_installation_id,
     jenkins_credential_secret_text.github_app_private_key,
