@@ -1,0 +1,36 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: burrito-api-gateway-alerts
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+    app: burrito
+spec:
+  groups:
+    - name: burrito.api-gateway
+      rules:
+        - alert: BurritoApiGatewayHigh5xxErrorRate
+          expr: |
+            (
+              sum(rate(http_requests_total{job="api-gateway",status=~"5.."}[5m]))
+              /
+              clamp_min(sum(rate(http_requests_total{job="api-gateway"}[5m])), 1)
+            ) * 100 > 5
+          for: 10m
+          labels:
+            severity: warning
+            team: burrito
+          annotations:
+            summary: "[Burrito] API Gateway 5xx error rate is high"
+            description: "Over the last 10 minutes, more than 5% of API Gateway requests returned HTTP 5xx responses."
+
+        - alert: BurritoApiGatewayTargetDown
+          expr: up{job="api-gateway"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: burrito
+          annotations:
+            summary: "[Burrito] API Gateway scrape target is down"
+            description: "Prometheus cannot scrape the API Gateway /metrics endpoint for at least 2 minutes."

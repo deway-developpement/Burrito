@@ -268,7 +268,6 @@ resource "helm_release" "jenkins" {
         persistence = {
           size = var.jenkins_storage_size
         }
-      }
     })
   ]
 
@@ -305,7 +304,6 @@ resource "helm_release" "argocd" {
         params = {
           "server.insecure" = true
         }
-      }
     })
   ]
 
@@ -372,6 +370,14 @@ resource "helm_release" "kube_prometheus_stack" {
         ingress = {
           enabled = false
         }
+        alertmanagerSpec = {
+          alertmanagerConfigSelector = {
+            matchLabels = {
+              app = "burrito"
+            }
+          }
+        }
+      }
       }
     })
   ]

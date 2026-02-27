@@ -1,0 +1,31 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: burrito-email-routing
+  namespace: monitoring
+  labels:
+    app: burrito
+    release: kube-prometheus-stack
+spec:
+  route:
+    receiver: team-burrito-email
+    matchers:
+      - name: team
+        value: burrito
+        matchType: "="
+  receivers:
+    - name: team-burrito-email
+      emailConfigs:
+        - to: Paul.mairesse@free.fr
+          from: no-reply@burrito.deway.fr
+          smarthost: in-v3.mailjet.com:587
+          authUsername:
+            name: alertmanager-smtp-auth
+            key: username
+          authPassword:
+            name: alertmanager-smtp-auth
+            key: password
+          requireTLS: true
+          headers:
+            subject: "[Burrito] {{ .Status | toUpper }} - {{ .CommonLabels.alertname }}"
+          html: "{{ range .Alerts }}<p><b>Burrito</b> - {{ .Annotations.summary }}</p><p>{{ .Annotations.description }}</p>{{ end }}"
