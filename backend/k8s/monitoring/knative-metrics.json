@@ -73,7 +73,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($kservice)(\\\\..*)?\"}[5m]))",
+          "expr": "sum(kn_revision_rps_stable{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"}) or sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($kservice)(\\\\..*)?\"}[5m]))",
           "legendFormat": "rps",
           "refId": "A"
         }
@@ -133,7 +133,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "100 * sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", response_code=~\"5..\", destination_service_name=~\"($kservice)(\\\\..*)?\"}[5m])) / sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($kservice)(\\\\..*)?\"}[5m]))",
+          "expr": "100 * ((sum(rate(kn_serving_invocation_duration_count{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\", http_response_status_code=~\"5..\"}[5m])) or sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", response_code=~\"5..\", destination_service_name=~\"($kservice)(\\\\..*)?\"}[5m]))) / clamp_min((sum(rate(kn_serving_invocation_duration_count{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"}[5m])) or sum(rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($kservice)(\\\\..*)?\"}[5m]))), 0.001))",
           "legendFormat": "5xx %",
           "refId": "A"
         }
@@ -193,7 +193,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($kservice)(\\\\..*)?\"}[5m])) by (le))",
+          "expr": "(histogram_quantile(0.95, sum(rate(kn_serving_invocation_duration_bucket{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"}[5m])) by (le)) * 1000) or histogram_quantile(0.95, sum(rate(istio_request_duration_milliseconds_bucket{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($kservice)(\\\\..*)?\"}[5m])) by (le))",
           "legendFormat": "p95",
           "refId": "A"
         }
@@ -286,8 +286,8 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (response_code) (rate(istio_requests_total{destination_workload_namespace=\"$namespace\", reporter=\"destination\", destination_service_name=~\"($kservice)(\\\\..*)?\"}[5m]))",
-          "legendFormat": "{{response_code}}",
+          "expr": "sum by (http_response_status_code) (rate(kn_serving_invocation_duration_count{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"}[5m]))",
+          "legendFormat": "{{http_response_status_code}}",
           "refId": "A"
         }
       ],
@@ -378,12 +378,12 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (label_serving_knative_dev_revision) ((kube_pod_status_phase{namespace=\"$namespace\", phase=\"Running\"} == 1) * on (namespace, pod) group_left(label_serving_knative_dev_revision) kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service=\"$kservice\", label_serving_knative_dev_revision=~\"$revision\"})",
-          "legendFormat": "{{label_serving_knative_dev_revision}}",
+          "expr": "sum by (kn_revision_name) (kn_revision_pods_count{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "legendFormat": "{{kn_revision_name}}",
           "refId": "A"
         }
       ],
-      "title": "Running Pods by Revision",
+      "title": "Running Pods by Revision (Autoscaler)",
       "type": "timeseries"
     },
     {
@@ -471,7 +471,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (label_serving_knative_dev_revision) (rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", container!=\"POD\", image!=\"\"}[5m]) * on (namespace, pod) group_left(label_serving_knative_dev_revision) kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service=\"$kservice\", label_serving_knative_dev_revision=~\"$revision\"})",
+          "expr": "sum by (label_serving_knative_dev_revision) (rate(container_cpu_usage_seconds_total{namespace=\"$namespace\", container!=\"POD\", image!=\"\"}[5m]) * on (namespace, pod) group_left(label_serving_knative_dev_revision) kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service=~\"$kservice\", label_serving_knative_dev_revision=~\"$revision\"})",
           "legendFormat": "{{label_serving_knative_dev_revision}}",
           "refId": "A"
         }
@@ -564,7 +564,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (label_serving_knative_dev_revision) (container_memory_working_set_bytes{namespace=\"$namespace\", container!=\"POD\", image!=\"\"} * on (namespace, pod) group_left(label_serving_knative_dev_revision) kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service=\"$kservice\", label_serving_knative_dev_revision=~\"$revision\"})",
+          "expr": "sum by (label_serving_knative_dev_revision) (container_memory_working_set_bytes{namespace=\"$namespace\", container!=\"POD\", image!=\"\"} * on (namespace, pod) group_left(label_serving_knative_dev_revision) kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service=~\"$kservice\", label_serving_knative_dev_revision=~\"$revision\"})",
           "legendFormat": "{{label_serving_knative_dev_revision}}",
           "refId": "A"
         }
@@ -656,7 +656,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (label_serving_knative_dev_revision) (increase(kube_pod_container_status_restarts_total{namespace=\"$namespace\"}[1h]) * on (namespace, pod) group_left(label_serving_knative_dev_revision) kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service=\"$kservice\", label_serving_knative_dev_revision=~\"$revision\"})",
+          "expr": "sum by (label_serving_knative_dev_revision) (increase(kube_pod_container_status_restarts_total{namespace=\"$namespace\"}[1h]) * on (namespace, pod) group_left(label_serving_knative_dev_revision) kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service=~\"$kservice\", label_serving_knative_dev_revision=~\"$revision\"})",
           "legendFormat": "{{label_serving_knative_dev_revision}}",
           "refId": "A"
         }
@@ -749,7 +749,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (kn_revision_name) (kn_serving_queue_depth{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "sum by (kn_revision_name) (kn_serving_queue_depth{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "{{kn_revision_name}}",
           "refId": "A"
         }
@@ -842,7 +842,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum by (le, kn_revision_name) (rate(kn_serving_invocation_duration_bucket{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"}[5m])))",
+          "expr": "histogram_quantile(0.95, sum by (le, kn_revision_name) (rate(kn_serving_invocation_duration_bucket{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"}[5m])))",
           "legendFormat": "p95 {{kn_revision_name}}",
           "refId": "A"
         }
@@ -935,17 +935,17 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (kn_revision_name) (kn_revision_pods_desired{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "sum by (kn_revision_name) (kn_revision_pods_desired{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "desired {{kn_revision_name}}",
           "refId": "A"
         },
         {
-          "expr": "sum by (kn_revision_name) (kn_revision_pods_requested{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "sum by (kn_revision_name) (kn_revision_pods_requested{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "requested {{kn_revision_name}}",
           "refId": "B"
         },
         {
-          "expr": "sum by (kn_revision_name) (kn_revision_pods_count{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "sum by (kn_revision_name) (kn_revision_pods_count{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "current {{kn_revision_name}}",
           "refId": "C"
         }
@@ -1038,17 +1038,17 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (kn_revision_name) (kn_revision_concurrency_stable{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "sum by (kn_revision_name) (kn_revision_concurrency_stable{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "stable {{kn_revision_name}}",
           "refId": "A"
         },
         {
-          "expr": "sum by (kn_revision_name) (kn_revision_concurrency_panic{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "sum by (kn_revision_name) (kn_revision_concurrency_panic{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "panic {{kn_revision_name}}",
           "refId": "B"
         },
         {
-          "expr": "sum by (kn_revision_name) (kn_revision_concurrency_target{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "sum by (kn_revision_name) (kn_revision_concurrency_target{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "target {{kn_revision_name}}",
           "refId": "C"
         }
@@ -1141,17 +1141,17 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "sum by (kn_revision_name) (kn_revision_rps_stable{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "sum by (kn_revision_name) (kn_revision_rps_stable{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "stable {{kn_revision_name}}",
           "refId": "A"
         },
         {
-          "expr": "sum by (kn_revision_name) (kn_revision_rps_panic{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "sum by (kn_revision_name) (kn_revision_rps_panic{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "panic {{kn_revision_name}}",
           "refId": "B"
         },
         {
-          "expr": "sum by (kn_revision_name) (kn_revision_rps_target{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "sum by (kn_revision_name) (kn_revision_rps_target{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "target {{kn_revision_name}}",
           "refId": "C"
         }
@@ -1224,7 +1224,7 @@
       "pluginVersion": "12.3.0",
       "targets": [
         {
-          "expr": "max by (kn_revision_name) (kn_revision_panic_mode{k8s_namespace_name=\"$namespace\", kn_service_name=\"$kservice\", kn_revision_name=~\"$revision\"})",
+          "expr": "max by (kn_revision_name) (kn_revision_panic_mode{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\", kn_revision_name=~\"$revision\"})",
           "legendFormat": "{{kn_revision_name}}",
           "refId": "A"
         }
@@ -1253,7 +1253,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(kube_pod_info{namespace=\"evaluation-system\"}, namespace)",
+        "definition": "label_values(kn_revision_pods_desired, k8s_namespace_name)",
         "hide": 0,
         "includeAll": false,
         "label": "Namespace",
@@ -1261,7 +1261,7 @@
         "name": "namespace",
         "options": [],
         "query": {
-          "query": "label_values(kube_pod_info{namespace=\"evaluation-system\"}, namespace)",
+          "query": "label_values(kn_revision_pods_desired, k8s_namespace_name)",
           "refId": "PrometheusVariableQuery"
         },
         "refresh": 1,
@@ -1272,28 +1272,29 @@
       {
         "current": {
           "selected": true,
-          "text": "intelligence-fn-rs",
-          "value": "intelligence-fn-rs"
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": {
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service!=\"\"}, label_serving_knative_dev_service)",
+        "definition": "label_values(kn_revision_pods_desired{k8s_namespace_name=\"$namespace\"}, kn_service_name)",
         "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "label": "Knative Service",
         "multi": false,
         "name": "kservice",
         "options": [],
         "query": {
-          "query": "label_values(kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service!=\"\"}, label_serving_knative_dev_service)",
+          "query": "label_values(kn_revision_pods_desired{k8s_namespace_name=\"$namespace\"}, kn_service_name)",
           "refId": "PrometheusVariableQuery"
         },
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
-        "type": "query"
+        "type": "query",
+        "allValue": ".*"
       },
       {
         "allValue": ".*",
@@ -1306,7 +1307,7 @@
           "type": "prometheus",
           "uid": "prometheus"
         },
-        "definition": "label_values(kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service=\"$kservice\", label_serving_knative_dev_revision!=\"\"}, label_serving_knative_dev_revision)",
+        "definition": "label_values(kn_revision_pods_desired{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\"}, kn_revision_name)",
         "hide": 0,
         "includeAll": true,
         "label": "Revision",
@@ -1314,7 +1315,7 @@
         "name": "revision",
         "options": [],
         "query": {
-          "query": "label_values(kube_pod_labels{namespace=\"$namespace\", label_serving_knative_dev_service=\"$kservice\", label_serving_knative_dev_revision!=\"\"}, label_serving_knative_dev_revision)",
+          "query": "label_values(kn_revision_pods_desired{k8s_namespace_name=\"$namespace\", kn_service_name=~\"$kservice\"}, kn_revision_name)",
           "refId": "PrometheusVariableQuery"
         },
         "refresh": 2,
