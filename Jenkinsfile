@@ -355,6 +355,7 @@ pipeline {
               GITOPS_OVERLAY_PATH="backend/k8s/overlays/prod/kustomization.yaml"
               SOURCE_BRANCH="main"
               TARGET_BRANCH="production"
+              GITOPS_TAG="latest"
 
               if [ ! -f "${GITOPS_OVERLAY_PATH}" ]; then
                 echo "Missing GitOps overlay file: ${GITOPS_OVERLAY_PATH}" >&2
@@ -441,15 +442,15 @@ pipeline {
               }
 
               for svc in ${BUILD_SERVICES}; do
-                update_tag "burrito-${svc}" "${IMAGE_TAG}"
+                update_tag "burrito-${svc}" "${GITOPS_TAG}"
               done
 
               if [ "${BUILD_INTELLIGENCE_FN}" = "true" ]; then
-                update_tag "burrito-intelligence-fn-rs" "${IMAGE_TAG}"
+                update_tag "burrito-intelligence-fn-rs" "${GITOPS_TAG}"
               fi
 
               if [ "${BUILD_FRONTEND}" = "true" ]; then
-                update_tag "registry.burrito.deway.fr/burrito-frontend" "${IMAGE_TAG}"
+                update_tag "registry.burrito.deway.fr/burrito-frontend" "${GITOPS_TAG}"
               fi
 
               ensure_only_allowed_changes() {
@@ -479,7 +480,7 @@ pipeline {
               if ! git diff --cached --quiet; then
                 git config user.name "jenkins-gitops[bot]"
                 git config user.email "jenkins-gitops[bot]@users.noreply.github.com"
-                git commit -m "ci: promote gitops images to ${IMAGE_TAG} [skip ci]"
+                git commit -m "ci: promote gitops images to ${GITOPS_TAG} [skip ci]"
               fi
 
               if git show-ref --verify --quiet "refs/remotes/origin/${TARGET_BRANCH}"; then
