@@ -22,6 +22,16 @@ export class AuthController {
     return this.authService.refresh(data.refreshToken);
   }
 
+  @MessagePattern({ cmd: 'auth.logout' })
+  logout(data: { refreshToken: string }) {
+    return this.authService.logout(data.refreshToken);
+  }
+
+  @MessagePattern({ cmd: 'auth.logoutAllSessions' })
+  logoutAllSessions(data: { userId: string }) {
+    return this.authService.logoutAllSessions(data.userId);
+  }
+
   @MessagePattern({ cmd: 'auth.generateFormHash' })
   generateFormHash(data: { userId: string; formId: string }): Promise<string> {
     return this.authService.generateFormHash(data.userId, data.formId);
