@@ -1,3 +1,161 @@
+def notifyDiscordBuild(Map cfg = [:]) {
+  String credentialId = (cfg.webhookCredentialsId ?: 'burrito-discord-webhook') as String
+  String mention = (cfg.channelMention ?: '') as String
+  String titlePrefix = (cfg.titlePrefix ?: 'Build') as String
+  String deployEnvironment = (cfg.environment ?: '') as String
+  String status = (currentBuild?.currentResult ?: 'UNKNOWN') as String
+
+  String jobName = env.JOB_NAME ?: 'unknown-job'
+  String buildNumber = env.BUILD_NUMBER ?: '0'
+  String buildUrl = env.BUILD_URL ?: ''
+  String duration = humanDuration(currentBuild?.duration ?: 0L)
+
+  Map git = gitInfoBestEffort()
+  List fields = []
+  fields << [name: 'Job', value: truncateText(jobName, 1024), inline: true]
+  fields << [name: 'Build', value: "#${buildNumber}", inline: true]
+  fields << [name: 'Status', value: status, inline: true]
+
+  if (deployEnvironment?.trim()) {
+    fields << [name: 'Env', value: truncateText(deployEnvironment, 1024), inline: true]
+  }
+  if (git.branch) {
+    fields << [name: 'Branch', value: truncateText(git.branch as String, 1024), inline: true]
+  }
+  if (git.commit) {
+    fields << [name: 'Commit', value: shortSha(git.commit as String), inline: true]
+  }
+  if (git.author) {
+    fields << [name: 'Author', value: truncateText(git.author as String, 1024), inline: true]
+  }
+  if (duration && duration != '0s') {
+    fields << [name: 'Duration', value: duration, inline: true]
+  }
+  if ((env.BUILD_SERVICES ?: '').trim()) {
+    fields << [name: 'Services', value: truncateText(env.BUILD_SERVICES, 1024), inline: false]
+  }
+  if ((env.BUILD_INTELLIGENCE_FN ?: '').trim()) {
+    fields << [name: 'Build intelligence-fn-rs', value: env.BUILD_INTELLIGENCE_FN, inline: true]
+  }
+  if ((env.BUILD_FRONTEND ?: '').trim()) {
+    fields << [name: 'Build frontend', value: env.BUILD_FRONTEND, inline: true]
+  }
+  if (git.message) {
+    fields << [name: 'Message', value: truncateText(git.message as String, 400), inline: false]
+  }
+
+  Map payload = [
+    embeds: [[
+      title      : "${titlePrefix} ${status}",
+      description: buildUrl ? "[Open in Jenkins](${buildUrl})" : '',
+      color      : discordColor(status),
+      fields     : fields,
+      footer     : [text: "Jenkins | ${jobName}"],
+      timestamp  : isoNowUtc()
+    ]]
+  ]
+
+  if (mention?.trim()) {
+    payload.content = mention
+  }
+
+  withCredentials([string(credentialsId: credentialId, variable: 'DISCORD_WEBHOOK_URL')]) {
+    String webhookUrl = env.DISCORD_WEBHOOK_URL ?: ''
+    if (!webhookUrl.trim()) {
+      echo "Discord webhook credential '${credentialId}' is empty; skipping notification."
+      return
+    }
+
+    httpRequest(
+      url: webhookUrl,
+      httpMode: 'POST',
+      contentType: 'APPLICATION_JSON',
+      acceptType: 'APPLICATION_JSON',
+      requestBody: groovy.json.JsonOutput.toJson(payload),
+      validResponseCodes: '200:299'
+    )
+  }
+}
+
+int discordColor(String status) {
+  switch (status) {
+    case 'SUCCESS':
+      return 0x2ECC71
+    case 'FAILURE':
+      return 0xE74C3C
+    case 'UNSTABLE':
+      return 0xF1C40F
+    case 'ABORTED':
+      return 0x95A5A6
+    default:
+      return 0x3498DB
+  }
+}
+
+Map gitInfoBestEffort() {
+  Map out = [branch: env.BRANCH_NAME ?: env.GIT_BRANCH, commit: env.GIT_COMMIT, author: null, message: null]
+
+  try {
+    if (!out.branch) {
+      out.branch = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+    }
+  } catch (ignored) {}
+
+  try {
+    if (!out.commit) {
+      out.commit = sh(script: 'git rev-parse HEAD', returnStdout: true).trim()
+    }
+  } catch (ignored) {}
+
+  try {
+    out.author = sh(script: 'git --no-pager log -1 --pretty=format:%an', returnStdout: true).trim()
+  } catch (ignored) {}
+
+  try {
+    out.message = sh(script: 'git --no-pager log -1 --pretty=format:%s', returnStdout: true).trim()
+  } catch (ignored) {}
+
+  return out
+}
+
+String shortSha(String sha) {
+  if (!sha) {
+    return ''
+  }
+  return sha.length() > 7 ? sha.substring(0, 7) : sha
+}
+
+String truncateText(String value, int maxLength) {
+  if (!value) {
+    return ''
+  }
+  if (value.length() <= maxLength) {
+    return value
+  }
+  return value.substring(0, maxLength - 3) + '...'
+}
+
+String humanDuration(long ms) {
+  if (ms <= 0L) {
+    return '0s'
+  }
+  long totalSeconds = (long) (ms / 1000L)
+  long hours = (long) (totalSeconds / 3600L)
+  long minutes = (long) ((totalSeconds % 3600L) / 60L)
+  long seconds = (long) (totalSeconds % 60L)
+  if (hours > 0L) {
+    return "${hours}h${minutes}m${seconds}s"
+  }
+  if (minutes > 0L) {
+    return "${minutes}m${seconds}s"
+  }
+  return "${seconds}s"
+}
+
+String isoNowUtc() {
+  return java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC).toString()
+}
+
 pipeline {
   agent {
     kubernetes {
@@ -815,6 +973,26 @@ EOF
               kubectl apply -k backend/k8s/monitoring
             '''
           }
+        }
+      }
+    }
+  }
+
+  post {
+    always {
+      script {
+        try {
+          def notifyEnv = env.BRANCH_NAME ?: (env.GIT_BRANCH ?: '')
+          def mention = ((currentBuild?.currentResult ?: 'UNKNOWN') == 'FAILURE') ? '@here' : ''
+
+          notifyDiscordBuild(
+            webhookCredentialsId: 'burrito-discord-webhook',
+            titlePrefix: 'CI',
+            environment: notifyEnv,
+            channelMention: mention
+          )
+        } catch (err) {
+          echo "Discord notification failed: ${err}"
         }
       }
     }
