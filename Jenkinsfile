@@ -386,87 +386,120 @@ pipeline {
                 git checkout -B "${TARGET_BRANCH}" "origin/${SOURCE_BRANCH}"
               fi
 
-              update_tag() {
-                local image_name="$1"
-                local image_tag="$2"
+              PROMOTE_IMAGES=""
+              for svc in ${BUILD_SERVICES}; do
+                PROMOTE_IMAGES="${PROMOTE_IMAGES} burrito-${svc}"
+              done
+              if [ "${BUILD_INTELLIGENCE_FN}" = "true" ]; then
+                PROMOTE_IMAGES="${PROMOTE_IMAGES} burrito-intelligence-fn-rs"
+              fi
+              if [ "${BUILD_FRONTEND}" = "true" ]; then
+                PROMOTE_IMAGES="${PROMOTE_IMAGES} registry.burrito.deway.fr/burrito-frontend"
+              fi
+              PROMOTE_IMAGES="$(printf '%s\n' "${PROMOTE_IMAGES}" | tr ' ' '\n' | awk 'NF' | sort -u | tr '\n' ' ' | sed 's/ $//')"
 
-                rc=0
-                awk -v image="${image_name}" -v image_tag="${image_tag}" '
-                  BEGIN { in_target = 0; updated = 0 }
-                  $1 == "-" && $2 == "name:" && $3 == image {
-                    in_target = 1
-                    print
-                    next
-                  }
-                  in_target == 1 && $1 == "newTag:" {
-                    sub(/newTag:[[:space:]]*.*/, sprintf("newTag: \"%s\"", image_tag))
-                    in_target = 0
-                    updated = 1
-                    print
-                    next
-                  }
-                  in_target == 1 && ($1 == "-nan" || $1 == ".nan" || $1 == "-.nan" || $1 == "nan") {
-                    print sprintf("    newTag: \"%s\"", image_tag)
-                    in_target = 0
-                    updated = 1
-                    next
-                  }
-                  in_target == 1 && $1 == "-" && $2 == "name:" {
-                    print sprintf("    newTag: \"%s\"", image_tag)
-                    in_target = 0
-                    updated = 1
-                    print
-                    next
-                  }
-                  { print }
-                  END {
-                    if (in_target == 1 && updated == 0) {
-                      print sprintf("    newTag: \"%s\"", image_tag)
-                      updated = 1
-                    }
-                    if (updated == 0) {
-                      exit 42
-                    }
-                  }
-                ' "${GITOPS_OVERLAY_PATH}" > "${GITOPS_OVERLAY_PATH}.tmp" || rc=$?
-                if [ "${rc}" -ne 0 ]; then
-                  rm -f "${GITOPS_OVERLAY_PATH}.tmp"
-                  if [ "${rc}" -eq 42 ]; then
-                    echo "Image entry not found in ${GITOPS_OVERLAY_PATH}: ${image_name}" >&2
-                  fi
-                  exit "${rc}"
-                fi
+              PROMOTE_IMAGES="${PROMOTE_IMAGES}" \
+              BACKEND_SERVICES="${BACKEND_SERVICES}" \
+              IMAGE_TAG="${IMAGE_TAG}" \
+              GITOPS_OVERLAY_PATH="${GITOPS_OVERLAY_PATH}" \
+              node <<'NODE'
+              const fs = require('fs');
 
-                mv "${GITOPS_OVERLAY_PATH}.tmp" "${GITOPS_OVERLAY_PATH}"
+              const overlayPath = process.env.GITOPS_OVERLAY_PATH;
+              const imageTag = (process.env.IMAGE_TAG || '').trim();
+              const parseList = (value) =>
+                (value || '')
+                  .trim()
+                  .split(/\s+/)
+                  .filter(Boolean);
+
+              if (!/^[0-9]+$/.test(imageTag)) {
+                throw new Error(`Invalid IMAGE_TAG '${imageTag}'`);
               }
 
-              malformed_pattern='^[[:space:]]*(-?\\.?nan|nan)[[:space:]]*$'
-              if grep -Eq "${malformed_pattern}" "${GITOPS_OVERLAY_PATH}"; then
-                echo "Detected malformed tag lines in ${GITOPS_OVERLAY_PATH}; forcing full tag repair with IMAGE_TAG=${IMAGE_TAG}."
-                for svc in ${BACKEND_SERVICES}; do
-                  update_tag "burrito-${svc}" "${IMAGE_TAG}"
-                done
-                update_tag "burrito-intelligence-fn-rs" "${IMAGE_TAG}"
-                update_tag "registry.burrito.deway.fr/burrito-frontend" "${IMAGE_TAG}"
-              else
-                for svc in ${BUILD_SERVICES}; do
-                  update_tag "burrito-${svc}" "${IMAGE_TAG}"
-                done
+              const malformedLine = /^\s*(-?\.?nan|nan)\s*$/;
+              const selectedImages = new Set(parseList(process.env.PROMOTE_IMAGES));
+              const backendServices = parseList(process.env.BACKEND_SERVICES);
 
-                if [ "${BUILD_INTELLIGENCE_FN}" = "true" ]; then
-                  update_tag "burrito-intelligence-fn-rs" "${IMAGE_TAG}"
-                fi
+              const content = fs.readFileSync(overlayPath, 'utf8');
+              const hasMalformed = content.split(/\r?\n/).some((line) => malformedLine.test(line));
 
-                if [ "${BUILD_FRONTEND}" = "true" ]; then
-                  update_tag "registry.burrito.deway.fr/burrito-frontend" "${IMAGE_TAG}"
-                fi
-              fi
+              if (hasMalformed) {
+                console.log(
+                  `Detected malformed tag lines in ${overlayPath}; forcing full tag repair with IMAGE_TAG=${imageTag}.`,
+                );
+                for (const svc of backendServices) {
+                  selectedImages.add(`burrito-${svc}`);
+                }
+                selectedImages.add('burrito-intelligence-fn-rs');
+                selectedImages.add('registry.burrito.deway.fr/burrito-frontend');
+              }
 
-              if grep -Eq "${malformed_pattern}" "${GITOPS_OVERLAY_PATH}"; then
-                echo "Malformed tag lines remain after promotion update; refusing to commit." >&2
-                sed -n '1,120p' "${GITOPS_OVERLAY_PATH}" >&2
-                exit 1
-              fi
+              if (selectedImages.size === 0) {
+                console.log('No images selected for GitOps promotion.');
+                process.exit(0);
+              }
+
+              const lines = content.split(/\r?\n/);
+              const out = [];
+              const updated = new Set();
+              let currentImage = '';
+              let inTarget = false;
+              let tagIndent = '    ';
+
+              const setTag = () => {
+                out.push(`${tagIndent}newTag: "${imageTag}"`);
+                updated.add(currentImage);
+                inTarget = false;
+              };
+
+              for (const line of lines) {
+                const nameMatch = line.match(/^(\s*)-\s+name:\s+(\S+)\s*$/);
+                if (nameMatch) {
+                  if (inTarget) {
+                    setTag();
+                  }
+                  currentImage = nameMatch[2];
+                  inTarget = selectedImages.has(currentImage);
+                  tagIndent = `${nameMatch[1]}  `;
+                  out.push(line);
+                  continue;
+                }
+
+                if (inTarget && /^\s*newTag:\s*.*$/.test(line)) {
+                  setTag();
+                  continue;
+                }
+
+                if (inTarget && malformedLine.test(line)) {
+                  setTag();
+                  continue;
+                }
+
+                out.push(line);
+              }
+
+              if (inTarget) {
+                setTag();
+              }
+
+              const missing = [...selectedImages].filter((image) => !updated.has(image));
+              if (missing.length > 0) {
+                throw new Error(
+                  `Image entry not found in ${overlayPath}: ${missing.join(', ')}`,
+                );
+              }
+
+              const rewritten = out.join('\n');
+              if (rewritten.split(/\r?\n/).some((line) => malformedLine.test(line))) {
+                throw new Error(
+                  `Malformed tag lines remain in ${overlayPath} after rewrite.`,
+                );
+              }
+
+              fs.writeFileSync(overlayPath, rewritten);
+              console.log(`Updated ${updated.size} image entries to tag ${imageTag}.`);
+NODE
 
               ensure_only_allowed_changes() {
                 local changed_files=""
