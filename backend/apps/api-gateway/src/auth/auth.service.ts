@@ -70,9 +70,69 @@ export class AuthService {
           if (err instanceof TimeoutError) {
             throw new GatewayTimeoutException('Auth service timed out');
           }
+          if (this.isUnauthorizedError(err)) {
+            throw new UnauthorizedException();
+          }
           throw err;
         }),
       ),
     );
+  }
+
+  private isUnauthorizedError(error: unknown): boolean {
+    const err = error as Record<string, unknown> | undefined;
+    const statusCandidates = [
+      err?.['status'],
+      err?.['statusCode'],
+      (err?.['response'] as Record<string, unknown> | undefined)?.['status'],
+      (err?.['response'] as Record<string, unknown> | undefined)?.[
+        'statusCode'
+      ],
+      (err?.['error'] as Record<string, unknown> | undefined)?.['status'],
+      (err?.['error'] as Record<string, unknown> | undefined)?.['statusCode'],
+    ]
+      .map((value) => (typeof value === 'number' ? value : Number(value)))
+      .filter((value) => Number.isFinite(value));
+
+    if (statusCandidates.includes(401) || statusCandidates.includes(403)) {
+      return true;
+    }
+
+    const message = this.extractErrorMessage(error).toLowerCase();
+    return (
+      message.includes('unauthorized') ||
+      message.includes('invalid token') ||
+      message.includes('jwt')
+    );
+  }
+
+  private extractErrorMessage(error: unknown): string {
+    if (!error) {
+      return '';
+    }
+    if (error instanceof Error) {
+      return error.message || '';
+    }
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    const err = error as Record<string, unknown>;
+    const nestedMessage =
+      err['message'] ??
+      (err['response'] as Record<string, unknown> | undefined)?.['message'] ??
+      (err['error'] as Record<string, unknown> | undefined)?.['message'];
+
+    if (typeof nestedMessage === 'string') {
+      return nestedMessage;
+    }
+    if (Array.isArray(nestedMessage)) {
+      return nestedMessage.join(' ');
+    }
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return '';
+    }
   }
 }
