@@ -20,6 +20,7 @@ import {
 } from '@willsoto/nestjs-prometheus';
 import { MetricsController } from '@app/common';
 import { PrometheusService } from '@app/common';
+import { createPinoHttpOptions } from '@app/common';
 import { EvaluationModule } from './evaluation/evaluation.module';
 import { LoggerModule } from 'nestjs-pino';
 import { AnalyticsModule } from './analytics/analytics.module';
@@ -28,12 +29,7 @@ import { GroupModule } from './group/group.module';
 @Module({
   imports: [
     LoggerModule.forRoot({
-      pinoHttp: {
-        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-        base: { service: 'api-gateway' },
-        autoLogging: false,
-        redact: ['req.headers.authorization'],
-      },
+      pinoHttp: createPinoHttpOptions('api-gateway'),
     }),
     ConfigModule.forRoot({
       envFilePath: '.env',

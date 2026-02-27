@@ -80,6 +80,21 @@ struct IntelligenceResultEvent {
     model_version: String,
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+struct IntelligenceObservabilityMetadata {
+    traceparent: Option<String>,
+    tracestate: Option<String>,
+    baggage: Option<String>,
+    producer_service: Option<String>,
+    produced_at: Option<String>,
+}
+
+#[derive(Debug, Clone)]
+struct ParsedIntelligenceRequest {
+    request: IntelligenceRequestEvent,
+    observability: IntelligenceObservabilityMetadata,
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct IdeaItem {
     idea: String,
@@ -178,8 +193,8 @@ async fn readyz() -> impl IntoResponse {
 }
 
 async fn handle_event(State(state): State<AppState>, Json(body): Json<Value>) -> Response {
-    let request = match parse_intelligence_request(&body) {
-        Ok(request) => request,
+    let parsed = match parse_intelligence_request(&body) {
+        Ok(parsed) => parsed,
         Err(error) => {
             warn!("invalid cloud event payload: {error}");
             return (
@@ -189,6 +204,15 @@ async fn handle_event(State(state): State<AppState>, Json(body): Json<Value>) ->
                 .into_response();
         }
     };
+    let request = parsed.request;
+    let observability = parsed.observability;
+    let request_trace_id = observability
+        .traceparent
+        .as_deref()
+        .and_then(trace_id_from_traceparent);
+    if let Some(trace_id) = request_trace_id.clone() {
+        info!(trace_id = %trace_id, question_id = %request.question_id, "received intelligence request");
+    }
 
     let result = match process_request(&state, &request).await {
         Ok(result) => result,
@@ -214,8 +238,12 @@ async fn handle_event(State(state): State<AppState>, Json(body): Json<Value>) ->
         }
     };
 
-    if let Err(error) = publish_result_event(&state, &result).await {
-        error!("failed to publish intelligence result event: {error}");
+    if let Err(error) = publish_result_event(&state, &result, &observability).await {
+        if let Some(trace_id) = request_trace_id {
+            error!(trace_id = %trace_id, "failed to publish intelligence result event: {error}");
+        } else {
+            error!("failed to publish intelligence result event: {error}");
+        }
         return (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(json!({ "error": "failed to publish result event" })),
@@ -526,6 +554,7 @@ fn load_models() -> Result<ModelResources> {
 async fn publish_result_event(
     state: &AppState,
     result: &IntelligenceResultEvent,
+    observability: &IntelligenceObservabilityMetadata,
 ) -> Result<String> {
     let payload = serde_json::to_string(result).context("failed to encode result payload")?;
     let mut connection = state
@@ -534,11 +563,28 @@ async fn publish_result_event(
         .await
         .context("failed to create redis async connection")?;
 
-    let message_id = redis::cmd("XADD")
+    let mut command = redis::cmd("XADD");
+    command
         .arg(&state.config.result_stream)
         .arg("*")
         .arg("payload")
         .arg(payload)
+        .arg("producer_service")
+        .arg("intelligence-fn-rs")
+        .arg("produced_at")
+        .arg(chrono::Utc::now().to_rfc3339());
+
+    if let Some(value) = observability.traceparent.as_deref().filter(|value| !value.is_empty()) {
+        command.arg("traceparent").arg(value);
+    }
+    if let Some(value) = observability.tracestate.as_deref().filter(|value| !value.is_empty()) {
+        command.arg("tracestate").arg(value);
+    }
+    if let Some(value) = observability.baggage.as_deref().filter(|value| !value.is_empty()) {
+        command.arg("baggage").arg(value);
+    }
+
+    let message_id = command
         .query_async::<String>(&mut connection)
         .await
         .context("failed to publish result payload")?;
@@ -715,8 +761,9 @@ async fn get_idea_stats(State(state): State<AppState>) -> Response {
         .into_response()
 }
 
-fn parse_intelligence_request(body: &Value) -> Result<IntelligenceRequestEvent> {
+fn parse_intelligence_request(body: &Value) -> Result<ParsedIntelligenceRequest> {
     let data = body.get("data").unwrap_or(body);
+    let observability = parse_observability_metadata(data);
 
     let payload = if let Some(payload) = data.get("payload") {
         payload.clone()
@@ -726,28 +773,95 @@ fn parse_intelligence_request(body: &Value) -> Result<IntelligenceRequestEvent> 
         data.clone()
     };
 
-    match payload {
+    let request = match payload {
         Value::String(serialized) => serde_json::from_str::<IntelligenceRequestEvent>(&serialized)
             .context("failed to decode request payload from string"),
         value => serde_json::from_value::<IntelligenceRequestEvent>(value)
             .context("failed to decode request payload"),
-    }
+    }?;
+
+    Ok(ParsedIntelligenceRequest {
+        request,
+        observability,
+    })
 }
 
 fn parse_payload_from_fields_array(fields: &[Value]) -> Result<Value> {
-    let mut index = 0;
-    while index + 1 < fields.len() {
-        if let Some(name) = fields[index].as_str() {
-            if name == "payload" {
-                return Ok(fields[index + 1].clone());
-            }
-        }
-        index += 2;
+    if let Some(payload) = parse_field_from_fields_array(fields, "payload") {
+        return Ok(payload);
     }
 
     Err(anyhow!(
         "cloud event data array does not contain a payload field"
     ))
+}
+
+fn parse_observability_metadata(data: &Value) -> IntelligenceObservabilityMetadata {
+    if let Some(object) = data.as_object() {
+        return IntelligenceObservabilityMetadata {
+            traceparent: object
+                .get("traceparent")
+                .and_then(Value::as_str)
+                .map(|value| value.to_string()),
+            tracestate: object
+                .get("tracestate")
+                .and_then(Value::as_str)
+                .map(|value| value.to_string()),
+            baggage: object
+                .get("baggage")
+                .and_then(Value::as_str)
+                .map(|value| value.to_string()),
+            producer_service: object
+                .get("producer_service")
+                .and_then(Value::as_str)
+                .map(|value| value.to_string()),
+            produced_at: object
+                .get("produced_at")
+                .and_then(Value::as_str)
+                .map(|value| value.to_string()),
+        };
+    }
+
+    if let Some(array) = data.as_array() {
+        return IntelligenceObservabilityMetadata {
+            traceparent: parse_field_from_fields_array(array, "traceparent")
+                .and_then(|value| value.as_str().map(|value| value.to_string())),
+            tracestate: parse_field_from_fields_array(array, "tracestate")
+                .and_then(|value| value.as_str().map(|value| value.to_string())),
+            baggage: parse_field_from_fields_array(array, "baggage")
+                .and_then(|value| value.as_str().map(|value| value.to_string())),
+            producer_service: parse_field_from_fields_array(array, "producer_service")
+                .and_then(|value| value.as_str().map(|value| value.to_string())),
+            produced_at: parse_field_from_fields_array(array, "produced_at")
+                .and_then(|value| value.as_str().map(|value| value.to_string())),
+        };
+    }
+
+    IntelligenceObservabilityMetadata::default()
+}
+
+fn parse_field_from_fields_array(fields: &[Value], field_name: &str) -> Option<Value> {
+    let mut index = 0;
+    while index + 1 < fields.len() {
+        if let Some(name) = fields[index].as_str() {
+            if name == field_name {
+                return Some(fields[index + 1].clone());
+            }
+        }
+        index += 2;
+    }
+    None
+}
+
+fn trace_id_from_traceparent(traceparent: &str) -> Option<String> {
+    let mut parts = traceparent.split('-');
+    let _version = parts.next()?;
+    let trace_id = parts.next()?;
+    if trace_id.len() == 32 {
+        Some(trace_id.to_string())
+    } else {
+        None
+    }
 }
 
 fn build_mongo_uri() -> String {
@@ -817,7 +931,7 @@ mod tests {
             }
         });
 
-        let request = parse_intelligence_request(&body).unwrap();
+        let request = parse_intelligence_request(&body).unwrap().request;
         assert_eq!(request.job_id, "job-1");
         assert_eq!(request.analysis_hash, "h-1");
     }
@@ -831,7 +945,7 @@ mod tests {
             ]
         });
 
-        let request = parse_intelligence_request(&body).unwrap();
+        let request = parse_intelligence_request(&body).unwrap().request;
         assert_eq!(request.job_id, "job-2");
         assert_eq!(request.question_id, "q-2");
     }

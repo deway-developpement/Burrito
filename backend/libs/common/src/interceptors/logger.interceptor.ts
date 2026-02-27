@@ -10,6 +10,7 @@ import { RedisContext } from '@nestjs/microservices';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { getActiveTraceLogFields } from '../telemetry/telemetry';
 
 @Injectable()
 export class RedisLoggerInterceptor implements NestInterceptor {
@@ -43,19 +44,24 @@ export class RedisLoggerInterceptor implements NestInterceptor {
     }
 
     // Log when request is received
-    this.logger.info({ channel }, 'Incoming message');
+    this.logger.info({ channel, ...getActiveTraceLogFields() }, 'Incoming message');
 
     return next.handle().pipe(
       tap({
         next: () => {
           this.logger.info(
-            { channel, durationMs: Date.now() - now },
+            { channel, durationMs: Date.now() - now, ...getActiveTraceLogFields() },
             'Handled message',
           );
         },
         error: (err) => {
           this.logger.warn(
-            { channel, durationMs: Date.now() - now, err: err?.message },
+            {
+              channel,
+              durationMs: Date.now() - now,
+              err: err?.message,
+              ...getActiveTraceLogFields(),
+            },
             'Error handling message',
           );
         },

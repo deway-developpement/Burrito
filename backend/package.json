@@ -40,6 +40,12 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.0",
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.66.0",
+    "@opentelemetry/core": "^2.2.0",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.207.0",
+    "@opentelemetry/resources": "^2.2.0",
+    "@opentelemetry/sdk-node": "^0.207.0",
     "@typegoose/typegoose": "^8.3.0",
     "@willsoto/nestjs-prometheus": "^6.0.2",
     "bcrypt": "6.0.0",
@@ -48,9 +54,9 @@
     "class-validator": "^0.14.3",
     "dataloader": "^2.2.3",
     "graphql": "^16.12.0",
-    "graphql-ws": "^5.16.0",
     "graphql-redis-subscriptions": "^2.7.0",
     "graphql-subscriptions": "^1.2.1",
+    "graphql-ws": "^5.16.0",
     "handlebars": "^4.7.8",
     "ioredis": "^5.8.2",
     "joi": "^18.0.1",
@@ -95,7 +101,8 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
-    "typescript-eslint": "^8.20.0"
+    "typescript-eslint": "^8.20.0",
+    "webpack": "^5.105.3"
   },
   "jest": {
     "moduleFileExtensions": [
