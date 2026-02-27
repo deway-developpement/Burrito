@@ -405,8 +405,25 @@ pipeline {
                     print
                     next
                   }
+                  in_target == 1 && ($1 == "-nan" || $1 == ".nan" || $1 == "-.nan" || $1 == "nan") {
+                    print sprintf("    newTag: \"%s\"", image_tag)
+                    in_target = 0
+                    updated = 1
+                    next
+                  }
+                  in_target == 1 && $1 == "-" && $2 == "name:" {
+                    print sprintf("    newTag: \"%s\"", image_tag)
+                    in_target = 0
+                    updated = 1
+                    print
+                    next
+                  }
                   { print }
                   END {
+                    if (in_target == 1 && updated == 0) {
+                      print sprintf("    newTag: \"%s\"", image_tag)
+                      updated = 1
+                    }
                     if (updated == 0) {
                       exit 42
                     }
