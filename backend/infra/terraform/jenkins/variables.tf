@@ -93,6 +93,13 @@ variable "burrito_huggingface_hub_token" {
   sensitive   = true
 }
 
+variable "burrito_discord_webhook" {
+  type        = string
+  description = "Discord webhook URL used by Jenkins build notifications"
+  default     = ""
+  sensitive   = true
+}
+
 variable "burrito_github_app_id" {
   type        = string
   description = "GitHub App ID used by Jenkins for GitOps promotion pushes"
