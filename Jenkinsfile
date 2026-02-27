@@ -465,8 +465,8 @@ pipeline {
               function toBase64Url(input) {
                 return Buffer.from(input)
                   .toString('base64')
-                  .replace(/\+/g, '-')
-                  .replace(/\//g, '_')
+                  .split('+').join('-')
+                  .split('/').join('_')
                   .replace(/=+$/g, '');
               }
 
@@ -477,7 +477,9 @@ pipeline {
                 process.exit(1);
               }
 
-              privateKey = privateKey.replace(/\\n/g, '\n');
+              privateKey = privateKey
+                .split(String.fromCharCode(92) + 'n')
+                .join(String.fromCharCode(10));
 
               const now = Math.floor(Date.now() / 1000);
               const header = { alg: 'RS256', typ: 'JWT' };
@@ -488,8 +490,8 @@ pipeline {
                 .update(unsignedToken)
                 .end()
                 .sign(privateKey, 'base64')
-                .replace(/\+/g, '-')
-                .replace(/\//g, '_')
+                .split('+').join('-')
+                .split('/').join('_')
                 .replace(/=+$/g, '');
               process.stdout.write(`${unsignedToken}.${signature}`);
 NODE
