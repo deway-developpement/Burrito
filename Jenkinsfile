@@ -769,12 +769,13 @@ NODE
             string(credentialsId: 'burrito-smtp-pass', variable: 'SMTP_PASS'),
           ]) {
             sh '''
-              set -euo pipefail
+              set -eu
 
               kubectl create secret generic alertmanager-smtp-auth \
                 --from-literal=username="${SMTP_USER}" \
                 --from-literal=password="${SMTP_PASS}" \
-                --dry-run=client -o yaml | kubectl apply -n monitoring -f -
+                --dry-run=client -o yaml > /tmp/alertmanager-smtp-auth.yaml
+              kubectl apply -n monitoring -f /tmp/alertmanager-smtp-auth.yaml
 
               # AlertmanagerConfig v1alpha1 expects authUsername as string (not SecretKeySelector).
               cat <<EOF | kubectl apply -f -
