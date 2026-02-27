@@ -9,28 +9,28 @@ resources:
 images:
   - name: burrito-api-gateway
     newName: registry.burrito.deway.fr/burrito-api-gateway
-    newTag: "77"
+    newTag: "79"
   - name: burrito-users-ms
     newName: registry.burrito.deway.fr/burrito-users-ms
-    newTag: "77"
+    newTag: "79"
   - name: burrito-forms-ms
     newName: registry.burrito.deway.fr/burrito-forms-ms
-    newTag: "77"
+    newTag: "79"
   - name: burrito-evaluations-ms
     newName: registry.burrito.deway.fr/burrito-evaluations-ms
-    newTag: "77"
+    newTag: "79"
   - name: burrito-analytics-ms
     newName: registry.burrito.deway.fr/burrito-analytics-ms
-    newTag: "77"
+    newTag: "79"
   - name: burrito-intelligence-fn-rs
     newName: registry.burrito.deway.fr/burrito-intelligence-fn-rs
     newTag: "77"
   - name: burrito-groups-ms
     newName: registry.burrito.deway.fr/burrito-groups-ms
-    newTag: "77"
+    newTag: "79"
   - name: burrito-notifications-ms
     newName: registry.burrito.deway.fr/burrito-notifications-ms
-    newTag: "77"
+    newTag: "79"
   - name: registry.burrito.deway.fr/burrito-frontend
     newName: registry.burrito.deway.fr/burrito-frontend
-    newTag: "77"
+    newTag: "79"
