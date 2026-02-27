@@ -62,6 +62,25 @@ export class AuthService {
     );
   }
 
+  async logout(req: Request) {
+    if (!req.headers?.refresh_token) throw new UnauthorizedException();
+    return this.sendWithTimeout(
+      this.userClient.send<{ success: boolean }>(
+        { cmd: 'auth.logout' },
+        { refreshToken: req.headers.refresh_token as string },
+      ),
+    );
+  }
+
+  async logoutAllSessions(userId: string) {
+    return this.sendWithTimeout(
+      this.userClient.send<{ success: boolean }>(
+        { cmd: 'auth.logoutAllSessions' },
+        { userId },
+      ),
+    );
+  }
+
   private async sendWithTimeout<T>(observable: Observable<T>): Promise<T> {
     return firstValueFrom(
       observable.pipe(

@@ -94,6 +94,15 @@ export class AuthService {
   }
 
   logout() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (refreshToken) {
+      const headers = new HttpHeaders().set('refresh_token', refreshToken);
+      // Best-effort server-side session revocation.
+      this.http
+        .post(`${this.apiBaseUrl}/auth/logout`, {}, { headers, withCredentials: true })
+        .pipe(catchError(() => of(null)))
+        .subscribe();
+    }
     this.token.set(null);
     this.currentUser.set(null);
     localStorage.removeItem('refresh_token');
