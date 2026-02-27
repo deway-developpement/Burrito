@@ -53,6 +53,19 @@ pipeline {
       }
     }
 
+    stage('Resolve Image Tag') {
+      steps {
+        script {
+          def resolvedBuildNumber = "${currentBuild.number}".trim()
+          if (!(resolvedBuildNumber ==~ /^[0-9]+$/)) {
+            error "Invalid currentBuild.number '${resolvedBuildNumber}', refusing to tag/promote images."
+          }
+          env.IMAGE_TAG = resolvedBuildNumber
+          echo "Resolved image tag: ${env.IMAGE_TAG} (raw BUILD_NUMBER='${env.BUILD_NUMBER ?: ''}')"
+        }
+      }
+    }
+
     stage('Compute Build Targets') {
       steps {
         container('builder') {
@@ -239,7 +252,7 @@ pipeline {
                     --local dockerfile=backend \
                     --opt filename=Dockerfile \
                     --opt "build-arg:SERVICE_NAME=${serviceName}" \
-                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-${serviceName}:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-${serviceName}:latest",push=true,registry.insecure=true'
+                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-${serviceName}:${env.IMAGE_TAG},${env.REGISTRY_PUSH_HOST}/burrito-${serviceName}:latest",push=true,registry.insecure=true'
                 """
               }
             }
@@ -256,7 +269,7 @@ pipeline {
                     --local context=backend/apps/intelligence-fn-rs \
                     --local dockerfile=backend/apps/intelligence-fn-rs \
                     --opt filename=Dockerfile \
-                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-intelligence-fn-rs:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-intelligence-fn-rs:latest",push=true,registry.insecure=true'
+                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-intelligence-fn-rs:${env.IMAGE_TAG},${env.REGISTRY_PUSH_HOST}/burrito-intelligence-fn-rs:latest",push=true,registry.insecure=true'
                 """
               }
             }
@@ -273,7 +286,7 @@ pipeline {
                     --local context=burrito-front \
                     --local dockerfile=burrito-front \
                     --opt filename=Dockerfile \
-                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-frontend:${env.BUILD_NUMBER},${env.REGISTRY_PUSH_HOST}/burrito-frontend:latest",push=true,registry.insecure=true'
+                    --output 'type=image,"name=${env.REGISTRY_PUSH_HOST}/burrito-frontend:${env.IMAGE_TAG},${env.REGISTRY_PUSH_HOST}/burrito-frontend:latest",push=true,registry.insecure=true'
                 """
               }
             }
@@ -392,8 +405,25 @@ pipeline {
                     print
                     next
                   }
+                  in_target == 1 && ($1 == "-nan" || $1 == ".nan" || $1 == "-.nan" || $1 == "nan") {
+                    print sprintf("    newTag: \"%s\"", image_tag)
+                    in_target = 0
+                    updated = 1
+                    next
+                  }
+                  in_target == 1 && $1 == "-" && $2 == "name:" {
+                    print sprintf("    newTag: \"%s\"", image_tag)
+                    in_target = 0
+                    updated = 1
+                    print
+                    next
+                  }
                   { print }
                   END {
+                    if (in_target == 1 && updated == 0) {
+                      print sprintf("    newTag: \"%s\"", image_tag)
+                      updated = 1
+                    }
                     if (updated == 0) {
                       exit 42
                     }
@@ -411,15 +441,15 @@ pipeline {
               }
 
               for svc in ${BUILD_SERVICES}; do
-                update_tag "burrito-${svc}" "${BUILD_NUMBER}"
+                update_tag "burrito-${svc}" "${IMAGE_TAG}"
               done
 
               if [ "${BUILD_INTELLIGENCE_FN}" = "true" ]; then
-                update_tag "burrito-intelligence-fn-rs" "${BUILD_NUMBER}"
+                update_tag "burrito-intelligence-fn-rs" "${IMAGE_TAG}"
               fi
 
               if [ "${BUILD_FRONTEND}" = "true" ]; then
-                update_tag "registry.burrito.deway.fr/burrito-frontend" "${BUILD_NUMBER}"
+                update_tag "registry.burrito.deway.fr/burrito-frontend" "${IMAGE_TAG}"
               fi
 
               ensure_only_allowed_changes() {
@@ -449,7 +479,7 @@ pipeline {
               if ! git diff --cached --quiet; then
                 git config user.name "jenkins-gitops[bot]"
                 git config user.email "jenkins-gitops[bot]@users.noreply.github.com"
-                git commit -m "ci: promote gitops images to ${BUILD_NUMBER} [skip ci]"
+                git commit -m "ci: promote gitops images to ${IMAGE_TAG} [skip ci]"
               fi
 
               if git show-ref --verify --quiet "refs/remotes/origin/${TARGET_BRANCH}"; then
@@ -578,7 +608,7 @@ NODE
             def updateImage = { String deployment, String image ->
               sh """
                 kubectl set image deployment/${deployment} \
-                  ${deployment}=${env.REGISTRY_HOST}/${image}:${env.BUILD_NUMBER} \
+                  ${deployment}=${env.REGISTRY_HOST}/${image}:${env.IMAGE_TAG} \
                   -n "\$K8S_NAMESPACE"
               """
             }
@@ -597,7 +627,7 @@ NODE
                 kubectl patch kservice/${serviceName} \
                   -n "\$K8S_NAMESPACE" \
                   --type=merge \
-                  -p '{"spec":{"template":{"metadata":{"annotations":{"burrito/build-number":"${env.BUILD_NUMBER}"}},"spec":{"containers":[{"image":"${env.REGISTRY_HOST}/${image}:${env.BUILD_NUMBER}"}]}}}}'
+                  -p '{"spec":{"template":{"metadata":{"annotations":{"burrito/build-number":"${env.IMAGE_TAG}"}},"spec":{"containers":[{"image":"${env.REGISTRY_HOST}/${image}:${env.IMAGE_TAG}"}]}}}}'
               """
             }
             def rolloutKnative = { String serviceName ->
