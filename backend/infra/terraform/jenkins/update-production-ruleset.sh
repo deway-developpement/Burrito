@@ -42,9 +42,13 @@ gh api \
     { "type": "deletion" },
     { "type": "non_fast_forward" },
     {
-      "type": "update",
+      "type": "pull_request",
       "parameters": {
-        "update_allows_fetch_and_merge": false
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_approving_review_count": 0,
+        "required_review_thread_resolution": false
       }
     }
   ]
