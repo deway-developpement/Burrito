@@ -1,6 +1,8 @@
 import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
 import Redis from 'ioredis';
+import { context, propagation, SpanKind, trace } from '@opentelemetry/api';
 import type {
+  IntelligenceObservabilityMetadata,
   IntelligenceRequestEvent,
   StreamMessage,
 } from './intelligence-stream.types';
@@ -26,6 +28,8 @@ export class IntelligenceStreamClient implements OnModuleDestroy {
 
   private readonly consumerGroup =
     process.env.ANALYTICS_INTELLIGENCE_CONSUMER_GROUP || 'analytics-ms';
+  private readonly producerService =
+    process.env.OTEL_SERVICE_NAME || 'analytics-ms';
 
   constructor() {
     const options = {
@@ -46,31 +50,79 @@ export class IntelligenceStreamClient implements OnModuleDestroy {
   }
 
   async publishRequest(payload: IntelligenceRequestEvent): Promise<string> {
-    await this.ensureConnected();
-    const messageId = await this.redis.xadd(
-      this.requestStream,
-      '*',
-      'payload',
-      JSON.stringify(payload),
-    );
-    if (!messageId) {
-      throw new Error('Redis did not return a message id for request stream');
-    }
-    return messageId;
+    return trace
+      .getTracer('analytics-ms.intelligence-stream')
+      .startActiveSpan(
+        'redis.stream.publish.request',
+        {
+          kind: SpanKind.PRODUCER,
+          attributes: {
+            'messaging.system': 'redis',
+            'messaging.destination': this.requestStream,
+            'db.system': 'redis',
+            'db.operation': 'xadd',
+          },
+        },
+        async (span) => {
+          try {
+            await this.ensureConnected();
+            const metadata = this.buildObservabilityMetadata();
+            const messageId = await this.redis.xadd(
+              this.requestStream,
+              ...this.buildXAddArgs(payload, metadata),
+            );
+            if (!messageId) {
+              throw new Error(
+                'Redis did not return a message id for request stream',
+              );
+            }
+            return messageId;
+          } catch (error) {
+            span.recordException(error as Error);
+            span.setStatus({ code: 2, message: String(error) });
+            throw error;
+          } finally {
+            span.end();
+          }
+        },
+      );
   }
 
   async publishDlq(payload: Record<string, unknown>): Promise<string> {
-    await this.ensureConnected();
-    const messageId = await this.redis.xadd(
-      this.dlqStream,
-      '*',
-      'payload',
-      JSON.stringify(payload),
-    );
-    if (!messageId) {
-      throw new Error('Redis did not return a message id for DLQ stream');
-    }
-    return messageId;
+    return trace
+      .getTracer('analytics-ms.intelligence-stream')
+      .startActiveSpan(
+        'redis.stream.publish.dlq',
+        {
+          kind: SpanKind.PRODUCER,
+          attributes: {
+            'messaging.system': 'redis',
+            'messaging.destination': this.dlqStream,
+            'db.system': 'redis',
+            'db.operation': 'xadd',
+          },
+        },
+        async (span) => {
+          try {
+            await this.ensureConnected();
+            const metadata = this.buildObservabilityMetadata();
+            const messageId = await this.redis.xadd(
+              this.dlqStream,
+              ...this.buildXAddArgs(payload, metadata),
+            );
+            if (!messageId) {
+              throw new Error('Redis did not return a message id for DLQ stream');
+            }
+            return messageId;
+          } catch (error) {
+            span.recordException(error as Error);
+            span.setStatus({ code: 2, message: String(error) });
+            throw error;
+          } finally {
+            span.end();
+          }
+        },
+      );
   }
 
   async ensureResultConsumerGroup(): Promise<void> {
@@ -129,8 +181,9 @@ export class IntelligenceStreamClient implements OnModuleDestroy {
     const messages: StreamMessage[] = [];
     for (const [id, fields] of entries) {
       const payload = this.extractField(fields, 'payload');
+      const metadata = this.extractObservabilityMetadata(fields);
       if (typeof payload === 'string') {
-        messages.push({ id, payload });
+        messages.push({ id, payload, metadata });
         continue;
       }
       this.logger.warn(
@@ -161,6 +214,48 @@ export class IntelligenceStreamClient implements OnModuleDestroy {
     return this.dlqStream;
   }
 
+  private buildObservabilityMetadata(): IntelligenceObservabilityMetadata {
+    const carrier: Record<string, string> = {};
+    propagation.inject(context.active(), carrier);
+    if (!carrier.traceparent) {
+      throw new Error('Could not inject traceparent from active context');
+    }
+
+    return {
+      traceparent: carrier.traceparent,
+      tracestate: carrier.tracestate,
+      baggage: carrier.baggage,
+      producer_service: this.producerService,
+      produced_at: new Date().toISOString(),
+    };
+  }
+
+  private buildXAddArgs(
+    payload: unknown,
+    metadata: IntelligenceObservabilityMetadata,
+  ): string[] {
+    const args = [
+      '*',
+      'payload',
+      JSON.stringify(payload),
+      'traceparent',
+      metadata.traceparent,
+      'producer_service',
+      metadata.producer_service,
+      'produced_at',
+      metadata.produced_at,
+    ];
+
+    if (metadata.tracestate) {
+      args.push('tracestate', metadata.tracestate);
+    }
+    if (metadata.baggage) {
+      args.push('baggage', metadata.baggage);
+    }
+
+    return args;
+  }
+
   private extractField(fields: string[], name: string): string | undefined {
     for (let index = 0; index < fields.length; index += 2) {
       if (fields[index] === name) {
@@ -168,6 +263,24 @@ export class IntelligenceStreamClient implements OnModuleDestroy {
       }
     }
     return undefined;
+  }
+
+  private extractObservabilityMetadata(
+    fields: string[],
+  ): Partial<IntelligenceObservabilityMetadata> | undefined {
+    const traceparent = this.extractField(fields, 'traceparent');
+    const producerService = this.extractField(fields, 'producer_service');
+    const producedAt = this.extractField(fields, 'produced_at');
+    if (!traceparent && !producerService && !producedAt) {
+      return undefined;
+    }
+    return {
+      traceparent: traceparent || '',
+      tracestate: this.extractField(fields, 'tracestate'),
+      baggage: this.extractField(fields, 'baggage'),
+      producer_service: producerService || 'unknown',
+      produced_at: producedAt || new Date().toISOString(),
+    };
   }
 
   private async ensureConnected(client: Redis = this.redis): Promise<void> {

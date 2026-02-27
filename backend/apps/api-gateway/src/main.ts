@@ -1,7 +1,12 @@
+import './telemetry.bootstrap';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { ApiGatewayModule } from './api-gateway.module';
 import { Logger } from 'nestjs-pino';
+import {
+  buildRedisTransportOptions,
+} from '@app/common';
+
 
 async function bootstrap() {
   const app = await NestFactory.create(ApiGatewayModule, { bufferLogs: true });
@@ -39,12 +44,7 @@ async function bootstrap() {
   app.useLogger(app.get(Logger));
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.REDIS,
-    options: {
-      port: parseInt(process.env.REDIS_PORT || '6379'),
-      host: process.env.REDIS_HOST || 'localhost',
-      retryAttempts: parseInt(process.env.REDIS_RETRY_ATTEMPTS || '1000000'),
-      retryDelay: parseInt(process.env.REDIS_RETRY_DELAY_MS || '1000'),
-    },
+    options: buildRedisTransportOptions(),
   });
   await app.startAllMicroservices();
   await app.listen(process.env.port ?? 3000);

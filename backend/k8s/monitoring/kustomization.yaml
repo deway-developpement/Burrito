@@ -32,9 +32,13 @@ configMapGenerator:
 resources:
   - service-monitor-api-gateway.yaml
   - service-monitor-knative-serving.yaml
+  - service-monitor-otel-collector.yaml
   - pod-monitor-knative-queue-proxy.yaml
   - pod-monitor-evaluation-istio-proxy.yaml
   - prometheus-rule-api-gateway.yaml
   - loki.yaml
+  - tempo.yaml
+  - otel-collector.yaml
   - promtail.yaml
   - loki-datasource.yaml
+  - tempo-datasource.yaml

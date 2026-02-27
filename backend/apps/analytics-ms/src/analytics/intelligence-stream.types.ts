@@ -10,6 +10,19 @@ export type IntelligenceRequestEvent = {
   createdAt: string;
 };
 
+export type IntelligenceObservabilityMetadata = {
+  traceparent: string;
+  tracestate?: string;
+  baggage?: string;
+  producer_service: string;
+  produced_at: string;
+};
+
+export type IntelligenceStreamEnvelope<TPayload> =
+  IntelligenceObservabilityMetadata & {
+    payload: TPayload;
+  };
+
 export type IntelligenceResultEvent = {
   jobId: string;
   formId: string;
@@ -32,4 +45,5 @@ export type IntelligenceResultEvent = {
 export type StreamMessage = {
   id: string;
   payload: string;
+  metadata?: Partial<IntelligenceObservabilityMetadata>;
 };

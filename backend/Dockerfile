@@ -8,9 +8,11 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends build-essential python3 git && \
     rm -rf /var/lib/apt/lists/*
 
-# Install dependencies (use package-lock.json if present for reproducible builds)
+# Install dependencies.
+# We use legacy-peer-deps because the current dependency graph includes peer
+# conflicts that otherwise break deterministic image builds with npm ci.
 COPY ./package*.json ./
-RUN npm ci --ignore-scripts --force
+RUN npm install --ignore-scripts --legacy-peer-deps --force
 
 ARG SERVICE_NAME
 

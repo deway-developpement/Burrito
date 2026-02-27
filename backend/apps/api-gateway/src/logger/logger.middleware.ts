@@ -5,6 +5,7 @@ import { InjectMetric } from '@willsoto/nestjs-prometheus';
 import { Counter } from 'prom-client';
 import { Request, Response, NextFunction } from 'express';
 import { InjectPinoLogger, PinoLogger } from 'nestjs-pino';
+import { getActiveTraceLogFields } from '@app/common';
 
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
@@ -30,6 +31,7 @@ export class LoggerMiddleware implements NestMiddleware {
         route: req.route?.path ?? req.originalUrl,
         status: res.statusCode,
         durationMs: Date.now() - start,
+        ...getActiveTraceLogFields(),
       };
 
       if (res.statusCode >= 500) {
