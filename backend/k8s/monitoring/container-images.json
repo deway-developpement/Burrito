@@ -148,14 +148,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "count by (label_app, container, image, image_version, image_id) ( label_replace( max by (label_app, pod, container, image, image_id) ( ((kube_pod_container_info{namespace=\"$namespace\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ), \"image_version\", \"$1\", \"image\", \"^.+:([^:@]+)$\" ) )",
+          "expr": "count by (container, image, image_version) ( label_replace( max by (pod, container, image) ( ((kube_pod_container_info{namespace=\"$namespace\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ), \"image_version\", \"$1\", \"image\", \"^.+:([^:@]+)$\" ) )",
           "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Running Images (app/container/image/version/image_id)",
+      "title": "Running Images (container/image/version)",
       "type": "table"
     },
     {
@@ -212,14 +212,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "label_replace( max by (label_app, pod, container, image, image_id) ( ((kube_pod_container_info{namespace=\"$namespace\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ), \"image_version\", \"$1\", \"image\", \"^.+:([^:@]+)$\" )",
+          "expr": "label_replace( max by (pod, container, image) ( ((kube_pod_container_info{namespace=\"$namespace\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ), \"image_version\", \"$1\", \"image\", \"^.+:([^:@]+)$\" )",
           "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Running Pod Images (pod/container/image/version/image_id)",
+      "title": "Running Pod Images (pod/container/image/version)",
       "type": "table"
     }
   ],
@@ -296,6 +296,6 @@
   "timezone": "browser",
   "title": "Burrito - Container Images",
   "uid": "burrito-container-images",
-  "version": 2,
+  "version": 3,
   "weekStart": ""
 }
