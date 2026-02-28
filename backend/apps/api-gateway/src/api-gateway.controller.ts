@@ -19,4 +19,14 @@ export class ApiGatewayController {
     );
     return this.apiGatewayService.burnCpu(clamped);
   }
+
+  @Get('burn-5xx')
+  burn5xx(
+    @Query('status') statusParam?: string,
+    @Query('message') message?: string,
+  ): never {
+    const parsed = Number.parseInt(statusParam ?? '500', 10);
+    const status = Number.isFinite(parsed) ? parsed : 500;
+    return this.apiGatewayService.forceServerError(status, message);
+  }
 }
