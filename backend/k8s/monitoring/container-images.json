@@ -84,7 +84,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum( count by (label_app, container) ( count by (label_app, container, image_id) ( max by (label_app, pod, container, image_id) ( kube_pod_container_info{namespace=\"$namespace\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"} * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1) ) ) ) > bool 1 )",
+          "expr": "sum( count by (label_app, container) ( count by (label_app, container, image_spec, image_id) ( max by (label_app, pod, container, image_spec, image_id) ( ((kube_pod_container_info{namespace=\"$namespace\",container!=\"istio-proxy\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ) ) ) > bool 1 )",
           "instant": true,
           "legendFormat": "drifted",
           "range": false,
@@ -115,11 +115,30 @@
               {
                 "color": "green",
                 "value": null
+              },
+              {
+                "color": "red",
+                "value": 2
               }
             ]
           }
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Value"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background-solid"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 5,
@@ -148,14 +167,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "count by (label_app, container, image, image_id) ( max by (label_app, pod, container, image, image_id) ( kube_pod_container_info{namespace=\"$namespace\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"} * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1) ) )",
+          "expr": "(count by (container, image_spec, image_version) ( label_replace( max by (pod, container, image_spec, image_id) ( ((kube_pod_container_info{namespace=\"$namespace\",container!=\"istio-proxy\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ), \"image_version\", \"$1\", \"image_spec\", \"^.+:([^:@]+)$\" ) ) * 0) + on(container) group_left() (count by (container) (count by (container, image_spec, image_id) (max by (pod, container, image_spec, image_id) ( ((kube_pod_container_info{namespace=\"$namespace\",container!=\"istio-proxy\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ))))",
           "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Running Images (app/container/image/image_id)",
+      "title": "Running Images (container/spec/version, colored by drift count)",
       "type": "table"
     },
     {
@@ -212,14 +231,14 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "max by (label_app, pod, container, image, image_id) ( kube_pod_container_info{namespace=\"$namespace\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"} * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1) )",
+          "expr": "label_replace( max by (pod, container, image_spec) ( ((kube_pod_container_info{namespace=\"$namespace\",container!=\"istio-proxy\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ), \"image_version\", \"$1\", \"image_spec\", \"^.+:([^:@]+)$\" )",
           "format": "table",
           "instant": true,
           "range": false,
           "refId": "A"
         }
       ],
-      "title": "Running Pod Images (pod/container/image/image_id)",
+      "title": "Running Pod Images (pod/container/spec/version)",
       "type": "table"
     }
   ],
@@ -296,6 +315,6 @@
   "timezone": "browser",
   "title": "Burrito - Container Images",
   "uid": "burrito-container-images",
-  "version": 1,
+  "version": 7,
   "weekStart": ""
 }

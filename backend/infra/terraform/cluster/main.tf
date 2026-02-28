@@ -381,6 +381,11 @@ resource "helm_release" "kube_prometheus_stack" {
           }
         }
       }
+      "kube-state-metrics" = {
+        metricLabelsAllowlist = [
+          "pods=[app,app.kubernetes.io/name,app.kubernetes.io/instance]",
+        ]
+      }
     })
   ]
 

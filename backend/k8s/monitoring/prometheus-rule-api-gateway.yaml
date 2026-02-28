@@ -21,6 +21,7 @@ spec:
           labels:
             severity: warning
             team: burrito
+            namespace: monitoring
           annotations:
             summary: "[Burrito] API Gateway 5xx error rate is high"
             description: "Over the last 10 minutes, more than 5% of API Gateway requests returned HTTP 5xx responses."
@@ -31,6 +32,7 @@ spec:
           labels:
             severity: critical
             team: burrito
+            namespace: monitoring
           annotations:
             summary: "[Burrito] API Gateway scrape target is down"
             description: "Prometheus cannot scrape the API Gateway /metrics endpoint for at least 2 minutes."
@@ -46,6 +48,7 @@ spec:
           labels:
             severity: warning
             team: burrito
+            namespace: monitoring
           annotations:
             summary: "[Burrito] Inbound edge traffic to API Gateway is missing"
             description: "No measurable inbound traffic has reached api-gateway for at least 20 minutes."
@@ -64,6 +67,7 @@ spec:
           labels:
             severity: warning
             team: burrito
+            namespace: monitoring
           annotations:
             summary: "[Burrito] API Gateway latency p95 is high"
             description: "Istio p95 latency on inbound API Gateway traffic has been above 800ms for 10 minutes."
@@ -76,6 +80,7 @@ spec:
           labels:
             severity: critical
             team: burrito
+            namespace: monitoring
           annotations:
             summary: "[Burrito] OpenTelemetry Collector fails to export spans"
             description: "The collector has failed to export at least one span over the last 5 minutes."
@@ -86,6 +91,7 @@ spec:
           labels:
             severity: warning
             team: burrito
+            namespace: monitoring
           annotations:
             summary: "[Burrito] OpenTelemetry Collector is dropping spans"
             description: "At least one processor dropped spans over the last 10 minutes. Trace continuity may be degraded."
@@ -96,6 +102,7 @@ spec:
           labels:
             severity: warning
             team: burrito
+            namespace: monitoring
           annotations:
             summary: "[Burrito] OpenTelemetry Collector memory is near saturation"
             description: "Collector RSS memory has exceeded 900MB for at least 10 minutes."
@@ -113,6 +120,7 @@ spec:
           labels:
             severity: warning
             team: burrito
+            namespace: monitoring
           annotations:
             summary: "[Burrito] Trace continuity is degraded"
             description: "More than 20% of accepted spans are not being exported, which can create orphan or incomplete traces."
@@ -123,6 +131,7 @@ spec:
           labels:
             severity: warning
             team: burrito
+            namespace: monitoring
           annotations:
             summary: "[Burrito] Redis Streams consumer lag is high"
             description: "analytics-ms consumer group has more than 100 pending stream messages for at least 10 minutes."

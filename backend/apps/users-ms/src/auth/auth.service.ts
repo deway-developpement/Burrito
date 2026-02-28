@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { compare } from 'bcrypt';
@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import {
   JwtPayload,
   RefreshTokenPayload,
+  UserType,
 } from '@app/common';
 import { IUser } from '@app/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -13,6 +14,7 @@ import { Model } from 'mongoose';
 import { isValidObjectId } from 'mongoose';
 import { subtle, randomUUID } from 'crypto';
 import type { SignOptions } from 'jsonwebtoken';
+import { RpcException } from '@nestjs/microservices';
 import {
   RefreshSession,
   RefreshSessionStatus,
@@ -28,6 +30,12 @@ type RefreshTokenIssue = {
   expiresAt: Date;
 };
 
+type AccessTokenClaims = {
+  sub: string;
+  username: string;
+  authType: UserType;
+};
+
 type SessionRefreshPayload = RefreshTokenPayload;
 type AnyRefreshPayload = SessionRefreshPayload | Record<string, unknown>;
 
@@ -40,6 +48,10 @@ export class AuthService {
   private readonly revokeRetentionDays = Math.max(
     1,
     parseInt(process.env.AUTH_REFRESH_REVOKED_RETENTION_DAYS || '30', 10),
+  );
+  private readonly refreshRotationIdempotencyWindowMs = Math.max(
+    0,
+    Number.parseInt(process.env.AUTH_REFRESH_IDEMPOTENCY_WINDOW_MS || '1000', 10),
   );
 
   constructor(
@@ -65,12 +77,12 @@ export class AuthService {
 
   async login(payload: JwtPayload): Promise<AuthTokens> {
     if (!isValidObjectId(payload.sub)) {
-      throw new UnauthorizedException();
+      this.throwUnauthorized();
     }
 
     const user = await this.usersService.findById(payload.sub);
     if (!user) {
-      throw new UnauthorizedException();
+      this.throwUnauthorized();
     }
 
     return this.issueNewSessionTokens(user);
@@ -79,20 +91,20 @@ export class AuthService {
   async refresh(refreshToken: string): Promise<AuthTokens> {
     const decoded = this.verifyRefreshToken(refreshToken);
     if (!isValidObjectId(decoded.sub)) {
-      throw new UnauthorizedException();
+      this.throwUnauthorized();
     }
 
     if (this.isSessionRefreshTokenPayload(decoded)) {
       return this.refreshSessionToken(decoded);
     }
 
-    throw new UnauthorizedException();
+    this.throwUnauthorized();
   }
 
   async logout(refreshToken: string): Promise<{ success: boolean }> {
     const decoded = this.verifyRefreshToken(refreshToken);
     if (!isValidObjectId(decoded.sub)) {
-      throw new UnauthorizedException();
+      this.throwUnauthorized();
     }
 
     if (this.isSessionRefreshTokenPayload(decoded)) {
@@ -100,12 +112,12 @@ export class AuthService {
       return { success: true };
     }
 
-    throw new UnauthorizedException();
+    this.throwUnauthorized();
   }
 
   async logoutAllSessions(userId: string): Promise<{ success: boolean }> {
     if (!isValidObjectId(userId)) {
-      throw new UnauthorizedException();
+      this.throwUnauthorized();
     }
 
     const now = new Date();
@@ -171,6 +183,9 @@ export class AuthService {
         {
           $set: {
             currentJti: nextJti,
+            currentRefreshToken: nextRefresh.token,
+            previousJti: decoded.jti,
+            previousRotatedAt: now,
             lastUsedAt: now,
             lastRotatedAt: now,
             expiresAt: nextRefresh.expiresAt,
@@ -186,17 +201,16 @@ export class AuthService {
       .exec();
 
     if (!rotated) {
-      await this.handleFailedSessionRefresh(decoded, now);
-      throw new UnauthorizedException();
+      const idempotentResult = await this.handleFailedSessionRefresh(decoded, now);
+      if (idempotentResult) {
+        return idempotentResult;
+      }
+      this.throwUnauthorized();
     }
 
-    const user = await this.usersService.findById(decoded.sub);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-
+    const access_token = await this.signAccessTokenFromSession(decoded.sub, rotated);
     return {
-      access_token: this.signAccessToken(user),
+      access_token,
       refresh_token: nextRefresh.token,
     };
   }
@@ -204,14 +218,24 @@ export class AuthService {
   private async handleFailedSessionRefresh(
     decoded: SessionRefreshPayload,
     now: Date,
-  ): Promise<void> {
+  ): Promise<AuthTokens | null> {
     const session = await this.refreshSessionModel
       .findOne({ sessionId: decoded.sid, familyId: decoded.fid })
       .lean<RefreshSession>()
       .exec();
 
     if (!session) {
-      return;
+      return null;
+    }
+
+    if (
+      this.isIdempotentRotationReplay(session, decoded.jti, now) &&
+      session.currentRefreshToken
+    ) {
+      return {
+        access_token: await this.signAccessTokenFromSession(decoded.sub, session),
+        refresh_token: session.currentRefreshToken,
+      };
     }
 
     if (
@@ -220,6 +244,8 @@ export class AuthService {
     ) {
       await this.revokeFamily(decoded.fid, 'REUSE_DETECTED', now, true);
     }
+
+    return null;
   }
 
   private async issueNewSessionTokens(user: IUser): Promise<AuthTokens> {
@@ -240,6 +266,11 @@ export class AuthService {
       sessionId: sid,
       familyId: fid,
       currentJti: jti,
+      currentRefreshToken: refresh.token,
+      previousJti: null,
+      previousRotatedAt: null,
+      userEmail: user.email,
+      userType: user.userType,
       status: RefreshSessionStatus.ACTIVE,
       issuedAt: now,
       lastUsedAt: now,
@@ -331,11 +362,42 @@ export class AuthService {
   }
 
   private signAccessToken(user: Pick<IUser, 'id' | 'email' | 'userType'>): string {
-    return this.jwtService.sign({
+    return this.signAccessTokenClaims({
       username: user.email,
       sub: user.id,
       authType: user.userType,
     });
+  }
+
+  private signAccessTokenClaims(payload: AccessTokenClaims): string {
+    return this.jwtService.sign({
+      username: payload.username,
+      sub: payload.sub,
+      authType: payload.authType,
+    });
+  }
+
+  private async signAccessTokenFromSession(
+    userId: string,
+    session: Pick<RefreshSession, 'userEmail' | 'userType'>,
+  ): Promise<string> {
+    if (
+      typeof session.userEmail === 'string' &&
+      session.userEmail &&
+      this.isKnownUserType(session.userType)
+    ) {
+      return this.signAccessTokenClaims({
+        username: session.userEmail,
+        sub: userId,
+        authType: session.userType,
+      });
+    }
+
+    const user = await this.usersService.findById(userId);
+    if (!user) {
+      this.throwUnauthorized();
+    }
+    return this.signAccessToken(user);
   }
 
   private signRefreshToken(payload: SessionRefreshPayload): RefreshTokenIssue {
@@ -361,7 +423,7 @@ export class AuthService {
     try {
       return this.jwtService.verify(refreshToken) as AnyRefreshPayload;
     } catch {
-      throw new UnauthorizedException();
+      this.throwUnauthorized();
     }
   }
 
@@ -382,5 +444,40 @@ export class AuthService {
     return new Date(
       base.getTime() + this.revokeRetentionDays * 24 * 60 * 60 * 1000,
     );
+  }
+
+  private isIdempotentRotationReplay(
+    session: Pick<
+      RefreshSession,
+      'status' | 'previousJti' | 'previousRotatedAt'
+    >,
+    jti: string,
+    now: Date,
+  ): boolean {
+    if (session.status !== RefreshSessionStatus.ACTIVE) {
+      return false;
+    }
+    if (!session.previousJti || session.previousJti !== jti) {
+      return false;
+    }
+    if (!session.previousRotatedAt) {
+      return false;
+    }
+    return (
+      now.getTime() - new Date(session.previousRotatedAt).getTime() <=
+      this.refreshRotationIdempotencyWindowMs
+    );
+  }
+
+  private isKnownUserType(value: unknown): value is UserType {
+    return (
+      value === UserType.ADMIN ||
+      value === UserType.TEACHER ||
+      value === UserType.STUDENT
+    );
+  }
+
+  private throwUnauthorized(): never {
+    throw new RpcException({ status: 401, message: 'Unauthorized' });
   }
 }
