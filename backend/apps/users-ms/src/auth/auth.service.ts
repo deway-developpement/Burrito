@@ -5,7 +5,6 @@ import { compare } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import {
   JwtPayload,
-  LegacyRefreshTokenPayload,
   RefreshTokenPayload,
 } from '@app/common';
 import { IUser } from '@app/common';
@@ -30,10 +29,7 @@ type RefreshTokenIssue = {
 };
 
 type SessionRefreshPayload = RefreshTokenPayload;
-type AnyRefreshPayload =
-  | SessionRefreshPayload
-  | LegacyRefreshTokenPayload
-  | Record<string, unknown>;
+type AnyRefreshPayload = SessionRefreshPayload | Record<string, unknown>;
 
 @Injectable()
 export class AuthService {
@@ -45,12 +41,6 @@ export class AuthService {
     1,
     parseInt(process.env.AUTH_REFRESH_REVOKED_RETENTION_DAYS || '30', 10),
   );
-  private readonly legacyCompatEnabled =
-    (process.env.AUTH_REFRESH_LEGACY_ENABLED || 'true').toLowerCase() ===
-    'true';
-  private readonly legacyCompatUntil = process.env.AUTH_REFRESH_LEGACY_UNTIL
-    ? new Date(process.env.AUTH_REFRESH_LEGACY_UNTIL)
-    : null;
 
   constructor(
     private usersService: UserService,
@@ -83,9 +73,6 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    // Clear legacy token storage when issuing new-style session refresh tokens.
-    await this.usersService.updateOne(user.id, { refresh_token: null });
-
     return this.issueNewSessionTokens(user);
   }
 
@@ -99,11 +86,7 @@ export class AuthService {
       return this.refreshSessionToken(decoded);
     }
 
-    if (!this.isLegacyCompatActive() || !this.isLegacyRefreshTokenPayload(decoded)) {
-      throw new UnauthorizedException();
-    }
-
-    return this.refreshLegacyToken(refreshToken, decoded.sub);
+    throw new UnauthorizedException();
   }
 
   async logout(refreshToken: string): Promise<{ success: boolean }> {
@@ -117,17 +100,7 @@ export class AuthService {
       return { success: true };
     }
 
-    if (!this.isLegacyCompatActive() || !this.isLegacyRefreshTokenPayload(decoded)) {
-      throw new UnauthorizedException();
-    }
-
-    const user = await this.usersService.findById(decoded.sub);
-    if (!user || user.refresh_token !== refreshToken) {
-      throw new UnauthorizedException();
-    }
-
-    await this.usersService.updateOne(user.id, { refresh_token: null });
-    return { success: true };
+    throw new UnauthorizedException();
   }
 
   async logoutAllSessions(userId: string): Promise<{ success: boolean }> {
@@ -148,8 +121,6 @@ export class AuthService {
         },
       },
     );
-
-    await this.usersService.updateOne(userId, { refresh_token: null });
     return { success: true };
   }
 
@@ -249,19 +220,6 @@ export class AuthService {
     ) {
       await this.revokeFamily(decoded.fid, 'REUSE_DETECTED', now, true);
     }
-  }
-
-  private async refreshLegacyToken(
-    refreshToken: string,
-    userId: string,
-  ): Promise<AuthTokens> {
-    const user = await this.usersService.findById(userId);
-    if (!user || !user.refresh_token || user.refresh_token !== refreshToken) {
-      throw new UnauthorizedException();
-    }
-
-    await this.usersService.updateOne(user.id, { refresh_token: null });
-    return this.issueNewSessionTokens(user);
   }
 
   private async issueNewSessionTokens(user: IUser): Promise<AuthTokens> {
@@ -420,35 +378,9 @@ export class AuthService {
     );
   }
 
-  private isLegacyRefreshTokenPayload(
-    payload: AnyRefreshPayload,
-  ): payload is LegacyRefreshTokenPayload {
-    const candidate = payload as LegacyRefreshTokenPayload &
-      Record<string, unknown>;
-    return (
-      typeof candidate?.sub === 'string' &&
-      typeof candidate?.['sid'] === 'undefined' &&
-      typeof candidate?.['fid'] === 'undefined' &&
-      typeof candidate?.['jti'] === 'undefined'
-    );
-  }
-
   private computeDeleteAt(base: Date): Date {
     return new Date(
       base.getTime() + this.revokeRetentionDays * 24 * 60 * 60 * 1000,
     );
-  }
-
-  private isLegacyCompatActive(): boolean {
-    if (!this.legacyCompatEnabled) {
-      return false;
-    }
-    if (!this.legacyCompatUntil) {
-      return true;
-    }
-    if (Number.isNaN(this.legacyCompatUntil.getTime())) {
-      return true;
-    }
-    return Date.now() <= this.legacyCompatUntil.getTime();
   }
 }

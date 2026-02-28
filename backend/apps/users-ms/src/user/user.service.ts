@@ -39,7 +39,6 @@ export class UserService extends MongooseQueryService<User> {
     const { token, tokenHash, expiresAt } = this.createVerificationToken();
     const createUserEntity = {
       ...createUserInput,
-      refresh_token: null,
       emailVerified: false,
       emailVerificationTokenHash: tokenHash,
       emailVerificationExpiresAt: expiresAt,
