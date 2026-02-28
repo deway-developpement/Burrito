@@ -952,6 +952,9 @@ spec:
       - name: team
         value: burrito
         matchType: "="
+      - name: alertname
+        value: BurritoApiGatewayHigh5xxErrorRate
+        matchType: "="
   receivers:
     - name: team-burrito-email
       emailConfigs:
