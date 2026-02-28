@@ -84,7 +84,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "sum( count by (label_app, container) ( count by (label_app, container, image_id) ( max by (label_app, pod, container, image_id) ( ((kube_pod_container_info{namespace=\"$namespace\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ) ) ) > bool 1 )",
+          "expr": "sum( count by (label_app, container) ( count by (label_app, container, image_id) ( max by (label_app, pod, container, image_id) ( ((kube_pod_container_info{namespace=\"$namespace\",container!=\"istio-proxy\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ) ) ) > bool 1 )",
           "instant": true,
           "legendFormat": "drifted",
           "range": false,
@@ -148,7 +148,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "count by (container, image, image_version) ( label_replace( max by (pod, container, image) ( ((kube_pod_container_info{namespace=\"$namespace\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ), \"image_version\", \"$1\", \"image\", \"^.+:([^:@]+)$\" ) )",
+          "expr": "count by (container, image, image_version) ( label_replace( max by (pod, container, image) ( ((kube_pod_container_info{namespace=\"$namespace\",container!=\"istio-proxy\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ), \"image_version\", \"$1\", \"image\", \"^.+:([^:@]+)$\" ) )",
           "format": "table",
           "instant": true,
           "range": false,
@@ -212,7 +212,7 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "label_replace( max by (pod, container, image) ( ((kube_pod_container_info{namespace=\"$namespace\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ), \"image_version\", \"$1\", \"image\", \"^.+:([^:@]+)$\" )",
+          "expr": "label_replace( max by (pod, container, image) ( ((kube_pod_container_info{namespace=\"$namespace\",container!=\"istio-proxy\"} * on(namespace,pod) group_left(label_app) kube_pod_labels{namespace=\"$namespace\",label_app=~\"$app\"}) * on(namespace,pod,container) group_left() (kube_pod_container_status_running{namespace=\"$namespace\"} == 1)) ), \"image_version\", \"$1\", \"image\", \"^.+:([^:@]+)$\" )",
           "format": "table",
           "instant": true,
           "range": false,
@@ -296,6 +296,6 @@
   "timezone": "browser",
   "title": "Burrito - Container Images",
   "uid": "burrito-container-images",
-  "version": 3,
+  "version": 4,
   "weekStart": ""
 }
