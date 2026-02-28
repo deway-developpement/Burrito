@@ -21,9 +21,3 @@ export interface RefreshTokenPayload {
   iat?: number;
   exp?: number;
 }
-
-export interface LegacyRefreshTokenPayload {
-  sub: string;
-  iat?: number;
-  exp?: number;
-}
