@@ -1,5 +1,6 @@
 import { GatewayTimeoutException, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { createRpcClient } from '@app/common';
 import {
   AggregateQuery,
   AggregateResponse,
@@ -27,10 +28,14 @@ import { UpdateGroupInput } from './dto/update-group.input';
 @Injectable()
 @QueryService(GroupDto)
 export class GroupService {
+  private readonly groupsClient: ClientProxy;
+
   constructor(
     @Inject('GROUPS_SERVICE')
-    private readonly groupsClient: ClientProxy,
-  ) {}
+    groupsClient: ClientProxy,
+  ) {
+    this.groupsClient = createRpcClient(groupsClient);
+  }
 
   async query(query: Query<GroupDto>): Promise<GroupDto[]> {
     return this.sendWithTimeout(

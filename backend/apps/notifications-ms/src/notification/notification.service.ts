@@ -22,7 +22,7 @@ import Handlebars from 'handlebars';
 import path from 'path';
 import fs from 'fs/promises';
 import { createHash } from 'crypto';
-import { UserType } from '@app/common';
+import { UserType, createRpcClient } from '@app/common';
 import type {
   IGroupForm,
   IMembership,
@@ -78,6 +78,10 @@ type NotificationJobData = {
 @Injectable()
 export class NotificationService implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new Logger(NotificationService.name);
+  private readonly userClient: ClientProxy;
+  private readonly groupsClient: ClientProxy;
+  private readonly formClient: ClientProxy;
+  private readonly evaluationClient: ClientProxy;
   private htmlTemplate?: Handlebars.TemplateDelegate<TemplateContext>;
   private textTemplate?: Handlebars.TemplateDelegate<TemplateContext>;
   private transporter?: nodemailer.Transporter;
@@ -112,13 +116,17 @@ export class NotificationService implements OnModuleInit, OnModuleDestroy {
   constructor(
     @InjectModel(Notification.name)
     private readonly notificationModel: Model<Notification>,
-    @Inject('USER_SERVICE') private readonly userClient: ClientProxy,
-    @Inject('GROUPS_SERVICE') private readonly groupsClient: ClientProxy,
-    @Inject('FORM_SERVICE') private readonly formClient: ClientProxy,
+    @Inject('USER_SERVICE') userClient: ClientProxy,
+    @Inject('GROUPS_SERVICE') groupsClient: ClientProxy,
+    @Inject('FORM_SERVICE') formClient: ClientProxy,
     @Inject('EVALUATION_SERVICE')
-    private readonly evaluationClient: ClientProxy,
+    evaluationClient: ClientProxy,
   ) {
     this.allowedCtaOrigins = this.resolveAllowedCtaOrigins();
+    this.userClient = createRpcClient(userClient);
+    this.groupsClient = createRpcClient(groupsClient);
+    this.formClient = createRpcClient(formClient);
+    this.evaluationClient = createRpcClient(evaluationClient);
   }
 
   async onModuleInit(): Promise<void> {

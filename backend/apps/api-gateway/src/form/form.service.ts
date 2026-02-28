@@ -28,16 +28,20 @@ import {
 import { FormDto } from './dto/form.dto';
 import { CreateFormInput } from './dto/create-form.input';
 import { UpdateFormInput } from './dto/update-form.input';
-import { FormStatus, UserType } from '@app/common';
+import { FormStatus, UserType, createRpcClient } from '@app/common';
 import { UserService } from '../user/user.service';
 
 @Injectable()
 @QueryService<FormDto>(FormDto)
 export class FormService {
+  private readonly formClient: ClientProxy;
+
   constructor(
-    @Inject('FORM_SERVICE') private readonly formClient: ClientProxy,
+    @Inject('FORM_SERVICE') formClient: ClientProxy,
     private readonly userService: UserService,
-  ) {}
+  ) {
+    this.formClient = createRpcClient(formClient);
+  }
 
   // === READ APIs ===
 

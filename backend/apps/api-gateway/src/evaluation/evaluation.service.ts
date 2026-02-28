@@ -1,6 +1,7 @@
 import { GatewayTimeoutException, Inject, Injectable } from '@nestjs/common';
 import { MICROSERVICE_TIMEOUT_MS } from '../constants';
 import { ClientProxy } from '@nestjs/microservices';
+import { createRpcClient } from '@app/common';
 import {
   AggregateQuery,
   AggregateResponse,
@@ -26,10 +27,14 @@ import { UpdateEvaluationInput } from './dto/update-evaluation.input';
 @Injectable()
 @QueryService(EvaluationDto)
 export class EvaluationService {
+  private readonly evaluationClient: ClientProxy;
+
   constructor(
     @Inject('EVALUATION_SERVICE')
-    private readonly evaluationClient: ClientProxy,
-  ) {}
+    evaluationClient: ClientProxy,
+  ) {
+    this.evaluationClient = createRpcClient(evaluationClient);
+  }
 
   // === READ APIs ===
 

@@ -27,15 +27,19 @@ import {
   timeout,
 } from 'rxjs';
 import { UserDto } from './dto/user.dto';
-import { IUser } from '@app/common';
+import { IUser, createRpcClient } from '@app/common';
 
 @Injectable()
 @QueryService<UserDto>(UserDto)
 export class UserService {
+  private readonly userClient: ClientProxy;
+
   constructor(
     @Inject('USER_SERVICE') // must match ClientsModule.register({ name: 'USER_SERVICE', ... })
-    private readonly userClient: ClientProxy,
-  ) {}
+    userClient: ClientProxy,
+  ) {
+    this.userClient = createRpcClient(userClient);
+  }
 
   /**
    * Called by CRUDResolver for list queries with filters, paging, sorting...

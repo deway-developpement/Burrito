@@ -8,14 +8,19 @@ import {
   timeout,
 } from 'rxjs';
 import { MICROSERVICE_TIMEOUT_MS } from '../constants';
+import { createRpcClient } from '@app/common';
 import type { IMembership } from '@app/common';
 
 @Injectable()
 export class MembershipService {
+  private readonly groupsClient: ClientProxy;
+
   constructor(
     @Inject('GROUPS_SERVICE')
-    private readonly groupsClient: ClientProxy,
-  ) {}
+    groupsClient: ClientProxy,
+  ) {
+    this.groupsClient = createRpcClient(groupsClient);
+  }
 
   async listByGroup(groupId: string): Promise<IMembership[]> {
     return this.sendWithTimeout(

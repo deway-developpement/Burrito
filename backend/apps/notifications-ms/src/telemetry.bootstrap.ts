@@ -1,4 +1,3 @@
-import { initOpenTelemetry, setupRedisRpcTracingBridge } from '@app/common';
+import { initOpenTelemetry } from '@app/common';
 
 initOpenTelemetry('notifications-ms');
-setupRedisRpcTracingBridge('notifications-ms');

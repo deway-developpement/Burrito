@@ -15,7 +15,7 @@ import {
   UpdateOneOptions,
 } from '@nestjs-query/core';
 import { genSalt, hash } from 'bcrypt';
-import { ICreateUser } from '@app/common';
+import { ICreateUser, createRpcClient } from '@app/common';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { createHash, randomBytes } from 'crypto';
 import type { EmailVerificationEvent, WelcomeEmailEvent } from './user.events';
@@ -24,13 +24,15 @@ import type { EmailVerificationEvent, WelcomeEmailEvent } from './user.events';
 @QueryService(User)
 export class UserService extends MongooseQueryService<User> {
   private readonly logger = new Logger(UserService.name);
+  private readonly notificationsClient: ClientProxy;
 
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
     @Inject('NOTIFICATIONS_EVENTS')
-    private readonly notificationsClient: ClientProxy,
+    notificationsClient: ClientProxy,
   ) {
     super(userModel);
+    this.notificationsClient = createRpcClient(notificationsClient);
   }
 
   async create(createUserInput: ICreateUser): Promise<User> {

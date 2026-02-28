@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { firstValueFrom } from 'rxjs';
 import { createHash, randomUUID } from 'crypto';
+import { createRpcClient } from '@app/common';
 import {
   AnalyticsSnapshot,
   NpsBuckets,
@@ -113,6 +114,9 @@ const ANALYTICS_TEXT_ANALYSIS_STATUS_CHANGED_EVENT =
 @Injectable()
 export class AnalyticsService {
   private readonly logger = new Logger(AnalyticsService.name);
+  private readonly formClient: ClientProxy;
+  private readonly evaluationClient: ClientProxy;
+  private readonly analyticsEventsClient: ClientProxy;
   private readonly pageSize = Math.max(
     1,
     parseInt(process.env.ANALYTICS_PAGE_SIZE || '1000'),
@@ -142,13 +146,17 @@ export class AnalyticsService {
   constructor(
     @InjectModel(AnalyticsSnapshot.name)
     private readonly snapshotModel: Model<AnalyticsSnapshot>,
-    @Inject('FORM_SERVICE') private readonly formClient: ClientProxy,
+    @Inject('FORM_SERVICE') formClient: ClientProxy,
     @Inject('EVALUATION_SERVICE')
-    private readonly evaluationClient: ClientProxy,
+    evaluationClient: ClientProxy,
     @Inject('ANALYTICS_EVENTS')
-    private readonly analyticsEventsClient: ClientProxy,
+    analyticsEventsClient: ClientProxy,
     private readonly streamClient: IntelligenceStreamClient,
-  ) {}
+  ) {
+    this.formClient = createRpcClient(formClient);
+    this.evaluationClient = createRpcClient(evaluationClient);
+    this.analyticsEventsClient = createRpcClient(analyticsEventsClient);
+  }
 
   async getFormSnapshot(
     data: GetFormSnapshotRequest,

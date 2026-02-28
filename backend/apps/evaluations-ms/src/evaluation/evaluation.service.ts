@@ -11,24 +11,31 @@ import type {
 } from '@nestjs-query/core';
 import { MongooseQueryService } from '@nestjs-query/query-mongoose';
 import { Evaluation } from './entities/evaluation.entity';
+import { createRpcClient } from '@app/common';
 import type { IGroupForm, IMembership } from '@app/common';
 
 @Injectable()
 @QueryService(Evaluation)
 export class EvaluationService extends MongooseQueryService<Evaluation> {
   private readonly logger = new Logger(EvaluationService.name);
+  private readonly userServiceClient: ClientProxy;
+  private readonly groupsServiceClient: ClientProxy;
+  private readonly notificationsClient: ClientProxy;
 
   constructor(
     @InjectModel(Evaluation.name)
     private readonly evaluationModel: Model<Evaluation>,
     @Inject('USER_SERVICE')
-    private readonly userServiceClient: ClientProxy,
+    userServiceClient: ClientProxy,
     @Inject('GROUPS_SERVICE')
-    private readonly groupsServiceClient: ClientProxy,
+    groupsServiceClient: ClientProxy,
     @Inject('NOTIFICATIONS_EVENTS')
-    private readonly notificationsClient: ClientProxy,
+    notificationsClient: ClientProxy,
   ) {
     super(evaluationModel);
+    this.userServiceClient = createRpcClient(userServiceClient);
+    this.groupsServiceClient = createRpcClient(groupsServiceClient);
+    this.notificationsClient = createRpcClient(notificationsClient);
   }
 
   async aggregate(

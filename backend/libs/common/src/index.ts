@@ -11,5 +11,6 @@ export * from './interceptors/logger.interceptor';
 export * from './metrics/metrics.service';
 export * from './metrics/metrics.controller';
 export * from './filters/rpcToHttp.filter';
+export * from './rpc/rpc-client';
 export * from './telemetry/telemetry';
 export * from './telemetry/pino';
