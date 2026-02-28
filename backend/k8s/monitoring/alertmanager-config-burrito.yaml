@@ -30,4 +30,42 @@ spec:
           headers:
             - key: subject
               value: "[Burrito] {{ .Status | toUpper }} - {{ .CommonLabels.alertname }}"
-          html: "{{ range .Alerts }}<p><b>Burrito</b> - {{ .Annotations.summary }}</p><p>{{ .Annotations.description }}</p>{{ end }}"
+          html: |-
+            <!doctype html>
+            <html lang="en">
+              <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,sans-serif;color:#111827;">
+                <div style="max-width:680px;margin:0 auto;padding:24px;">
+                  <div style="background:#111827;color:#fff;border-radius:10px 10px 0 0;padding:16px 20px;">
+                    <div style="font-size:12px;opacity:.8;letter-spacing:.08em;text-transform:uppercase;">Burrito Monitoring</div>
+                    <div style="font-size:22px;font-weight:700;margin-top:4px;">Alert {{ .Status | toUpper }}</div>
+                    <div style="font-size:13px;opacity:.9;margin-top:6px;">{{ len .Alerts }} alert(s) - {{ .CommonLabels.alertname }}</div>
+                  </div>
+                  <div style="background:#ffffff;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 10px 10px;padding:16px 20px;">
+                    {{ range .Alerts }}
+                    <div style="border:1px solid #e5e7eb;border-left:6px solid {{ if eq .Status "firing" }}#dc2626{{ else }}#16a34a{{ end }};border-radius:8px;padding:14px 14px 10px 14px;margin-bottom:14px;">
+                      <div style="font-size:16px;font-weight:700;color:#111827;margin:0 0 6px 0;">
+                        {{ if .Annotations.summary }}{{ .Annotations.summary }}{{ else }}{{ .Labels.alertname }}{{ end }}
+                      </div>
+                      <div style="font-size:14px;color:#374151;line-height:1.5;margin:0 0 10px 0;">
+                        {{ if .Annotations.description }}{{ .Annotations.description }}{{ else }}No description provided.{{ end }}
+                      </div>
+                      <table role="presentation" cellspacing="0" cellpadding="0" style="font-size:12px;color:#4b5563;">
+                        <tr><td style="padding:2px 10px 2px 0;">Severity</td><td style="padding:2px 0;"><b>{{ .Labels.severity }}</b></td></tr>
+                        <tr><td style="padding:2px 10px 2px 0;">Status</td><td style="padding:2px 0;"><b>{{ .Status | toUpper }}</b></td></tr>
+                        <tr><td style="padding:2px 10px 2px 0;">Started</td><td style="padding:2px 0;">{{ .StartsAt }}</td></tr>
+                        <tr><td style="padding:2px 10px 2px 0;">Service</td><td style="padding:2px 0;">{{ if .Labels.job }}{{ .Labels.job }}{{ else if .Labels.alertname }}{{ .Labels.alertname }}{{ else }}n/a{{ end }}</td></tr>
+                      </table>
+                      {{ if .GeneratorURL }}
+                      <div style="margin-top:10px;">
+                        <a href="{{ .GeneratorURL }}" style="font-size:12px;color:#2563eb;text-decoration:none;">Open in Prometheus</a>
+                      </div>
+                      {{ end }}
+                    </div>
+                    {{ end }}
+                    <div style="font-size:11px;color:#6b7280;padding-top:6px;border-top:1px solid #e5e7eb;">
+                      Sent by Alertmanager (Burrito monitoring stack)
+                    </div>
+                  </div>
+                </div>
+              </body>
+            </html>
