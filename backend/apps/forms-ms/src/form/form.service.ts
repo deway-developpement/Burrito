@@ -5,20 +5,22 @@ import { Model } from 'mongoose';
 import { Filter, Query, QueryService } from '@nestjs-query/core';
 import { MongooseQueryService } from '@nestjs-query/query-mongoose';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { FormStatus } from '@app/common';
+import { FormStatus, createRpcClient } from '@app/common';
 import { Form } from './entities/form.entity';
 
 @Injectable()
 @QueryService(Form)
 export class FormService extends MongooseQueryService<Form> {
   private readonly logger = new Logger(FormService.name);
+  private readonly notificationsClient: ClientProxy;
 
   constructor(
     @InjectModel(Form.name) private readonly formModel: Model<Form>,
     @Inject('NOTIFICATIONS_EVENTS')
-    private readonly notificationsClient: ClientProxy,
+    notificationsClient: ClientProxy,
   ) {
     super(formModel);
+    this.notificationsClient = createRpcClient(notificationsClient);
   }
 
   async findByIds(ids: string[]): Promise<Form[]> {

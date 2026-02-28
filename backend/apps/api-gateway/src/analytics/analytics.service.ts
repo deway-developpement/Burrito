@@ -1,5 +1,6 @@
 import { GatewayTimeoutException, Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { createRpcClient } from '@app/common';
 import {
   Observable,
   TimeoutError,
@@ -86,10 +87,14 @@ type AnalyticsSnapshotRaw = {
 
 @Injectable()
 export class AnalyticsService {
+  private readonly analyticsClient: ClientProxy;
+
   constructor(
     @Inject('ANALYTICS_SERVICE')
-    private readonly analyticsClient: ClientProxy,
-  ) {}
+    analyticsClient: ClientProxy,
+  ) {
+    this.analyticsClient = createRpcClient(analyticsClient);
+  }
 
   async getFormSnapshot(
     request: AnalyticsSnapshotRequest,

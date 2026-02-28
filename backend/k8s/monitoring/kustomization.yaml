@@ -28,6 +28,14 @@ configMapGenerator:
         grafana_dashboard: "1"
         dashboard_version: "v1.0"
         app: "burrito"
+  - name: grafana-dashboard-container-images
+    files:
+      - container-images.json
+    options:
+      labels:
+        grafana_dashboard: "1"
+        dashboard_version: "v1.0"
+        app: "burrito"
 
 resources:
   - service-monitor-api-gateway.yaml

@@ -1,4 +1,3 @@
-import { initOpenTelemetry, setupRedisRpcTracingBridge } from '@app/common';
+import { initOpenTelemetry } from '@app/common';
 
 initOpenTelemetry('users-ms');
-setupRedisRpcTracingBridge('users-ms');

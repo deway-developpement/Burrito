@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { MICROSERVICE_TIMEOUT_MS } from '../constants';
-import { JwtPayload } from '@app/common';
+import { JwtPayload, createRpcClient } from '@app/common';
 import type { Request } from 'express';
 import { IUser } from '@app/common';
 import { ClientProxy } from '@nestjs/microservices';
@@ -19,10 +19,14 @@ import {
 
 @Injectable()
 export class AuthService {
+  private readonly userClient: ClientProxy;
+
   constructor(
     @Inject('USER_SERVICE') // must match ClientsModule.register({ name: 'USER_SERVICE', ... })
-    private readonly userClient: ClientProxy,
-  ) {}
+    userClient: ClientProxy,
+  ) {
+    this.userClient = createRpcClient(userClient);
+  }
 
   async validateUser(
     username: string,
