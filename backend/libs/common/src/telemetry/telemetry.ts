@@ -82,8 +82,14 @@ function getTracer(serviceName: string): Tracer {
 
 function tryRequire<T>(moduleName: string): T | null {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    return require(moduleName) as T;
+    // In webpack bundles, `require(variable)` may be rewritten to an empty context.
+    // Using a runtime-created function keeps Node's native require resolution.
+    // eslint-disable-next-line no-new-func
+    const nodeRequire = new Function(
+      'moduleName',
+      'return require(moduleName)',
+    ) as (name: string) => unknown;
+    return nodeRequire(moduleName) as T;
   } catch {
     return null;
   }
