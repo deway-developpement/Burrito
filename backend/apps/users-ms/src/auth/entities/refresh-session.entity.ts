@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { UserType } from '@app/common';
 
 export enum RefreshSessionStatus {
   ACTIVE = 'ACTIVE',
@@ -25,6 +26,21 @@ export class RefreshSession extends Document {
 
   @Prop({ type: String, required: true, unique: true, sparse: true })
   currentJti!: string;
+
+  @Prop({ type: String, required: true })
+  currentRefreshToken!: string;
+
+  @Prop({ type: String, default: null, index: true })
+  previousJti!: string | null;
+
+  @Prop({ type: Date, default: null, index: true })
+  previousRotatedAt!: Date | null;
+
+  @Prop({ type: String, required: true })
+  userEmail!: string;
+
+  @Prop({ type: Number, enum: UserType, required: true })
+  userType!: UserType;
 
   @Prop({
     type: String,
