@@ -23,9 +23,6 @@ export class User extends Document implements IUser {
   @Prop({ type: Number, enum: UserType, required: true })
   readonly userType: UserType;
 
-  @Prop({ default: null, nullable: true, type: String })
-  readonly refresh_token: string | null;
-
   @Prop({ default: false })
   emailVerified: boolean;
 

@@ -14,8 +14,6 @@ export interface IUser {
 
   readonly userType: UserType;
 
-  readonly refresh_token: string | null;
-
   readonly emailVerified: boolean;
 
   readonly createdAt: Date;
@@ -38,7 +36,6 @@ export interface IUpdateUser {
   password?: string;
   fullName?: string;
   userType?: UserType;
-  refresh_token?: string | null;
 }
 
 export interface INotificationPreferences {

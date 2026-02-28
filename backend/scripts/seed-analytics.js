@@ -474,7 +474,6 @@ async function main() {
             fullName: user.fullName,
             password: passwordHash,
             userType: user.userType,
-            refresh_token: null,
             updatedAt: now,
             seedTag,
           },
