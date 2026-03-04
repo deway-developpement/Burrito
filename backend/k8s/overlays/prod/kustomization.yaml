@@ -9,7 +9,7 @@ resources:
 images:
   - name: burrito-api-gateway
     newName: registry.burrito.deway.fr/burrito-api-gateway
-    newTag: "97"
+    newTag: "98"
   - name: burrito-users-ms
     newName: registry.burrito.deway.fr/burrito-users-ms
     newTag: "97"
