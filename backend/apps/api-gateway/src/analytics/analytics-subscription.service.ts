@@ -5,6 +5,8 @@ import type { TextAnalysisStatus } from './dto/analytics-snapshot.dto';
 export const ANALYTICS_PUBSUB = 'ANALYTICS_PUBSUB';
 export const ANALYTICS_TEXT_ANALYSIS_STATUS_CHANGED_EVENT =
   'analytics.textAnalysisStatusChanged';
+const ANALYTICS_TEXT_ANALYSIS_STATUS_CHANGED_SUBSCRIPTION_EVENT =
+  'graphql.analytics.textAnalysisStatusChanged';
 
 export type AnalyticsTextAnalysisStatusEvent = {
   formId: string;
@@ -33,15 +35,18 @@ export class AnalyticsSubscriptionService {
     payload: AnalyticsTextAnalysisStatusEvent,
   ): Promise<void> {
     const normalized = this.normalizePayload(payload);
-    return this.pubSub.publish(ANALYTICS_TEXT_ANALYSIS_STATUS_CHANGED_EVENT, {
-      analyticsTextAnalysisStatusChanged: normalized,
-    });
+    return this.pubSub.publish(
+      ANALYTICS_TEXT_ANALYSIS_STATUS_CHANGED_SUBSCRIPTION_EVENT,
+      {
+        analyticsTextAnalysisStatusChanged: normalized,
+      },
+    );
   }
 
   getTextAnalysisStatusChangedIterator() {
     return this.pubSub.asyncIterator<{
       analyticsTextAnalysisStatusChanged: AnalyticsTextAnalysisStatusEvent;
-    }>(ANALYTICS_TEXT_ANALYSIS_STATUS_CHANGED_EVENT);
+    }>(ANALYTICS_TEXT_ANALYSIS_STATUS_CHANGED_SUBSCRIPTION_EVENT);
   }
 
   private normalizePayload(
